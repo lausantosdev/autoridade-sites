@@ -464,7 +464,7 @@
 
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
             gap: 16px;
             margin-bottom: 32px;
         }
@@ -902,7 +902,8 @@
             const inputTokens = 2000 * total;
             const outputTokens = 3000 * total;
             const cost = ((inputTokens / 1e6) * 0.28 + (outputTokens / 1e6) * 0.42).toFixed(2);
-            document.getElementById('r_cost').textContent = `Custo estimado: ~$${cost} USD`;
+            const costBrl = (parseFloat(cost) * 5.8).toFixed(2);
+            document.getElementById('r_cost').textContent = `Custo estimado: ~$${cost} USD (~R$${costBrl})`;
         }
 
         // ===== GENERATION =====
@@ -986,7 +987,8 @@
                     document.getElementById('finalStats').innerHTML = `
                         <div class="stat-box"><div class="val">${s.pages}</div><div class="lbl">Páginas</div></div>
                         <div class="stat-box"><div class="val">${s.words.toLocaleString()}</div><div class="lbl">Palavras</div></div>
-                        <div class="stat-box"><div class="val">$${s.cost_usd}</div><div class="lbl">Custo API</div></div>
+                        <div class="stat-box"><div class="val">$${s.cost_usd}</div><div class="lbl">Custo USD</div></div>
+                        <div class="stat-box"><div class="val">R$${s.cost_brl.toFixed(2)}</div><div class="lbl">Custo BRL</div></div>
                         <div class="stat-box"><div class="val">${s.duration}</div><div class="lbl">Tempo Gasto</div></div>
                     `;
                     document.getElementById('downloadBtn').href = msg.download;

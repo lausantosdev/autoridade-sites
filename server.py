@@ -153,11 +153,21 @@ async def websocket_generate(websocket: WebSocket):
             
             total = len(pages)
             completed = [0]
-            
+            loop = asyncio.get_running_loop()
+            progress_queue: asyncio.Queue = asyncio.Queue()
+
             def progress_cb(current, total_pages, title):
                 completed[0] = current
-                # Envia progresso via thread-safe queue (simplificado para agora)
-            
+                loop.call_soon_threadsafe(
+                    progress_queue.put_nowait,
+                    {
+                        "type": "progress",
+                        "current": current,
+                        "total": total_pages,
+                        "percentage": round((current / max(total_pages, 1)) * 100)
+                    }
+                )
+
             # Executar geração em thread separada
             def run_generation():
                 generate_all_pages(
@@ -169,21 +179,29 @@ async def websocket_generate(websocket: WebSocket):
                     output_dir=output_dir,
                     progress_callback=progress_cb
                 )
-            
+
             thread = threading.Thread(target=run_generation)
             thread.start()
-            
-            # Monitorar progresso
+
+            # Monitorar progresso via queue (disparo imediato por página concluída)
             while thread.is_alive():
-                await asyncio.sleep(2)
-                await websocket.send_json({
-                    "type": "progress",
-                    "current": completed[0],
-                    "total": total,
-                    "percentage": round((completed[0] / max(total, 1)) * 100)
-                })
-            
+                try:
+                    msg = await asyncio.wait_for(progress_queue.get(), timeout=1.0)
+                    await websocket.send_json(msg)
+                except asyncio.TimeoutError:
+                    # Heartbeat a cada 1s sem nova página
+                    await websocket.send_json({
+                        "type": "progress",
+                        "current": completed[0],
+                        "total": total,
+                        "percentage": round((completed[0] / max(total, 1)) * 100)
+                    })
+
             thread.join()
+
+            # Drena mensagens restantes antes de seguir
+            while not progress_queue.empty():
+                await websocket.send_json(progress_queue.get_nowait())
             
             # Validate
             await websocket.send_json({"type": "step", "step": 7, "message": "Validando qualidade..."})

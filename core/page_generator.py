@@ -2,6 +2,7 @@
 Page Generator - Gera páginas SEO em massa usando DeepSeek via OpenRouter
 """
 import os
+import json
 import random
 import concurrent.futures
 from pathlib import Path
@@ -161,6 +162,10 @@ REGRAS CRÍTICAS:
 
     # Substituir placeholders do GPT no template
     html = template
+
+    # Injetar Schema Markup (LocalBusiness + FAQPage)
+    schema = _build_schema_markup(page, config, flat_result)
+    html = html.replace('{{schema_markup}}', schema)
     
     # Injetar variáveis de contexto da página primeiro
     html = html.replace("@local", page['location'])
@@ -257,6 +262,76 @@ def _replace_config_vars(template: str, config: dict) -> str:
         template = template.replace(placeholder, value)
 
     return template
+
+
+def _build_schema_markup(page: dict, config: dict, flat_result: dict) -> str:
+    """
+    Gera os blocos JSON-LD de Schema Markup para a página:
+    - LocalBusiness: informa ao Google sobre o negócio local
+    - FAQPage: expande a listagem na SERP com perguntas/respostas
+    """
+    empresa = config['empresa']
+    phone_raw = empresa.get('telefone_whatsapp', '')
+    phone_display = get_phone_display(config)
+    location = page.get('location', '')
+    keyword = page.get('keyword', '')
+
+    # --- LocalBusiness ---
+    local_business = {
+        "@context": "https://schema.org",
+        "@type": "LocalBusiness",
+        "name": empresa['nome'],
+        "description": flat_result.get('meta_description', f"{keyword} em {location}"),
+        "telephone": phone_display,
+        "url": f"https://{empresa['dominio']}/{page['filename']}",
+        "address": {
+            "@type": "PostalAddress",
+            "addressLocality": location,
+            "addressCountry": "BR"
+        },
+        "areaServed": location,
+        "openingHours": empresa.get('horario', ''),
+        "contactPoint": {
+            "@type": "ContactPoint",
+            "telephone": phone_raw,
+            "contactType": "customer service",
+            "availableLanguage": "Portuguese"
+        },
+        "sameAs": [
+            f"https://wa.me/{phone_raw}"
+        ]
+    }
+
+    # --- FAQPage (usa as perguntas já geradas pela IA) ---
+    faq_entities = []
+    for i in range(1, 4):
+        pergunta = flat_result.get(f'faq_{i}_pergunta', '').strip()
+        resposta = flat_result.get(f'faq_{i}_resposta', '').strip()
+        if pergunta and resposta:
+            faq_entities.append({
+                "@type": "Question",
+                "name": pergunta,
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": resposta
+                }
+            })
+
+    blocks = [
+        f'<script type="application/ld+json">\n{json.dumps(local_business, ensure_ascii=False, indent=2)}\n</script>'
+    ]
+
+    if faq_entities:
+        faq_schema = {
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            "mainEntity": faq_entities
+        }
+        blocks.append(
+            f'<script type="application/ld+json">\n{json.dumps(faq_schema, ensure_ascii=False, indent=2)}\n</script>'
+        )
+
+    return '\n    '.join(blocks)
 
 
 def _log_error(page_title: str, error: str, output_dir: str):
