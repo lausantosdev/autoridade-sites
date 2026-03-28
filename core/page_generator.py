@@ -6,6 +6,7 @@ import json
 import random
 import concurrent.futures
 from pathlib import Path
+from urllib.parse import quote
 from tqdm import tqdm
 from core.openrouter_client import OpenRouterClient
 from core.topic_generator import get_random_mix
@@ -170,6 +171,12 @@ REGRAS CRÍTICAS:
     # Injetar variáveis de contexto da página primeiro
     html = html.replace("@local", page['location'])
     html = html.replace("@keyword", page['keyword'])
+
+    # Gerar link de WhatsApp personalizado para esta página
+    phone_raw = config['empresa']['telefone_whatsapp']
+    msg_pagina = f"Olá, quero saber sobre {page['keyword']} em {page['location']}"
+    whatsapp_pagina = f"https://wa.me/{phone_raw}?text={quote(msg_pagina)}"
+    html = html.replace("@whatsapp_pagina", whatsapp_pagina)
     
     replaced_count = 0
     for key, value in flat_result.items():
