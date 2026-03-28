@@ -10,3 +10,4 @@ config_*.yaml
 error_log*.txt
 .venv/
 node_modules/
+server_log.txt
