@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="@meta_description">
+    <meta name="keywords" content="@meta_keywords">
+    <meta property="og:title" content="@og_title">
+    <meta property="og:description" content="@og_description">
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="pt_BR">
+    <meta name="theme-color" content="{{cor_marca}}">
+    <title>@titulo</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="css/reset.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <!-- Header -->
+    <header class="site-header">
+        <div class="container header-inner">
+            <a href="index.html" class="header-logo" data-dinamico="empresa_nome">{{empresa_nome}}</a>
+            <nav class="header-nav">
+                <a href="index.html">Início</a>
+                <a href="mapa-do-site.html">Serviços</a>
+                <a href="#seo-content">Sobre</a>
+                <a href="#contato" class="header-cta">
+                    <i class="fab fa-whatsapp"></i> Orçamento
+                </a>
+            </nav>
+            <button class="mobile-toggle" aria-label="Menu">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Hero -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <div class="hero-badge">
+                    <i class="fas fa-check-circle"></i>
+                    <span data-dinamico="empresa_categoria">{{empresa_categoria}}</span> — <span data-dinamico="empresa_nome">{{empresa_nome}}</span>
+                </div>
+                <h1 class="hero-title">
+                    @hero_titulo_linha_1<br>
+                    <span class="accent">@hero_titulo_destaque</span><br>
+                    @hero_titulo_linha_3
+                </h1>
+                <p class="hero-subtitle">@hero_subtitulo</p>
+                <div class="hero-buttons">
+                    <a href="{{whatsapp_link}}" data-dinamico-href="whatsapp_link" class="btn btn-primary" target="_blank" rel="noopener">
+                        <i class="fab fa-whatsapp"></i> Solicitar Orçamento
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats -->
+    <section class="stats">
+        <div class="container">
+            <div class="stats-grid reveal">
+                <div class="stat-item">
+                    <div class="stat-number"><i class="fas fa-check-circle" style="font-size: 2.5rem; color: var(--primary);"></i></div>
+                    <div class="stat-label">Atendimento Qualificado</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number"><i class="fas fa-handshake" style="font-size: 2.5rem; color: var(--primary);"></i></div>
+                    <div class="stat-label" style="margin-top: 10px;">Foco na Satisfação</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number"><i class="fas fa-bullseye" style="font-size: 2.5rem; color: var(--primary);"></i></div>
+                    <div class="stat-label" style="margin-top: 10px;">Compromisso com o Resultado</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SEO Content: Iceberg Strategy (Copy + SEO) -->
+    <section id="seo-content" class="seo-section">
+        <div class="container">
+            <!-- Part 1: The Problem (Copy Focus) -->
+            <div class="seo-intro reveal">
+                <h2 class="section-title">@dor_h2</h2>
+                <div class="intro-text">
+                    <p class="lead">@dor_p1</p>
+                    <p>@dor_p2</p>
+                </div>
+            </div>
+
+            <!-- Part 2: Benefits Grid (Visual Conversion) -->
+            <div class="section-header reveal" style="margin-top: 60px;">
+                <span class="section-tag">Por que nos escolher</span>
+                <h3 class="section-title-sm">Diferenciais em @local</h3>
+            </div>
+            <div class="diff-grid reveal">
+                <div class="diff-card">
+                    <div class="diff-icon"><i class="@beneficio_1_icone"></i></div>
+                    <h4>@beneficio_1_titulo</h4>
+                    <p>@beneficio_1_texto</p>
+                </div>
+                <div class="diff-card">
+                    <div class="diff-icon"><i class="@beneficio_2_icone"></i></div>
+                    <h4>@beneficio_2_titulo</h4>
+                    <p>@beneficio_2_texto</p>
+                </div>
+                <div class="diff-card">
+                    <div class="diff-icon"><i class="@beneficio_3_icone"></i></div>
+                    <h4>@beneficio_3_titulo</h4>
+                    <p>@beneficio_3_texto</p>
+                </div>
+                <div class="diff-card">
+                    <div class="diff-icon"><i class="@beneficio_4_icone"></i></div>
+                    <h4>@beneficio_4_titulo</h4>
+                    <p>@beneficio_4_texto</p>
+                </div>
+            </div>
+
+            <!-- Part 3: Process & Authority (SEO Heavy) -->
+            <div class="seo-deep-content reveal" style="margin-top: 80px;">
+                <div class="seo-block">
+                    <h2>@processo_h2</h2>
+                    <p>@processo_p1</p>
+                    <p>@processo_p2</p>
+                </div>
+
+                <div class="seo-block">
+                    <h2>@autoridade_h2</h2>
+                    <p>@autoridade_p1</p>
+                    <p>@autoridade_p2</p>
+                </div>
+            </div>
+
+            <!-- Part 4: FAQ (Semantic SEO / Voice Search) -->
+            <div class="faq-section reveal" style="margin-top: 80px; padding: 40px; background: var(--bg-alt); border-radius: 20px;">
+                <h2 style="margin-bottom: 30px; text-align: center;">@faq_h2</h2>
+                <div class="faq-item" style="margin-bottom: 25px;">
+                    <h4 style="color: var(--primary); margin-bottom: 10px;">@faq_1_pergunta</h4>
+                    <p>@faq_1_resposta</p>
+                </div>
+                <div class="faq-item" style="margin-bottom: 25px;">
+                    <h4 style="color: var(--primary); margin-bottom: 10px;">@faq_2_pergunta</h4>
+                    <p>@faq_2_resposta</p>
+                </div>
+                <div class="faq-item">
+                    <h4 style="color: var(--primary); margin-bottom: 10px;">@faq_3_pergunta</h4>
+                    <p>@faq_3_resposta</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA -->
+    <section id="contato" class="cta-section">
+        <div class="container">
+            <h2 class="cta-title">Fale com a equipe: <span data-dinamico="empresa_nome">{{empresa_nome}}</span></h2>
+            <p class="cta-subtitle">Atendimento rápido e profissional. Entre em contato para um orçamento sem compromisso.</p>
+            <div class="cta-buttons">
+                <a href="{{whatsapp_link}}" data-dinamico-href="whatsapp_link" class="btn btn-white" target="_blank" rel="noopener">
+                    <i class="fab fa-whatsapp"></i> WhatsApp
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Map -->
+    <section class="map-section">
+        <iframe src="{{google_maps_url}}" data-dinamico-src="google_maps_url" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Localização {{empresa_nome}}"></iframe>
+    </section>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <h3 data-dinamico="empresa_nome">{{empresa_nome}}</h3>
+                    <p><span data-dinamico="empresa_categoria">{{empresa_categoria}}</span> de excelência. Profissionais qualificados, atendimento personalizado e resultados comprovados.</p>
+                </div>
+                <div class="footer-col">
+                    <h4>Links</h4>
+                    <a href="index.html">Página Inicial</a>
+                    <a href="mapa-do-site.html">Mapa do Site</a>
+                    <a href="#seo-content">Sobre</a>
+                    <a href="#contato">Contato</a>
+                </div>
+                <div class="footer-col">
+                    <h4>Contato</h4>
+                    <p><i class="fas fa-phone"></i> <span data-dinamico="telefone_display">{{telefone_display}}</span></p>
+                    <p><i class="fas fa-clock"></i> <span data-dinamico="horario">{{horario}}</span></p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <span>© <span data-dinamico="ano">{{ano}}</span> <span data-dinamico="empresa_nome">{{empresa_nome}}</span>. Todos os direitos reservados.</span>
+                <a href="#" target="_blank" rel="noopener">AUTORIDADE DIGITAL</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- WhatsApp Float -->
+    <a href="{{whatsapp_link}}" data-dinamico-href="whatsapp_link" class="whatsapp-float" target="_blank" rel="noopener" aria-label="WhatsApp">
+        <i class="fab fa-whatsapp"></i>
+    </a>
+
+    <!-- JS -->
+    <script src="js/dados.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>

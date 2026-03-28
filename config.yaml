@@ -1,0 +1,43 @@
+# ===== DADOS DA EMPRESA =====
+empresa:
+  nome: "CleanPro Estofados"
+  dominio: "cleanproestofados.com.br"
+  categoria: "Limpeza de Estofados"
+  telefone_whatsapp: "5541999998888"
+  telefone_ligar: "(41) 99999-8888"
+  horario: "Segunda a Sábado, 8h às 18h"
+  cor_marca: "#2563EB"
+  google_maps_embed: ""
+
+# ===== SEO =====
+seo:
+  # Opção 1: Importar do CSV do Google Keyword Planner
+  # palavras_chave_csv: "keywords.csv"
+
+  # Opção 2: Lista manual
+  palavras_chave:
+    - Limpeza de Sofá
+    - Higienização de Estofados
+    - Lavagem de Colchão
+    - Impermeabilização de Sofá
+    - Limpeza de Cadeiras
+    - Lavagem de Tapete
+    - Higienização de Colchão
+    - Limpeza de Poltrona
+    - Limpeza de Estofado Automotivo
+    - Lavagem a Seco de Sofá
+
+  locais:
+    - Curitiba
+    - São José dos Pinhais
+    - Colombo
+    - Araucária
+    - Pinhais
+    - Campo Largo
+
+# ===== API =====
+api:
+  provider: "openrouter"
+  model: "deepseek/deepseek-chat"
+  max_workers: 30
+  max_retries: 3

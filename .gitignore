@@ -1,0 +1,12 @@
+.env
+__pycache__/
+*.pyc
+output/
+reports/
+cache/
+uploads/
+config_*.yaml
+*.log
+error_log*.txt
+.venv/
+node_modules/
