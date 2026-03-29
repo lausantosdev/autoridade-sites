@@ -309,9 +309,13 @@ def _build_config(data: dict) -> dict:
         },
         'api': {
             'provider': 'openrouter',
-            'model': data.get('model', 'deepseek/deepseek-chat'),
+            'model': data.get('model', 'deepseek/deepseek-v3.2'),
             'max_workers': int(data.get('max_workers', 30)),
             'max_retries': 3,
+        },
+        'leads': {
+            'worker_url':   data.get('worker_url', ''),
+            'client_token': data.get('client_token', ''),
         }
     }
 

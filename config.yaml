@@ -42,3 +42,8 @@ api:
   model: "deepseek/deepseek-v3.2"
   max_workers: 30
   max_retries: 3
+
+# ===== LEADS =====
+leads:
+  worker_url: ""        # URL do Cloudflare Worker (deixe vazio para desativar o widget)
+  client_token: ""      # Token único deste cliente (UUID)

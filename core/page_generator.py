@@ -284,6 +284,8 @@ def _replace_config_vars(template: str, config: dict) -> str:
         '{{endereco_footer}}': endereco_footer,
         '{{servicos_footer}}': servicos_footer,
         '{{locais_footer}}': locais_footer,
+        '{{worker_url}}':    config.get('leads', {}).get('worker_url', ''),
+        '{{client_token}}':  config.get('leads', {}).get('client_token', ''),
     }
 
     for placeholder, value in replacements.items():

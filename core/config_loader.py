@@ -37,6 +37,10 @@ def load_config(config_path: str = "config.yaml") -> dict:
     config['api'].setdefault('max_workers', 30)
     config['api'].setdefault('max_retries', 3)
 
+    config.setdefault('leads', {})
+    config['leads'].setdefault('worker_url', '')
+    config['leads'].setdefault('client_token', '')
+
     config.setdefault('template', {})
     config['template'].setdefault('preset', 'custom')
 
