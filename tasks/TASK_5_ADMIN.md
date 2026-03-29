@@ -96,6 +96,127 @@ Colunas: Data | Nome | WhatsApp | Palavra-chave | Local
 
 Mesmo estilo da tabela do `dashboard/index.html`. Clicar novamente colapsa.
 
+#### Exportação PDF (Relatório Mensal por Cliente)
+
+Adicionar jsPDF via CDN no `<head>`:
+```html
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+```
+
+Ao clicar em "⬇ Relatório PDF", gerar um PDF com **uma página por cliente**, contendo:
+
+**Cabeçalho de cada página:**
+```
+AUTORIDADE SITES — Relatório Mensal
+Cliente: petclean.com.br
+Período: Abril/2025
+Token: a1b2c3d4...
+```
+
+**Resumo do cliente:**
+```
+Total de leads no mês: 12
+Total geral: 47
+```
+
+**Tabela de leads do mês atual do cliente:**
+Colunas: Data | Nome | WhatsApp | Palavra-chave | Local
+
+**Rodapé de cada página:**
+```
+Gerado em DD/MM/YYYY — Autoridade Sites
+```
+
+**Implementação com jsPDF:**
+```js
+function exportPdf(leads) {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    const now = new Date();
+    const mesAtual = new Date(now.getFullYear(), now.getMonth(), 1);
+    const nomeMes = now.toLocaleString('pt-BR', { month: 'long', year: 'numeric' });
+
+    // Agrupar por client_token
+    const clientes = {};
+    leads.forEach(l => {
+        if (!clientes[l.client_token]) clientes[l.client_token] = [];
+        clientes[l.client_token].push(l);
+    });
+
+    let primeiraPage = true;
+
+    Object.entries(clientes).forEach(([token, clientLeads]) => {
+        if (!primeiraPage) doc.addPage();
+        primeiraPage = false;
+
+        const dominio = clientLeads[0]?.dominio || 'desconhecido';
+        const leadsDoMes = clientLeads.filter(l => new Date(l.created_at) >= mesAtual);
+        const tokenCurto = token.slice(0, 8) + '...';
+
+        let y = 20;
+
+        // Cabeçalho
+        doc.setFontSize(16);
+        doc.setFont(undefined, 'bold');
+        doc.text('AUTORIDADE SITES — Relatório Mensal', 14, y);
+        y += 10;
+
+        doc.setFontSize(11);
+        doc.setFont(undefined, 'normal');
+        doc.text(`Cliente: ${dominio}`, 14, y); y += 7;
+        doc.text(`Período: ${nomeMes}`, 14, y); y += 7;
+        doc.text(`Token: ${tokenCurto}`, 14, y); y += 12;
+
+        // Resumo
+        doc.setFont(undefined, 'bold');
+        doc.text(`Leads no mês: ${leadsDoMes.length}`, 14, y); y += 7;
+        doc.text(`Total geral: ${clientLeads.length}`, 14, y); y += 12;
+
+        // Tabela de leads do mês
+        if (leadsDoMes.length === 0) {
+            doc.setFont(undefined, 'italic');
+            doc.text('Nenhum lead capturado neste mês.', 14, y);
+        } else {
+            doc.setFont(undefined, 'bold');
+            doc.setFontSize(9);
+            doc.text('Data', 14, y);
+            doc.text('Nome', 45, y);
+            doc.text('WhatsApp', 95, y);
+            doc.text('Palavra-chave', 130, y);
+            doc.text('Local', 175, y);
+            y += 6;
+
+            doc.setFont(undefined, 'normal');
+            leadsDoMes.forEach(lead => {
+                if (y > 270) { doc.addPage(); y = 20; }
+                const data = new Date(lead.created_at).toLocaleString('pt-BR', {
+                    timeZone: 'America/Sao_Paulo', day:'2-digit', month:'2-digit', year:'numeric'
+                });
+                doc.text(data,                          14, y);
+                doc.text((lead.nome || '-').slice(0,20), 45, y);
+                doc.text((lead.whatsapp || '-').slice(0,18), 95, y);
+                doc.text((lead.keyword || '-').slice(0,22), 130, y);
+                doc.text((lead.local || '-').slice(0,16), 175, y);
+                y += 6;
+            });
+        }
+
+        // Rodapé
+        doc.setFontSize(8);
+        doc.setTextColor(150);
+        doc.text(
+            `Gerado em ${new Date().toLocaleDateString('pt-BR')} — Autoridade Sites`,
+            14, 285
+        );
+        doc.setTextColor(0);
+    });
+
+    const nomeArquivo = `relatorio_${now.toISOString().slice(0,7)}.pdf`;
+    doc.save(nomeArquivo);
+}
+```
+
 ### Tabela global de todos os leads
 Título: "Todos os Leads (mais recentes)"
 
@@ -103,8 +224,13 @@ Exibir os 100 leads mais recentes de todos os clientes.
 
 Colunas: Data | Domínio | Nome | WhatsApp | Palavra-chave | Local | Token (8 chars)
 
-### Botão de exportação CSV
-Acima da tabela global, botão "⬇ Exportar CSV" que gera e baixa um arquivo `leads_export_{data}.csv` com **todos** os leads (não apenas os 100 exibidos).
+### Botões de exportação
+Acima da tabela global, dois botões lado a lado:
+- "⬇ Exportar CSV" — exporta todos os leads em CSV
+- "⬇ Relatório PDF" — gera relatório mensal por cliente em PDF
+
+#### Exportação CSV
+Baixa `leads_export_{data}.csv` com **todos** os leads (não apenas os 100 exibidos).
 
 Campos do CSV: `created_at`, `dominio`, `client_token`, `nome`, `whatsapp`, `keyword`, `local`, `pagina`
 
