@@ -83,14 +83,15 @@ def _validate_page(filename: str, content: str, config: dict) -> dict:
     if len(h2s) < 3:
         issues['warnings'].append(f"{filename}: Apenas {len(h2s)} H2s (mínimo recomendado: 6)")
 
-    # Verificar placeholders não substituídos
-    placeholders = re.findall(r'@[a-z_]+', content)
+    # Verificar placeholders não substituídos (ignorar blocos <script> para não confundir com JSON-LD)
+    content_no_scripts = re.sub(r'<script[^>]*>.*?</script>', '', content, flags=re.DOTALL)
+    placeholders = re.findall(r'@[a-z_]+', content_no_scripts)
     if placeholders:
         issues['errors'].append(
             f"{filename}: {len(placeholders)} placeholders não substituídos: {placeholders[:5]}"
         )
 
-    config_placeholders = re.findall(r'\{\{[a-z_]+\}\}', content)
+    config_placeholders = re.findall(r'\{\{[a-z_]+\}\}', content_no_scripts)
     if config_placeholders:
         issues['errors'].append(
             f"{filename}: Config vars não substituídas: {config_placeholders[:5]}"
