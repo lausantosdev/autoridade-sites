@@ -114,7 +114,7 @@ output/{dominio}/
 ## API
 
 - Provider: OpenRouter (`OPENROUTER_API_KEY` no `.env`)
-- Modelo padrão: `deepseek/deepseek-chat`
+- Modelo padrão: `deepseek/deepseek-v3.2`
 - Custo típico: ~R$1,00 por site de 60 páginas
 
 ## Status das features
@@ -124,10 +124,37 @@ output/{dominio}/
 | Gerador CLI + Web (FastAPI/WebSocket) | ✅ Pronto |
 | Templates HTML/CSS/JS | ✅ Pronto |
 | Schema markup (LocalBusiness + FAQPage) | ✅ Pronto |
-| Widget de captura de leads (JS puro) | ⏳ Planejado |
-| Cloudflare Worker (endpoint seguro para leads) | ⏳ Planejado |
-| Supabase (armazenamento de leads + RLS) | ⏳ Planejado |
-| Dashboard do cliente (token-based) | ⏳ Planejado |
+| Widget de captura de leads (JS puro) | ✅ Pronto |
+| Cloudflare Worker (endpoint seguro para leads) | ✅ Pronto |
+| Supabase setup (tabela leads + RLS) | ✅ Pronto (SQL em `supabase/setup.sql`) |
+| Dashboard do cliente (token-based + dark mode) | ✅ Pronto |
+| Painel Admin + export CSV/PDF | ⏳ TASK_5 aguardando execução |
+
+## Roteamento de tarefas — Claude vs agente barato
+
+Regra validada na prática neste projeto. Seguir sempre:
+
+| Situação | Estratégia |
+|----------|-----------|
+| Arquivo novo, lógica isolada, spec clara | Agente barato — criar `tasks/TASK_N.md` primeiro |
+| Arquivo novo, lógica complexa | Claude direto |
+| Modificar arquivo existente | Claude direto — ler o arquivo antes de agir |
+| Volume alto de arquivos similares | Agente barato (custo da spec diluído) |
+
+**Formato obrigatório da spec para agente barato (`tasks/TASK_N.md`):**
+- Contexto do projeto em 3-5 linhas
+- Caminhos exatos dos arquivos a criar
+- Schema/interfaces que o código vai consumir
+- Comportamento em pseudocódigo ou exemplos concretos
+- Seção "O que NÃO fazer" para evitar over-engineering
+- Dar tudo inline — não exigir que o agente explore o codebase
+
+**Fluxo validado:**
+1. Claude cria `TASK_N.md` com spec completa
+2. Agente barato executa (só arquivos novos, nunca modificar existentes)
+3. Claude revisa: bugs de integração, XSS, lógica incorreta
+4. Claude faz correções pontuais
+5. Claude faz a integração com o codebase (sempre tarefa separada)
 
 ## Decisões de arquitetura não óbvias
 
