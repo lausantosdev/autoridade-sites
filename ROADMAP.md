@@ -60,7 +60,7 @@ O dashboard é o que **fecha a recorrência**: o cliente vê quantos leads viera
 
 ---
 
-## Fase 1 — Widget de Captura + Backend de Leads
+## Fase 1 — Widget de Captura + Backend de Leads ✅ Concluída
 
 ### O widget (template HTML/JS)
 
@@ -137,45 +137,39 @@ leads:
 
 ---
 
-## Fase 2 — Dashboard do Cliente
+## Fase 2 — Dashboard do Cliente ✅ Concluída
 
-### Como funciona
+**Arquivo:** `dashboard/index.html`
 
-O cliente acessa uma URL única:
-```
-app.autoridade-sites.com.br/dashboard?token=SEU-TOKEN
-```
-
-**O que vê:**
-- Total de leads do mês atual
-- Leads por página/keyword (ranking)
-- Lista completa: data, nome, WhatsApp, página de origem
-- Histórico mês a mês
-
-### Stack
-
-- HTML/CSS/JS puro (sem framework)
-- Supabase JS client com anon key + Row Level Security
-- RLS: cada token só acessa seus próprios leads
+- Cards: total de leads / este mês / esta semana
+- Ranking de leads por palavra-chave com barra visual
+- Tabela completa com timezone BR (limite 50 registros)
+- Dark mode: toggle manual + respeita `prefers-color-scheme`
+- Proteção XSS em todos os dados do usuário
 - Hospedagem: Cloudflare Pages ou GitHub Pages (grátis)
-
-### Row Level Security (Supabase)
-
-```sql
--- Política: cliente só vê seus próprios leads
-CREATE POLICY "client sees own leads"
-ON leads FOR SELECT
-USING (client_token = current_setting('app.client_token', true));
-```
 
 ---
 
-## Fase 3 — Painel Admin (você)
+## Fase 3 — Painel Admin ⏳ Aguardando execução
 
-- Vê todos os clientes e todos os leads
-- Métricas gerais por cliente
-- Exporta relatório PDF mensal por cliente
-- Gestão de tokens (criar novo cliente, revogar acesso)
+**Spec:** `tasks/TASK_5_ADMIN.md`
+**Arquivo a criar:** `admin/index.html`
+
+- Cards globais: total leads / mês / clientes ativos / domínios
+- Tabela de clientes com expandir/colapsar leads inline
+- Tabela global dos 100 leads mais recentes
+- Exportação CSV (todos os leads)
+- Exportação PDF (relatório mensal por cliente, via jsPDF)
+
+---
+
+## Infraestrutura pendente (ações manuais)
+
+1. Criar projeto Supabase → executar `supabase/setup.sql`
+2. Deploy Cloudflare Worker → `cd cloudflare-worker && wrangler deploy`
+3. Configurar secrets do Worker: `SUPABASE_URL` e `SUPABASE_SERVICE_KEY`
+4. Preencher `config.yaml`: `leads.worker_url` e `leads.client_token`
+5. Hospedar `dashboard/` (Cloudflare Pages ou GitHub Pages)
 
 ---
 
@@ -183,36 +177,24 @@ USING (client_token = current_setting('app.client_token', true));
 
 | Decisão | Escolha | Motivo |
 |---------|---------|--------|
-| Banco de leads | Supabase | Gratuito, dashboard, RLS, escala |
+| Banco de leads | Supabase | Gratuito, RLS, escala |
 | Endpoint intermediário | Cloudflare Worker | Protege credenciais, grátis, zero manutenção |
 | Widget | JS puro embutido no template | Zero dependência externa, zero setup por cliente |
 | Dashboard | HTML estático + Supabase anon key + RLS | Simples, seguro, sem backend |
-| Captação | 24h (não só fora do horário) | Mais leads, sem complexidade de lógica de horário |
+| Captação | 24h contínuo | Mais leads, sem lógica de horário |
 | Dados capturados | nome + whatsapp + pagina + keyword + local | Suficiente para provar ROI ao cliente |
-
----
-
-## Próxima sessão — por onde começar
-
-1. Criar projeto no Supabase e a tabela `leads`
-2. Criar o Cloudflare Worker (`cloudflare-worker/index.js`)
-3. Implementar o widget (`templates/js/widget.js` + estilos)
-4. Integrar widget nos templates (`index.html` e `page.html`)
-5. Adicionar campos `worker_url` e `client_token` ao config e wizard
-6. Testar end-to-end com empresa fictícia
+| Modelo IA | DeepSeek V3.2 via OpenRouter | Melhor qualidade, 2.3x mais barato no output que V3 |
 
 ---
 
 ## Estado atual do repositório
 
 **Branch:** `main`
-**Último commit:** `c42b082` — fix validator ignorar blocos script
+**Último commit:** `ad675b6` — atualiza CLAUDE.md com roteamento de agentes
 
-**Commits desta sessão:**
-- `4a4ab4f` — WhatsApp personalizado por página
-- `54973a8` — Footer rico (serviços, cidades, endereço)
-- `7ae152d` — H1 simplificado no index
-- `c42b082` — Validator corrigido (falso positivo JSON-LD)
-- `1402a22` — .gitignore ignorar .claude/
-- `3799244` — .gitignore server_log.txt
-- `774b888` — Schema Markup + progresso real-time + custo BRL
+**Commits relevantes:**
+- Widget + CSS + integração pipeline
+- Cloudflare Worker (index.js, wrangler.toml)
+- Dashboard com dark mode e proteção XSS
+- Migração para DeepSeek V3.2
+- Tasks 1–5 (specs para agentes)
