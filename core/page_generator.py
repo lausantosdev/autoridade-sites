@@ -251,6 +251,24 @@ def _replace_config_vars(template: str, config: dict) -> str:
     empresa = config['empresa']
     r, g, b = hex_to_rgb(empresa['cor_marca'])
 
+    # Gerar HTML do endereço para o footer
+    endereco = empresa.get('endereco', '').strip()
+    endereco_footer = (
+        f'<p><i class="fas fa-location-dot"></i> {endereco}</p>' if endereco else ''
+    )
+
+    # Gerar HTML dos serviços para o footer (palavras-chave como links internos)
+    palavras = config.get('seo', {}).get('palavras_chave', [])
+    servicos_footer = '\n'.join(
+        f'<a href="mapa-do-site.html">{p}</a>' for p in palavras
+    )
+
+    # Gerar HTML das cidades atendidas para o footer
+    locais = config.get('seo', {}).get('locais', [])
+    locais_footer = '\n'.join(
+        f'<p><i class="fas fa-check"></i> {local}</p>' for local in locais
+    )
+
     replacements = {
         '{{empresa_nome}}': empresa['nome'],
         '{{empresa_categoria}}': empresa['categoria'],
@@ -263,6 +281,9 @@ def _replace_config_vars(template: str, config: dict) -> str:
         '{{dominio}}': empresa['dominio'],
         '{{horario}}': empresa.get('horario', ''),
         '{{ano}}': str(__import__('datetime').datetime.now().year),
+        '{{endereco_footer}}': endereco_footer,
+        '{{servicos_footer}}': servicos_footer,
+        '{{locais_footer}}': locais_footer,
     }
 
     for placeholder, value in replacements.items():

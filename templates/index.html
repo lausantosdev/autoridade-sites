@@ -189,19 +189,21 @@
             <div class="footer-grid">
                 <div class="footer-brand">
                     <h3 data-dinamico="empresa_nome">{{empresa_nome}}</h3>
-                    <p><span data-dinamico="empresa_categoria">{{empresa_categoria}}</span> de excelência. Profissionais qualificados, resultados comprovados.</p>
-                </div>
-                <div class="footer-col">
-                    <h4>Navegação</h4>
-                    <a href="index.html">Início</a>
-                    <a href="#servicos">Serviços</a>
-                    <a href="#diferenciais">Diferenciais</a>
-                    <a href="mapa-do-site.html">Mapa do Site</a>
+                    <p><span data-dinamico="empresa_categoria">{{empresa_categoria}}</span> de excelência. Profissionais qualificados, atendimento personalizado e resultados comprovados.</p>
                 </div>
                 <div class="footer-col">
                     <h4>Contato</h4>
                     <p><i class="fas fa-phone"></i> <span data-dinamico="telefone_display">{{telefone_display}}</span></p>
                     <p><i class="fas fa-clock"></i> <span data-dinamico="horario">{{horario}}</span></p>
+                    {{endereco_footer}}
+                </div>
+                <div class="footer-col">
+                    <h4>Serviços</h4>
+                    {{servicos_footer}}
+                </div>
+                <div class="footer-col">
+                    <h4>Cidades Atendidas</h4>
+                    {{locais_footer}}
                 </div>
             </div>
             <div class="footer-bottom">

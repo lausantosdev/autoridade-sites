@@ -7,6 +7,7 @@ empresa:
   telefone_ligar: "(41) 99999-8888"
   horario: "Segunda a Sábado, 8h às 18h"
   cor_marca: "#2563EB"
+  endereco: ""  # Ex: "Rua das Flores, 123 - Curitiba, PR"
   google_maps_embed: ""
 
 # ===== SEO =====

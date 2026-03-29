@@ -300,6 +300,7 @@ def _build_config(data: dict) -> dict:
             'horario': data.get('horario', 'Segunda a Sexta, 8h às 18h'),
             'servicos_manuais': [s.strip() for s in data.get('servicos', '').split('\n') if s.strip()],
             'cor_marca': data.get('cor_marca', '#2563EB'),
+            'endereco': data.get('endereco', ''),
             'google_maps_embed': google_maps_input,
         },
         'seo': {

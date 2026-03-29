@@ -585,7 +585,12 @@
                     <input type="text" id="horario" placeholder="Seg a Sex, 8h às 18h" value="Segunda a Sábado, 8h às 18h">
                 </div>
             </div>
-            
+
+            <div class="field" style="margin-top: 20px;">
+                <label>Endereço <span style="font-size:0.8rem; font-weight:normal;">(opcional — aparece no rodapé e ajuda no SEO local)</span></label>
+                <input type="text" id="endereco" placeholder="Rua das Flores, 123 - Curitiba, PR">
+            </div>
+
             <div class="field" style="margin-top: 20px;">
                 <label>Principais Serviços <span style="font-size:0.8rem; font-weight:normal;">(Um serviço por linha. Ex: Troca de Fiação)</span></label>
                 <textarea id="servicos" placeholder="Troca de fiação completa&#10;Conserto de curtos-circuitos&#10;Instalação de refletores"></textarea>
@@ -918,6 +923,7 @@
                 categoria: document.getElementById('categoria').value.trim(),
                 telefone: document.getElementById('telefone').value.trim(),
                 horario: document.getElementById('horario').value.trim(),
+                endereco: document.getElementById('endereco').value.trim(),
                 servicos: document.getElementById('servicos').value.trim(),
                 cor_marca: document.getElementById('cor_marca').value,
                 google_maps: document.getElementById('google_maps').value.trim(),
