@@ -39,6 +39,6 @@ seo:
 # ===== API =====
 api:
   provider: "openrouter"
-  model: "deepseek/deepseek-chat"
+  model: "deepseek/deepseek-v3.2"
   max_workers: 30
   max_retries: 3

@@ -99,9 +99,9 @@ class OpenRouterClient:
 
     def get_stats(self) -> dict:
         """Retorna estatísticas de uso da API."""
-        # Preços do DeepSeek V3.2 via OpenRouter
-        input_cost = (self._total_input_tokens / 1_000_000) * 0.28
-        output_cost = (self._total_output_tokens / 1_000_000) * 0.42
+        # Preços do DeepSeek V3.2 via OpenRouter ($0.26/M input, $0.38/M output)
+        input_cost = (self._total_input_tokens / 1_000_000) * 0.26
+        output_cost = (self._total_output_tokens / 1_000_000) * 0.38
         return {
             'calls': self._call_count,
             'input_tokens': self._total_input_tokens,

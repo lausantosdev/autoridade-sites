@@ -33,7 +33,7 @@ def load_config(config_path: str = "config.yaml") -> dict:
     # Defaults para campos opcionais
     config.setdefault('api', {})
     config['api'].setdefault('provider', 'openrouter')
-    config['api'].setdefault('model', 'deepseek/deepseek-chat')
+    config['api'].setdefault('model', 'deepseek/deepseek-v3.2')
     config['api'].setdefault('max_workers', 30)
     config['api'].setdefault('max_retries', 3)
 
