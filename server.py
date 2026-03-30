@@ -129,6 +129,29 @@ async def websocket_generate(websocket: WebSocket):
             await asyncio.sleep(0.05)
             _generate_index(config, output_dir)
             
+            # Gerar imagem hero com Gemini (novo passo 4.5)
+            await websocket.send_json({"type": "step", "step": 4, "message": "Gerando imagem hero com IA..."})
+            try:
+                from core.imagen_client import GeminiImageClient
+                import os
+                images_dir = Path(output_dir) / "images"
+                images_dir.mkdir(parents=True, exist_ok=True)
+                
+                img_client = GeminiImageClient()
+                img_path_out = str(images_dir / "hero.jpg")
+                keywords = config.get('seo', {}).get('palavras_chave', [])
+                
+                # Executar em thread para não bloquear o websocket
+                await asyncio.to_thread(
+                    img_client.generate_hero,
+                    config['empresa']['categoria'],
+                    config['empresa']['nome'],
+                    img_path_out,
+                    keywords
+                )
+            except Exception as e:
+                print(f"Erro ao gerar imagem AI: {e}")
+            
             # API Client
             client = OpenRouterClient(
                 model=config['api']['model'],

@@ -112,6 +112,26 @@ def main():
         _print_done(start_time)
         return
 
+    # 6.5 Gerar Imagem Hero (Imagen 3)
+    if args.step in ('all', 'pages', 'image'):
+        hero_img_path = Path(output_dir) / "images" / "hero.jpg"
+        if not hero_img_path.exists():
+            print("🎨 Gerando Imagem Hero com Google Gemini...")
+            try:
+                from core.imagen_client import GeminiImageClient
+                img_client = GeminiImageClient()
+                img_client.generate_hero(
+                    categoria=config['empresa']['categoria'],
+                    nome=config['empresa']['nome'],
+                    output_path=str(hero_img_path),
+                    keywords=config.get('seo', {}).get('palavras_chave', [])
+                )
+            except Exception as e:
+                print(f"  ⚠ Aviso: Não foi possível gerar imagem hero: {e}")
+        else:
+            print("🎨 Imagem Hero já existe. Pulando geração.")
+        print()
+
     # 7. Gerar páginas SEO
     if args.step in ('all', 'pages'):
         print("⚡ Gerando páginas SEO...")

@@ -18,15 +18,17 @@
     const nav = document.querySelector('.header-nav');
     if (toggle && nav) {
         toggle.addEventListener('click', () => {
-            nav.classList.toggle('open');
-            toggle.innerHTML = nav.classList.contains('open')
+            const isOpen = nav.classList.toggle('open');
+            toggle.innerHTML = isOpen
                 ? '<i class="fas fa-times"></i>'
                 : '<i class="fas fa-bars"></i>';
+            document.body.style.overflow = isOpen ? 'hidden' : '';
         });
         nav.querySelectorAll('a').forEach(link => {
             link.addEventListener('click', () => {
                 nav.classList.remove('open');
                 toggle.innerHTML = '<i class="fas fa-bars"></i>';
+                document.body.style.overflow = '';
             });
         });
     }

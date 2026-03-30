@@ -40,8 +40,9 @@
     </header>
 
     <!-- Hero -->
-    <section class="hero">
-        <div class="container">
+    <section class="hero" style="background-image: url('images/hero.jpg');">
+        <div class="hero-overlay"></div>
+        <div class="container hero-container">
             <div class="hero-content">
                 <div class="hero-badge">
                     <i class="fas fa-award"></i>
@@ -97,7 +98,9 @@
             </div>
             
             <div class="text-center" style="margin-top: 40px;">
-                <a href="mapa-do-site.html" class="btn btn-outline" style="color: var(--text); border-color: var(--border);">Ver todas as áreas atendidas</a>
+                <a href="{{whatsapp_link}}" data-dinamico-href="whatsapp_link" class="btn btn-outline" style="color: var(--text-white); border-color: rgba(255,255,255,0.2);" target="_blank" rel="noopener">
+                    <i class="fab fa-whatsapp"></i> Falar com Especialista
+                </a>
             </div>
         </div>
     </section>
