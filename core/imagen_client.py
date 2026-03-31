@@ -19,18 +19,25 @@ class GeminiImageClient:
         
         self.client = genai.Client(api_key=self.api_key)
 
-    def generate_hero(self, categoria: str, nome: str, output_path: str, keywords: list = None) -> bool:
+    def generate_hero(self, categoria: str, nome: str, output_path: str, keywords: list = None, theme_mode: str = 'dark') -> bool:
         """
         Gera e salva a imagem. Retorna True se sucesso, False se falha.
         """
         servicos = ", ".join(keywords[:3]) if keywords else categoria
         
+        if theme_mode == 'light':
+            palette = "Color palette: bright, clean, airy whites and soft pastels with warm natural light."
+            space = "leaving ample light negative space in the middle for dark text overlays."
+        else:
+            palette = "Color palette: dark gray, black, and subtle hints of professional colors."
+            space = "leaving massive dark negative space in the middle for text overlays."
+        
         prompt = (
             f"Premium cinematic photography representing the final positive outcome, satisfaction, and elegance in the field of: {categoria}. "
             f"Show beautiful, clean, and positive concepts (e.g. happy clients, healthy pets, pristine environments). Do NOT show raw tools, surgery equipment, or messy work processes. "
             f"Lighting: Cinematic, dramatic, moody. Depth of field: strong bokeh effect on background. "
-            f"Composition: Off-center, leaving massive dark negative space in the middle for text overlays. "
-            f"Color palette: dark gray, black, and subtle hints of professional colors. "
+            f"Composition: Off-center, {space} "
+            f"{palette} "
             f"Style: High-end, premium corporate, elegant and modern lifestyle."
         )
 

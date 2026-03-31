@@ -44,3 +44,8 @@ api:
 leads:
   worker_url: ""        # URL do Cloudflare Worker (deixe vazio para desativar)
   client_token: ""      # Token UUID único deste cliente
+
+# ===== TEMA (opcional) =====
+# Se omitido, a IA escolhe automaticamente baseado no nicho da empresa
+# theme:
+#   mode: "dark"   # "dark" ou "light"

@@ -65,6 +65,7 @@ def replace_config_vars(template: str, config: dict) -> str:
         '{{locais_footer}}':    locais_footer,
         '{{worker_url}}':       config.get('leads', {}).get('worker_url', ''),
         '{{client_token}}':     config.get('leads', {}).get('client_token', ''),
+        '{{theme_mode}}':       config.get('theme', {}).get('mode', 'dark'),
     }
 
     for placeholder, value in replacements.items():

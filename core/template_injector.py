@@ -98,6 +98,7 @@ def _inject_meta_tags(html: str, site_data: dict) -> str:
         '__SITE_OG_TITLE__': seo.get('ogTitle', seo.get('title', '')),
         '__SITE_OG_DESC__': seo.get('ogDescription', seo.get('metaDescription', '')),
         '__SITE_THEME_COLOR__': theme.get('color', '#000000'),
+        '__SITE_THEME_MODE__': theme.get('mode', 'dark'),
     }
 
     for marker, value in replacements.items():

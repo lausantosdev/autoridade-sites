@@ -117,7 +117,18 @@ def main():
         _print_done(start_time)
         return
 
-    # 6.5 Gerar Imagem Hero (Imagen 3)
+    # 6.5 Gerar Home Data (SiteGen) — ANTES da imagem para saber o tema
+    site_data = None
+    if args.step in ('all', 'home', 'pages', 'image'):
+        print("🏠 Gerando conteúdo da home page via IA...")
+        try:
+            site_data = build_site_data(config, client)
+        except Exception as e:
+            print(f"  ⚠ Erro ao gerar site_data: {e}")
+        print()
+
+    # 6.6 Gerar Imagem Hero (Imagen 3) — usa theme_mode da IA
+    theme_mode = config.get('theme', {}).get('mode', 'dark')
     hero_img_path = Path(output_dir) / "hero-image.jpg"
     if args.step in ('all', 'home', 'pages', 'image'):
         # Também gerar em images/hero.jpg para subpáginas HTML puras
@@ -132,7 +143,8 @@ def main():
                     categoria=config['empresa']['categoria'],
                     nome=config['empresa']['nome'],
                     output_path=str(hero_img_path),
-                    keywords=config.get('seo', {}).get('palavras_chave', [])
+                    keywords=config.get('seo', {}).get('palavras_chave', []),
+                    theme_mode=theme_mode
                 )
                 # Copiar para caminho legado (subpáginas HTML puras)
                 hero_img_legacy.parent.mkdir(parents=True, exist_ok=True)
@@ -144,19 +156,22 @@ def main():
             print("🎨 Imagem Hero já existe. Pulando geração.")
         print()
 
-    # 6.6 Gerar Home Page (SiteGen Template)
+    # 6.7 Injetar Home Page (SiteGen Template)
     if args.step in ('all', 'home'):
-        print("🏠 Gerando home page premium (SiteGen)...")
-        try:
-            site_data = build_site_data(config, client)
-            inject_template(
-                site_data=site_data,
-                output_dir=output_dir,
-                hero_image_path=str(hero_img_path) if hero_img_path.exists() else None,
-            )
-        except Exception as e:
-            print(f"  ⚠ Erro na home SiteGen: {e}")
-            print("  ↳ Gerando home com template HTML fallback...")
+        if site_data:
+            print("🏠 Injetando home page premium (SiteGen)...")
+            try:
+                inject_template(
+                    site_data=site_data,
+                    output_dir=output_dir,
+                    hero_image_path=str(hero_img_path) if hero_img_path.exists() else None,
+                )
+            except Exception as e:
+                print(f"  ⚠ Erro na home SiteGen: {e}")
+                print("  ↳ Gerando home com template HTML fallback...")
+                _generate_index(config, output_dir)
+        else:
+            print("  ↳ site_data indisponível. Usando template HTML fallback...")
             _generate_index(config, output_dir)
         print()
 

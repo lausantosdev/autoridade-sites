@@ -76,7 +76,7 @@ def build_site_data(config: dict, client: OpenRouterClient) -> dict:
         },
         
         "theme": {
-            "mode": config.get('theme', {}).get('mode', 'dark'),
+            "mode": "dark",  # será sobrescrito pela lógica config > IA > fallback
             "color": cor,
             "colorRgb": f"{r}, {g}, {b}",
         },
@@ -171,6 +171,24 @@ def build_site_data(config: dict, client: OpenRouterClient) -> dict:
         },
     }
     
+    # Resolver tema: config.yaml > IA > fallback dark
+    config_theme = config.get('theme', {}).get('mode', '')
+    if config_theme in ('light', 'dark'):
+        theme_mode = config_theme
+    else:
+        theme_mode = ai_content.get('theme_mode', 'dark')
+        if theme_mode not in ('light', 'dark'):
+            theme_mode = 'dark'
+    
+    site_data["theme"]["mode"] = theme_mode
+    
+    # Propagar para config (usado pelo template_renderer nas subpáginas)
+    if 'theme' not in config:
+        config['theme'] = {}
+    config['theme']['mode'] = theme_mode
+    
+    print(f"  🎨 Tema definido: {theme_mode} ({'via config.yaml' if config_theme else 'via IA'})")
+    
     return site_data
 
 
@@ -228,6 +246,12 @@ CTA FINAL:
 
 FOOTER:
 - footer_descricao (10-15 palavras sobre a empresa com categoria e cidade)
+
+TEMA VISUAL:
+- theme_mode ("light" ou "dark")
+  Regra: saúde, pet, infantil, alimentação, jurídico, educação, beleza feminina, bem-estar → "light"
+  Tecnologia, automotivo, barbearia, mecânica, segurança, noturno, luxo masculino → "dark"
+  Na dúvida: público feminino/família = light, masculino/industrial = dark
 
 REGRAS ABSOLUTAS:
 - NÃO invente prêmios, datas de fundação ou números sem base
