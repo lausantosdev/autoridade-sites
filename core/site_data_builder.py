@@ -28,6 +28,46 @@ AVAILABLE_ICONS = [
 ]
 
 
+def resolve_theme_mode(config: dict, client: OpenRouterClient) -> str:
+    """
+    Resolve o tema (light/dark) de forma leve.
+    
+    Hierarquia: config.yaml > IA (chamada rápida) > fallback 'dark'.
+    NÃO gera conteúdo da home — só pergunta o tema à IA.
+    Propaga o resultado para config['theme']['mode'].
+    """
+    # 1. Config manual tem prioridade absoluta
+    config_theme = config.get('theme', {}).get('mode', '')
+    if config_theme in ('light', 'dark'):
+        print(f"  🎨 Tema definido: {config_theme} (via config.yaml)")
+        return config_theme
+    
+    # 2. Pergunta rápida para a IA (~2-3 segundos)
+    categoria = config['empresa']['categoria']
+    print(f"  🎨 Consultando IA sobre tema ideal para: {categoria}...")
+    try:
+        result = client.generate_json(
+            "Responda APENAS em JSON puro: {\"theme_mode\": \"light\" ou \"dark\"}",
+            f"O nicho é: {categoria}. "
+            "Regra: saúde/pet/infantil/alimentação/jurídico/educação/beleza/bem-estar → light. "
+            "Tecnologia/automotivo/barbearia/mecânica/segurança/noturno/luxo masculino → dark. "
+            "Na dúvida: público feminino/família = light, masculino/industrial = dark."
+        )
+        theme_mode = result.get('theme_mode', 'dark') if result else 'dark'
+        if theme_mode not in ('light', 'dark'):
+            theme_mode = 'dark'
+    except Exception:
+        theme_mode = 'dark'
+    
+    # 3. Propagar para config (para template_renderer usar nas subpáginas)
+    if 'theme' not in config:
+        config['theme'] = {}
+    config['theme']['mode'] = theme_mode
+    
+    print(f"  🎨 Tema definido: {theme_mode} (via IA)")
+    return theme_mode
+
+
 def build_site_data(config: dict, client: OpenRouterClient) -> dict:
     """
     Constrói o objeto SiteData completo.
