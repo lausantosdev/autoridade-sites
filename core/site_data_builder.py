@@ -138,7 +138,7 @@ def build_site_data(config: dict, client: OpenRouterClient) -> dict:
             "local": locais[0] if locais else '',
         },
         
-        "whatsappCtaText": ai_content.get('whatsapp_cta_text', 'Fale Conosco'),
+        "whatsappCtaText": "Fale Conosco",
         
         "hero": {
             "badgeText": ai_content.get('hero_badge_text', f"Referência em {empresa['categoria']}"),
@@ -258,7 +258,6 @@ HERO:
 - hero_title_line_1 (3-5 palavras impactantes)
 - hero_title_line_2 (3-5 palavras com destaque colorido — inclui categoria ou cidade)
 - hero_subtitle (20-30 palavras com empresa, categoria e cidade principal)
-- whatsapp_cta_text (2-3 palavras, ex: "Fale Conosco")
 
 DIFERENCIAIS (6 itens):
 - feature_1_title, feature_1_description (máx 20 palavras), feature_1_icon

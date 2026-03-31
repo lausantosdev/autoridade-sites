@@ -956,7 +956,31 @@
             };
         }
 
+        function updateProgressCircle(pct, labelText) {
+            const circumference = 2 * Math.PI * 88;
+            const offset = circumference - (pct / 100) * circumference;
+            document.getElementById('progressCircle').style.strokeDashoffset = offset;
+            document.getElementById('progressPercent').textContent = `${Math.round(pct)}%`;
+            if (labelText) {
+                document.getElementById('progressPages').textContent = labelText;
+            }
+        }
+
         function handleWSMessage(msg) {
+            // Mapeamento de progresso inicial para cada passo (0 a 100%)
+            // O passo 7 (gerar páginas) vai de 40% a 85%.
+            const stepPercentages = {
+                1: 5,   // Validar config
+                2: 10,  // Gerar combinacoes
+                3: 15,  // Criar sitemap
+                4: 25,  // Criar imagem hero
+                5: 30,  // Home page premium
+                6: 35,  // Tópicos do nicho
+                7: 40,  // Páginas SEO (começa em 40%)
+                8: 90,  // Validar qualidade
+                9: 95   // Empacotar site
+            };
+
             switch (msg.type) {
                 case 'step':
                     // Marcar steps como concluídos
@@ -972,15 +996,22 @@
                         }
                     });
                     document.getElementById('progressStatus').textContent = msg.message;
+                    
+                    if (stepPercentages[msg.step]) {
+                        // Resgata o nome do passo atual da lista HTML para mostrar abaixo da porcentagem
+                        const activeEl = document.querySelector(`.p-step[data-pstep="${msg.step}"]`);
+                        const stepName = activeEl ? activeEl.textContent.trim() : "Processando...";
+                        updateProgressCircle(stepPercentages[msg.step], stepName);
+                    }
                     break;
 
                 case 'progress':
-                    const pct = msg.percentage;
-                    const circumference = 2 * Math.PI * 88;
-                    const offset = circumference - (pct / 100) * circumference;
-                    document.getElementById('progressCircle').style.strokeDashoffset = offset;
-                    document.getElementById('progressPercent').textContent = `${pct}%`;
-                    document.getElementById('progressPages').textContent = `${msg.current}/${msg.total} páginas`;
+                    // O progresso de páginas varia de 0 a 100%. 
+                    // Vamos mapear isso para encher a fatia global de 40% até 85%.
+                    const pagesProg = msg.percentage; 
+                    const globalPct = 40 + (pagesProg * 0.45); 
+                    
+                    updateProgressCircle(globalPct, `${msg.current}/${msg.total} páginas`);
                     break;
 
                 case 'info':
@@ -988,6 +1019,7 @@
                     break;
 
                 case 'complete':
+                    updateProgressCircle(100, "Concluído!");
                     showPanel('complete');
                     const s = msg.stats;
                     document.getElementById('finalStats').innerHTML = `
