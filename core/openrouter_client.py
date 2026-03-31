@@ -2,6 +2,7 @@
 OpenRouter Client - Client unificado para API do OpenRouter (compatível com OpenAI SDK)
 """
 import os
+import json
 import time
 from openai import OpenAI
 from dotenv import load_dotenv
@@ -57,8 +58,7 @@ class OpenRouterClient:
                     self._total_input_tokens += response.usage.prompt_tokens
                     self._total_output_tokens += response.usage.completion_tokens
 
-                content = response.choices[0].message.content
-                return json.loads(content)
+                return json.loads(response.choices[0].message.content)
 
             except Exception as e:
                 print(f"    ⚠ Tentativa {attempt + 1}/{self.max_retries} falhou: {e}")

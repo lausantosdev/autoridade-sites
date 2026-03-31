@@ -5,13 +5,12 @@ import os
 import json
 import random
 import concurrent.futures
-from pathlib import Path
 from urllib.parse import quote
 from tqdm import tqdm
 from core.openrouter_client import OpenRouterClient
 from core.topic_generator import get_random_mix
-from core.config_loader import get_whatsapp_link, get_phone_display
-from core.utils import hex_to_rgb
+from core.config_loader import get_phone_display
+from core.template_renderer import replace_config_vars as _replace_config_vars
 
 
 # System prompt fixo (cacheado pelo DeepSeek para economia)
@@ -114,45 +113,78 @@ def _generate_single_page(
     mixes = get_random_mix(topics, 6)
     mixes_str = "\n".join(f"- {m}" for m in mixes)
 
-    user_prompt = f"""Gere conteúdo Estratégico de ALTA CONVERSÃO + SEO para a empresa '{empresa}' ({categoria}).
+    user_prompt = f"""Gere conteúdo de ALTA CONVERSÃO + SEO para a empresa '{empresa}' ({categoria}).
 Página: '{page['title']}' (keyword: '{page['keyword']}', local: '{page['location']}')
 
 Retorne ESTRITAMENTE um JSON FLAT (nível único, sem aninhamento) com estas chaves exatas:
 
-- titulo (Título SEO: 8-12 palavras, incluir keyword e local)
-- meta_description (Meta description chamativa: 25-30 palavras)
+META TAGS:
+- titulo (Título SEO: 8-12 palavras, keyword + local + empresa)
+- meta_description (25-30 palavras, chamativo, com keyword + local)
 - meta_keywords (10-15 termos separados por vírgula)
 
-- hero_titulo_linha_1
-- hero_titulo_destaque
-- hero_titulo_linha_3
-- hero_subtitulo (20-30 palavras)
+HERO (curto e impactante — cada linha separada):
+- hero_titulo_linha_1 (3-5 palavras — verbo de ação ou pergunta)
+- hero_titulo_destaque (2-4 palavras — o destaque colorido, inclui keyword)
+- hero_titulo_linha_3 (2-4 palavras — fecha com local)
+- hero_subtitulo (MÁXIMO 20 palavras — benefício direto + empresa + local)
 
-- dor_h2 (Título provocativo)
-- dor_p1, dor_p2 (80-100 palavras cada)
+FEATURES (6 cards espelhando a home — títulos curtos, textos diretos):
+- features_titulo (6-10 palavras com keyword — ex: "Por que escolher nossa [keyword]?")
+- features_subtitulo (8-12 palavras — complementa o título)
+- beneficio_1_titulo, beneficio_1_texto (MÁXIMO 18 palavras), beneficio_1_icone
+- beneficio_2_titulo, beneficio_2_texto (MÁXIMO 18 palavras), beneficio_2_icone
+- beneficio_3_titulo, beneficio_3_texto (MÁXIMO 18 palavras), beneficio_3_icone
+- beneficio_4_titulo, beneficio_4_texto (MÁXIMO 18 palavras), beneficio_4_icone
+- beneficio_5_titulo, beneficio_5_texto (MÁXIMO 18 palavras), beneficio_5_icone
+- beneficio_6_titulo, beneficio_6_texto (MÁXIMO 18 palavras), beneficio_6_icone
+(Ícones FontAwesome 6 Free SÓLIDOS: fas fa-clock, fas fa-shield-halved, fas fa-truck-fast, fas fa-tools, fas fa-star, fas fa-check-circle, fas fa-bolt, fas fa-headset, fas fa-medal, fas fa-map-marker-alt, fas fa-thumbs-up, fas fa-wrench)
 
-- beneficio_1_titulo, beneficio_1_texto, beneficio_1_icone (Use classes REAIS do FontAwesome 6, ex: fas fa-clock, fas fa-shield-halved, fas fa-truck-fast, fas fa-tools)
-- beneficio_2_titulo, beneficio_2_texto, beneficio_2_icone
-- beneficio_3_titulo, beneficio_3_texto, beneficio_3_icone
-- beneficio_4_titulo, beneficio_4_texto, beneficio_4_icone
+AUTORIDADE (espelha "Sobre Nós" da home):
+- autoridade_eyebrow (2-3 palavras em maiúsculas)
+- autoridade_titulo (6-9 palavras — por que nos escolher)
+- autoridade_manifesto (40-60 palavras — parágrafo profissional e honesto, sem prêmios inventados)
 
-- processo_h2 (Título técnico)
-- processo_p1, processo_p2 (120-150 palavras cada, rico em SEO técnico)
+MEGA CTA:
+- cta_titulo (4-6 palavras urgentes, inclui keyword ou local)
+- cta_subtitulo (8-12 palavras, complementa o CTA)
 
-- autoridade_h2
-- autoridade_p1, autoridade_p2 (100-120 palavras cada)
+FAQ — 3 perguntas reais de quem busca por '{page['keyword']}' em '{page['location']}':
+- faq_h2 (4-6 palavras, ex: "Perguntas Frequentes Sobre [keyword]")
+- faq_1_pergunta, faq_1_resposta (40-60 palavras — resposta direta e útil)
+- faq_2_pergunta, faq_2_resposta (40-60 palavras — responde objeção de compra)
+- faq_3_pergunta, faq_3_resposta (40-60 palavras — responde dúvida prática)
 
-- faq_h2
-- faq_1_pergunta, faq_1_resposta
-- faq_2_pergunta, faq_2_resposta
-- faq_3_pergunta, faq_3_resposta
+SEO EDITORIAL — 6 seções, MÍNIMO 900 palavras total:
+Cada parágrafo deve ter 130-160 palavras. Conteúdo EVERGREEN — sem preços fixos, prazos ou dados que mudam.
+Use keyword e local naturalmente (sem repetição forçada). Termos do nicho disponíveis: {mixes_str}
+Links internos: inclua 1-2 links naturais APENAS em seo_p1 e seo_p5, usando HTML <a href="URL">texto âncora</a>.
+URLs disponíveis para interlinking: {interlink_str}
 
-REGRAS CRÍTICAS:
-- VOLUME DE TEXTO: O total de texto deve ultrapassar 1000 palavras para SEO.
-- DENSIDADE: Insira a keyword e o local '{page['location']}' naturalmente em todos os blocos.
-- TECNICIDADE: Use termos técnicos reais do nicho: {mixes_str}
-- LINKS: Incorpore estes links internos no texto: {interlink_str}
-- SEM ALUCINAÇÃO: Não invente prêmios ou datas de fundação. Use tom profissional."""
+- seo_h2_1 (H2 informacional: "O que é [keyword] e por que é importante em [local]", 6-10 palavras)
+- seo_p1 (130-160 palavras: define o serviço, importância no contexto de [local], 1-2 links internos)
+
+- seo_h2_2 (H2 processo: "Como funciona [keyword] profissional: etapas e técnicas", 6-10 palavras)
+- seo_p2 (130-160 palavras: descreve o processo passo a passo, usa termos técnicos do nicho)
+
+- seo_h2_3 (H2 urgência: "Quando contratar [keyword]: sinais que não devem ser ignorados", 6-10 palavras)
+- seo_p3 (130-160 palavras: situações que exigem o serviço, senso de urgência sem alarmismo)
+
+- seo_h2_4 (H2 comparação: "[keyword] profissional vs solução caseira: diferenças fundamentais", 6-10 palavras)
+- seo_p4 (130-160 palavras: argumenta a favor do profissional, sem denegrir o cliente)
+
+- seo_h2_5 (H2 autoridade local: "[empresa] em [local]: referência em [keyword]", 6-10 palavras)
+- seo_p5 (130-160 palavras: autoridade da empresa, área de atendimento em [local], diferenciais, 1-2 links internos)
+
+- seo_h2_6 (H2 ação: "Como solicitar [keyword] em [local]: simples e rápido", 6-10 palavras)
+- seo_p6 (130-160 palavras: próximos passos, facilidade de contato, CTA suave, reforça localização)
+
+REGRAS ABSOLUTAS:
+- JSON FLAT: zero aninhamento, todas as chaves no nível raiz
+- BREVIDADE: hero_subtitulo e beneficio_X_texto com limite rígido de palavras
+- SEM ALUCINAÇÃO: não invente prêmios, certificações, datas de fundação ou números sem base
+- LINKS: somente em seo_p1 e seo_p5, usando HTML puro <a href="filename.html">âncora relevante</a>
+- GEO: FAQ deve responder perguntas reais que alguém faria a uma IA sobre esse serviço nessa cidade"""
 
     result = client.generate_json(SYSTEM_PROMPT, user_prompt)
     if not result:
@@ -164,10 +196,14 @@ REGRAS CRÍTICAS:
     # Substituir placeholders do GPT no template
     html = template
 
-    # Injetar Schema Markup (LocalBusiness + FAQPage)
+    # Injetar Schema Markup (LocalBusiness + FAQPage + BreadcrumbList)
     schema = _build_schema_markup(page, config, flat_result)
     html = html.replace('{{schema_markup}}', schema)
-    
+
+    # Canonical URL por página
+    canonical_url = f"https://{config['empresa']['dominio']}/{page['filename']}"
+    html = html.replace("{{canonical_url}}", canonical_url)
+
     # Injetar variáveis de contexto da página primeiro
     html = html.replace("@local", page['location'])
     html = html.replace("@keyword", page['keyword'])
@@ -246,54 +282,6 @@ def _flatten_json(data: dict, parent_key: str = '', sep: str = '_') -> dict:
     return items
 
 
-def _replace_config_vars(template: str, config: dict) -> str:
-    """Substitui variáveis de configuração ({{var}}) no template."""
-    empresa = config['empresa']
-    r, g, b = hex_to_rgb(empresa['cor_marca'])
-
-    # Gerar HTML do endereço para o footer
-    endereco = empresa.get('endereco', '').strip()
-    endereco_footer = (
-        f'<p><i class="fas fa-location-dot"></i> {endereco}</p>' if endereco else ''
-    )
-
-    # Gerar HTML dos serviços para o footer (palavras-chave como links internos)
-    palavras = config.get('seo', {}).get('palavras_chave', [])
-    servicos_footer = '\n'.join(
-        f'<a href="mapa-do-site.html">{p}</a>' for p in palavras
-    )
-
-    # Gerar HTML das cidades atendidas para o footer
-    locais = config.get('seo', {}).get('locais', [])
-    locais_footer = '\n'.join(
-        f'<p><i class="fas fa-check"></i> {local}</p>' for local in locais
-    )
-
-    replacements = {
-        '{{empresa_nome}}': empresa['nome'],
-        '{{empresa_categoria}}': empresa['categoria'],
-        '{{telefone_whatsapp}}': empresa['telefone_whatsapp'],
-        '{{telefone_display}}': get_phone_display(config),
-        '{{whatsapp_link}}': get_whatsapp_link(config),
-        '{{cor_marca}}': empresa['cor_marca'],
-        '{{cor_marca_rgb}}': f"{r}, {g}, {b}",
-        '{{google_maps_url}}': empresa.get('google_maps_embed', ''),
-        '{{dominio}}': empresa['dominio'],
-        '{{horario}}': empresa.get('horario', ''),
-        '{{ano}}': str(__import__('datetime').datetime.now().year),
-        '{{endereco_footer}}': endereco_footer,
-        '{{servicos_footer}}': servicos_footer,
-        '{{locais_footer}}': locais_footer,
-        '{{worker_url}}':    config.get('leads', {}).get('worker_url', ''),
-        '{{client_token}}':  config.get('leads', {}).get('client_token', ''),
-    }
-
-    for placeholder, value in replacements.items():
-        template = template.replace(placeholder, value)
-
-    return template
-
-
 def _build_schema_markup(page: dict, config: dict, flat_result: dict) -> str:
     """
     Gera os blocos JSON-LD de Schema Markup para a página:
@@ -347,8 +335,29 @@ def _build_schema_markup(page: dict, config: dict, flat_result: dict) -> str:
                 }
             })
 
+    # --- BreadcrumbList ---
+    breadcrumb = {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+            {
+                "@type": "ListItem",
+                "position": 1,
+                "name": "Início",
+                "item": f"https://{empresa['dominio']}/"
+            },
+            {
+                "@type": "ListItem",
+                "position": 2,
+                "name": f"{keyword} em {location}",
+                "item": f"https://{empresa['dominio']}/{page['filename']}"
+            }
+        ]
+    }
+
     blocks = [
-        f'<script type="application/ld+json">\n{json.dumps(local_business, ensure_ascii=False, indent=2)}\n</script>'
+        f'<script type="application/ld+json">\n{json.dumps(local_business, ensure_ascii=False, indent=2)}\n</script>',
+        f'<script type="application/ld+json">\n{json.dumps(breadcrumb, ensure_ascii=False, indent=2)}\n</script>'
     ]
 
     if faq_entities:

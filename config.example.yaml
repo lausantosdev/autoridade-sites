@@ -1,0 +1,46 @@
+# ===================================================
+# SiteGen — Configuração do Cliente
+# Copie para config.yaml e preencha os dados reais
+# cp config.example.yaml config.yaml
+# ===================================================
+
+# ===== DADOS DA EMPRESA =====
+empresa:
+  nome: "Nome da Empresa"
+  dominio: "dominio.com.br"
+  categoria: "Categoria Principal do Negócio"
+  telefone_whatsapp: "5511999999999"    # Formato: 55 + DDD + número (sem espaços)
+  telefone_ligar: "(11) 99999-9999"     # Formato de exibição
+  horario: "Segunda a Sábado, 8h às 18h"
+  cor_marca: "#2563EB"                  # Hex da cor principal da marca
+  endereco: ""                          # Ex: "Rua das Flores, 123 - São Paulo, SP"
+  google_maps_embed: ""                 # URL do iframe do Google Maps
+
+# ===== SEO =====
+seo:
+  # Opção 1: importar keywords do Google Keyword Planner (CSV exportado)
+  # palavras_chave_csv: "keywords.csv"
+
+  # Opção 2: lista manual de palavras-chave
+  palavras_chave:
+    - Serviço Principal 1
+    - Serviço Principal 2
+    - Serviço Principal 3
+
+  # Cidades/regiões para geração de subpáginas (keyword × local)
+  locais:
+    - Cidade Principal
+    - Cidade 2
+    - Cidade 3
+
+# ===== API =====
+api:
+  provider: "openrouter"
+  model: "deepseek/deepseek-v3.2"
+  max_workers: 30       # Geração paralela — reduza se tiver erros de rate limit
+  max_retries: 3
+
+# ===== LEADS (opcional) =====
+leads:
+  worker_url: ""        # URL do Cloudflare Worker (deixe vazio para desativar)
+  client_token: ""      # Token UUID único deste cliente

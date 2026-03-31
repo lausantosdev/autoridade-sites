@@ -1,16 +1,16 @@
 """
 Mixer - Gera o produto cartesiano de palavras-chave × locais
 """
+from core.utils import slugify
 
 
 def mix_keywords_locations(keywords: list, locations: list) -> list:
     """
     Gera todas as combinações de palavras-chave × locais.
-    
+
     Returns:
         Lista de dicts com 'title' e 'slug' para cada combinação.
     """
-    from core.utils import slugify
 
     pages = []
     for kw in keywords:

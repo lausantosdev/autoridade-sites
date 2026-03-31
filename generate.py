@@ -13,16 +13,18 @@ Uso:
 """
 import sys
 import time
+import json
 import shutil
 import argparse
 from pathlib import Path
+from datetime import datetime
 
-from core.config_loader import load_config
+from core.config_loader import load_config, get_whatsapp_link, get_phone_display
 from core.mixer import mix_keywords_locations, get_summary
 from core.sitemap_generator import generate_sitemap
 from core.openrouter_client import OpenRouterClient
 from core.topic_generator import generate_topics
-from core.page_generator import generate_all_pages
+from core.page_generator import generate_all_pages, _replace_config_vars
 from core.validator import validate_site, generate_report
 from core.site_data_builder import build_site_data
 from core.template_injector import inject_template
@@ -34,7 +36,7 @@ TEMPLATES_DIR = Path("templates")
 def main():
     parser = argparse.ArgumentParser(description="Autoridade Sites - Gerador de Sites SEO com IA")
     parser.add_argument('--config', default='config.yaml', help='Arquivo de configuração')
-    parser.add_argument('--step', choices=['mix', 'sitemap', 'topics', 'home', 'pages', 'validate', 'all'],
+    parser.add_argument('--step', choices=['mix', 'sitemap', 'topics', 'image', 'home', 'pages', 'validate', 'all'],
                         default='all', help='Passo específico a executar')
     parser.add_argument('--force-topics', action='store_true', help='Forçar regeneração de tópicos')
     args = parser.parse_args()
@@ -215,7 +217,6 @@ def _setup_output_dir(output_dir: str, config: dict):
     # Processar variáveis no arquivo CSS copiado sempre
     css_path = css_dst / "style.css"
     if css_path.exists():
-        from core.page_generator import _replace_config_vars
         css_content = css_path.read_text(encoding='utf-8')
         css_content = _replace_config_vars(css_content, config)
         css_path.write_text(css_content, encoding='utf-8')
@@ -227,8 +228,6 @@ def _setup_output_dir(output_dir: str, config: dict):
         shutil.copytree(str(js_src), str(js_dst))
 
     # Criar js/dados.js dinamicamente com base nas configurações
-    import json
-    from core.config_loader import get_whatsapp_link, get_phone_display
 
     dados_js = {
         "empresa_nome": config['empresa']['nome'],
@@ -240,7 +239,7 @@ def _setup_output_dir(output_dir: str, config: dict):
         "horario": config['empresa'].get('horario', ''),
         "google_maps_url": config['empresa'].get('google_maps_embed', ''),
         "dominio": config['empresa']['dominio'],
-        "ano": str(__import__('datetime').datetime.now().year)
+        "ano": str(datetime.now().year)
     }
 
     # Assegurar que pasta JS existe
@@ -266,7 +265,6 @@ def _setup_output_dir(output_dir: str, config: dict):
 
 def _generate_index(config: dict, output_dir: str):
     """Fallback: gera index.html do template HTML puro (caso SiteGen falhe)."""
-    from core.page_generator import _replace_config_vars
     index_template = TEMPLATES_DIR / "index.html"
     if index_template.exists():
         content = index_template.read_text(encoding='utf-8')

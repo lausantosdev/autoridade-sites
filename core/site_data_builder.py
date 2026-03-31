@@ -59,7 +59,7 @@ def build_site_data(config: dict, client: OpenRouterClient) -> dict:
         ai_content = _fallback_content(empresa, palavras)
     
     # WhatsApp link com mensagem genérica (home page)
-    msg_home = f"Olá, gostaria de solicitar um orçamento para {empresa['categoria']}."
+    msg_home = f"Olá, gostaria de saber mais sobre os serviços de {empresa['categoria']}."
     whatsapp_home = f"https://wa.me/{phone_raw}?text={quote(msg_home)}"
     
     # Montar o objeto SiteData
@@ -123,7 +123,7 @@ def build_site_data(config: dict, client: OpenRouterClient) -> dict:
         
         "megaCtaSection": {
             "title": ai_content.get('mega_cta_title', f"Pronto para começar?"),
-            "subtitle": ai_content.get('mega_cta_subtitle', "Orçamento rápido e sem compromisso pelo WhatsApp."),
+            "subtitle": ai_content.get('mega_cta_subtitle', "Fale com nossa equipe pelo WhatsApp sem compromisso."),
         },
         
         "faqSection": {
@@ -158,7 +158,10 @@ def build_site_data(config: dict, client: OpenRouterClient) -> dict:
         },
         
         "schema": {
-            "localBusiness": _build_local_business_schema(empresa, phone_display, locais),
+            "localBusiness": _build_local_business_schema(
+                empresa, phone_display, locais,
+                description=ai_content.get('seo_meta_description', '')
+            ),
             "faqPage": _build_faq_schema(ai_content),
         },
         
@@ -175,60 +178,60 @@ def _generate_home_content(empresa: dict, palavras: list, locais: list, client: 
     """Gera o conteúdo da home page via IA em uma única chamada."""
     servicos_str = ', '.join(palavras[:6]) if palavras else empresa['categoria']
     locais_str = ', '.join(locais[:4]) if locais else ''
+    cidade_principal = locais[0] if locais else ''
     icons_str = ', '.join(AVAILABLE_ICONS)
-    
+
     user_prompt = f"""Gere conteúdo de ALTA CONVERSÃO para a HOME PAGE da empresa '{empresa['nome']}' ({empresa['categoria']}).
-Serviços: {servicos_str}
+Cidade principal: {cidade_principal}
 Cidades atendidas: {locais_str}
+Serviços: {servicos_str}
 
 Retorne um JSON FLAT com estas chaves exatas:
 
-SEO:
-- seo_title (Título SEO: 8-12 palavras)
-- seo_meta_description (25-30 palavras, chamativo)
-- seo_meta_keywords (10 termos separados por vírgula)
-- seo_og_title
-- seo_og_description
+SEO (cidade principal OBRIGATÓRIA em title e meta_description):
+- seo_title (8-12 palavras — DEVE conter categoria + cidade principal + empresa)
+- seo_meta_description (25-30 palavras — DEVE mencionar empresa, categoria e cidade principal)
+- seo_meta_keywords (10 termos separados por vírgula — inclua variações com cidade)
+- seo_og_title (igual ao seo_title ou variação curta)
+- seo_og_description (15-20 palavras chamativas com categoria + cidade)
 
 HERO:
-- hero_badge_text (Frase curta de autoridade, 3-5 palavras, ex: "Referência em Limpeza de Estofados")
-- hero_title_line_1 (Primeira linha do título, 3-5 palavras, impactante)
-- hero_title_line_2 (Segunda linha com destaque colorido, 3-5 palavras)
-- hero_subtitle (20-30 palavras descrevendo o valor da empresa)
-- whatsapp_cta_text (Texto do botão WhatsApp, 2-3 palavras, ex: "Fale Conosco")
+- hero_badge_text (3-5 palavras de autoridade, ex: "Referência em {empresa['categoria']}")
+- hero_title_line_1 (3-5 palavras impactantes)
+- hero_title_line_2 (3-5 palavras com destaque colorido — inclui categoria ou cidade)
+- hero_subtitle (20-30 palavras com empresa, categoria e cidade principal)
+- whatsapp_cta_text (2-3 palavras, ex: "Fale Conosco")
 
 DIFERENCIAIS (6 itens):
-- feature_1_title, feature_1_description, feature_1_icon
-- feature_2_title, feature_2_description, feature_2_icon
-- feature_3_title, feature_3_description, feature_3_icon
-- feature_4_title, feature_4_description, feature_4_icon
-- feature_5_title, feature_5_description, feature_5_icon
-- feature_6_title, feature_6_description, feature_6_icon
+- feature_1_title, feature_1_description (máx 20 palavras), feature_1_icon
+- feature_2_title, feature_2_description (máx 20 palavras), feature_2_icon
+- feature_3_title, feature_3_description (máx 20 palavras), feature_3_icon
+- feature_4_title, feature_4_description (máx 20 palavras), feature_4_icon
+- feature_5_title, feature_5_description (máx 20 palavras), feature_5_icon
+- feature_6_title, feature_6_description (máx 20 palavras), feature_6_icon
+Ícones — use EXATAMENTE um destes: {icons_str}
 
-Os ícones DEVEM ser um destes nomes exatos: {icons_str}
+AUTORIDADE:
+- authority_title (6-9 palavras — por que nos escolher)
+- authority_manifesto (50-80 palavras — tom profissional, menciona cidade e categoria, sem prêmios inventados)
+- features_title (título da seção de diferenciais, formato pergunta, 6-10 palavras)
+- features_subtitle (1 frase complementar, 8-12 palavras)
 
-SOBRE/AUTORIDADE:
-- authority_title (Título da seção sobre nós)
-- authority_manifesto (Texto de 50-80 palavras, tom profissional, sem inventar prêmios ou datas)
-- features_title (Título da seção de diferenciais, formato pergunta)
-- features_subtitle (1 frase complementar)
-
-FAQ (3 perguntas):
-- faq_1_question, faq_1_answer
-- faq_2_question, faq_2_answer
-- faq_3_question, faq_3_answer
+FAQ — 3 perguntas reais de quem busca {empresa['categoria']} em {cidade_principal}:
+- faq_1_question, faq_1_answer (40-60 palavras)
+- faq_2_question, faq_2_answer (40-60 palavras)
+- faq_3_question, faq_3_answer (40-60 palavras)
 
 CTA FINAL:
-- mega_cta_title (Frase de urgência, 4-6 palavras)
-- mega_cta_subtitle (1 frase complementar)
+- mega_cta_title (4-6 palavras urgentes)
+- mega_cta_subtitle (8-12 palavras complementares)
 
 FOOTER:
-- footer_descricao (1 frase sobre a empresa, 10-15 palavras)
+- footer_descricao (10-15 palavras sobre a empresa com categoria e cidade)
 
-REGRAS:
-- NÃO invente prêmios, fundação, ou números específicos
-- Tom profissional e confiante
-- Incluir a categoria e localização naturalmente"""
+REGRAS ABSOLUTAS:
+- NÃO invente prêmios, datas de fundação ou números sem base
+- Cidade principal '{cidade_principal}' DEVE aparecer em seo_title, seo_meta_description e hero_subtitle"""
 
     return client.generate_json(SYSTEM_PROMPT, user_prompt) or {}
 
@@ -255,7 +258,7 @@ def _build_features(ai_content: dict) -> list:
     return features if features else [
         {"title": "Qualidade Profissional", "iconName": "Shield", "description": "Serviço realizado com as melhores técnicas do mercado."},
         {"title": "Atendimento Rápido", "iconName": "Zap", "description": "Agilidade sem comprometer a qualidade."},
-        {"title": "Orçamento Sem Compromisso", "iconName": "Briefcase", "description": "Preço justo e transparente."},
+        {"title": "Atendimento Consultivo", "iconName": "Briefcase", "description": "Fale com nossa equipe sem compromisso."},
     ]
 
 
@@ -270,25 +273,29 @@ def _build_faqs(ai_content: dict) -> list:
     return faqs
 
 
-def _build_local_business_schema(empresa: dict, phone_display: str, locais: list) -> str:
+def _build_local_business_schema(empresa: dict, phone_display: str, locais: list, description: str = '') -> str:
     """Gera JSON-LD para LocalBusiness."""
     location = locais[0] if locais else ''
+    phone_raw = empresa.get('telefone_whatsapp', '')
     schema = {
         "@context": "https://schema.org",
         "@type": "LocalBusiness",
         "name": empresa['nome'],
-        "description": f"{empresa['categoria']} profissional.",
+        "description": description or f"{empresa['nome']} — {empresa['categoria']} em {location}.",
         "telephone": phone_display,
+        "url": f"https://{empresa['dominio']}/",
         "address": {
             "@type": "PostalAddress",
             "addressLocality": location,
             "addressCountry": "BR"
         },
+        "areaServed": locais[:4] if len(locais) > 1 else location,
         "openingHours": empresa.get('horario', ''),
+        "sameAs": [f"https://wa.me/{phone_raw}"],
     }
     if empresa.get('endereco'):
         schema['address']['streetAddress'] = empresa['endereco']
-    
+
     return json.dumps(schema, ensure_ascii=False)
 
 
@@ -322,13 +329,13 @@ def _fallback_content(empresa: dict, palavras: list) -> dict:
         'hero_badge_text': f"Referência em {empresa['categoria']}",
         'hero_title_line_1': f"{empresa['nome']}",
         'hero_title_line_2': empresa['categoria'],
-        'hero_subtitle': f"Profissionais qualificados em {empresa['categoria']}. Solicite seu orçamento sem compromisso.",
+        'hero_subtitle': f"Profissionais qualificados em {empresa['categoria']}. Fale com um especialista sem compromisso.",
         'whatsapp_cta_text': 'Fale Conosco',
         'features_title': f"Por que escolher a {empresa['nome']}?",
         'features_subtitle': "Compromisso com qualidade e resultado.",
         'authority_title': f"Especialistas em {empresa['categoria']}",
         'authority_manifesto': f"Nossa equipe é especializada em {empresa['categoria']}. Trabalhamos com profissionalismo e compromisso para entregar os melhores resultados.",
         'mega_cta_title': 'Pronto para começar?',
-        'mega_cta_subtitle': 'Orçamento rápido e sem compromisso pelo WhatsApp.',
+        'mega_cta_subtitle': 'Fale com nossa equipe pelo WhatsApp sem compromisso.',
         'footer_descricao': f"{empresa['categoria']} de excelência. Resultados comprovados.",
     }

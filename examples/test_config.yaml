@@ -1,0 +1,33 @@
+# ===== DADOS DA EMPRESA =====
+empresa:
+  nome: "PisoPro Instalações"
+  dominio: "pisoproinstalacoes.com.br"
+  categoria: "Instalação de Piso Vinílico e Laminado"
+  telefone_whatsapp: "5511999998888"
+  telefone_ligar: "(11) 99999-8888"
+  horario: "Segunda a Sábado, 8h às 18h"
+  cor_marca: "#D97706" # Um tom ambar/madeira amarelado
+  endereco: ""  
+  google_maps_embed: ""
+
+# ===== SEO =====
+seo:
+  palavras_chave:
+    - Instalação de Piso Vinílico
+    - Colocação de Piso Laminado
+    - Instalação de Rodapé
+  locais:
+    - São Paulo
+    - Osasco
+
+# ===== API =====
+api:
+  provider: "openrouter"
+  model: "deepseek/deepseek-v3.2"
+  max_workers: 10
+  max_retries: 3
+
+# ===== LEADS =====
+leads:
+  worker_url: ""        
+  client_token: ""

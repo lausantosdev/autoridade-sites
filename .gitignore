@@ -5,6 +5,7 @@ output/
 reports/
 cache/
 uploads/
+config.yaml
 config_*.yaml
 *.log
 error_log*.txt
@@ -12,3 +13,6 @@ error_log*.txt
 node_modules/
 server_log.txt
 .claude/
+.pytest_cache/
+htmlcov/
+.coverage

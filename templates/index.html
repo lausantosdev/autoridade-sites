@@ -3,14 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="{{empresa_nome}} — {{empresa_categoria}} de excelência. Atendimento profissional e resultados garantidos.">
-    <meta name="keywords" content="{{empresa_categoria}}, {{empresa_nome}}">
-    <meta property="og:title" content="{{empresa_nome}} — {{empresa_categoria}}">
-    <meta property="og:description" content="{{empresa_categoria}} profissional com qualidade garantida. Entre em contato!">
+    <meta name="description" content="{{empresa_nome}} — {{empresa_categoria}} em {{cidade_principal}}. Profissionais qualificados, atendimento personalizado e resultados comprovados. Solicite seu orçamento!">
+    <meta name="keywords" content="{{empresa_categoria}}, {{empresa_nome}}, {{empresa_categoria}} {{cidade_principal}}, {{empresa_categoria}} profissional">
+    <meta property="og:title" content="{{empresa_nome}} — {{empresa_categoria}} em {{cidade_principal}}">
+    <meta property="og:description" content="{{empresa_nome}} é referência em {{empresa_categoria}} em {{cidade_principal}}. Orçamento sem compromisso pelo WhatsApp!">
     <meta property="og:type" content="website">
     <meta property="og:locale" content="pt_BR">
+    <meta property="og:url" content="https://{{dominio}}/">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://{{dominio}}/">
     <meta name="theme-color" content="{{cor_marca}}">
-    <title>{{empresa_nome}} — {{empresa_categoria}}</title>
+    <title>{{empresa_nome}} — {{empresa_categoria}} em {{cidade_principal}}</title>
+
+    <!-- Schema Markup -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "LocalBusiness",
+      "name": "{{empresa_nome}}",
+      "description": "{{empresa_nome}} — {{empresa_categoria}} em {{cidade_principal}}. Profissionais qualificados e resultados comprovados.",
+      "telephone": "{{telefone_display}}",
+      "url": "https://{{dominio}}/",
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "{{cidade_principal}}",
+        "addressCountry": "BR"
+      },
+      "openingHours": "{{horario}}",
+      "sameAs": ["https://wa.me/{{telefone_whatsapp}}"]
+    }
+    </script>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -30,7 +52,7 @@
                 <a href="#diferenciais">Diferenciais</a>
                 <a href="#sobre">Sobre</a>
                 <a href="#contato" class="header-cta">
-                    <i class="fab fa-whatsapp"></i> Orçamento
+                    <i class="fab fa-whatsapp"></i> Fale Conosco
                 </a>
             </nav>
             <button class="mobile-toggle" aria-label="Menu">
@@ -49,16 +71,17 @@
                     Referência em <span data-dinamico="empresa_categoria">{{empresa_categoria}}</span>
                 </div>
                 <h1 class="hero-title">
-                    <span class="accent" data-dinamico="empresa_nome">{{empresa_nome}}</span><br>
-                    <span data-dinamico="empresa_categoria">{{empresa_categoria}}</span>
+                    <span data-dinamico="empresa_categoria">{{empresa_categoria}}</span><br>
+                    em {{cidade_principal}}<br>
+                    <span class="accent" data-dinamico="empresa_nome">{{empresa_nome}}</span>
                 </h1>
                 <p class="hero-subtitle">
                     <strong data-dinamico="empresa_nome">{{empresa_nome}}</strong> — profissionais qualificados, atendimento personalizado
-                    e resultados comprovados. Solicite seu orçamento sem compromisso.
+                    e resultados comprovados. Fale com um especialista sem compromisso.
                 </p>
                 <div class="hero-buttons">
                     <a href="{{whatsapp_link}}" data-dinamico-href="whatsapp_link" class="btn btn-primary" target="_blank" rel="noopener">
-                        <i class="fab fa-whatsapp"></i> Solicitar Orçamento
+                        <i class="fab fa-whatsapp"></i> Fale Conosco
                     </a>
                 </div>
             </div>
@@ -132,7 +155,7 @@
                 </div>
                 <div class="diff-card">
                     <div class="diff-icon"><i class="fas fa-hand-holding-dollar"></i></div>
-                    <h3>Preço justo e orçamento sem compromisso</h3>
+                    <h3>Atendimento consultivo e sem compromisso</h3>
                 </div>
                 <div class="diff-card">
                     <div class="diff-icon"><i class="fas fa-headset"></i></div>
@@ -162,7 +185,7 @@
                 </p>
                 <p>
                     Entre em <a href="#contato">contato</a> conosco e descubra por que somos a escolha preferida
-                    em <span data-dinamico="empresa_categoria">{{empresa_categoria}}</span>. Solicite seu orçamento sem compromisso!
+                    em <span data-dinamico="empresa_categoria">{{empresa_categoria}}</span>. Fale com um especialista sem compromisso!
                 </p>
             </div>
         </div>
@@ -172,7 +195,7 @@
     <section id="contato" class="cta-section">
         <div class="container">
             <h2 class="cta-title">Pronto para começar?</h2>
-            <p class="cta-subtitle">Entre em contato agora e receba um orçamento personalizado.</p>
+            <p class="cta-subtitle">Entre em contato agora e fale com nossa equipe sem compromisso.</p>
             <div class="cta-buttons">
                 <a href="{{whatsapp_link}}" data-dinamico-href="whatsapp_link" class="btn btn-white" target="_blank" rel="noopener">
                     <i class="fab fa-whatsapp"></i> WhatsApp

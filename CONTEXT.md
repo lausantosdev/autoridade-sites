@@ -45,10 +45,11 @@ sitegen/
 │   ├── page_generator.py    # Gera subpáginas SEO via IA
 │   ├── site_data_builder.py # Constrói SiteData para a home premium
 │   ├── template_injector.py # Injeta dados no template React pré-buildado
+│   ├── template_renderer.py # Substitui {{vars}} em templates HTML (shared)
 │   ├── imagen_client.py     # Gera hero image via Gemini/Imagen
 │   ├── openrouter_client.py # Client OpenRouter (DeepSeek)
 │   ├── validator.py         # Valida qualidade das páginas geradas
-│   └── utils.py             # Utilitários (hex_to_rgb, etc.)
+│   └── utils.py             # Utilitários (hex_to_rgb, slugify, etc.)
 │
 ├── template-dist/           # Template React pré-buildado (NÃO editar)
 │   ├── index.html           # HTML com marcadores de injeção
@@ -67,6 +68,20 @@ sitegen/
 ├── cloudflare-worker/       # Worker de captura de leads
 ├── dashboard/               # Dashboard de leads (Supabase)
 ├── supabase/                # Schema SQL do banco
+│
+├── examples/                # Configs de exemplo (versionadas)
+│   └── test_config.yaml     # Configuração de teste (PisoPro)
+│
+├── tests/                   # Testes unitários (pytest)
+│   ├── test_utils.py        # slugify, hex_to_rgb, adjust_color
+│   ├── test_mixer.py        # mix_keywords_locations, get_summary
+│   └── test_config_loader.py# load_config, get_phone_display, get_whatsapp_link
+│
+├── Makefile                 # Atalhos: make install, make test, make generate
+├── config.example.yaml      # Template de config (sem dados reais)
+├── .env.example             # Template de variáveis de ambiente
+├── requirements.txt         # Dependências de produção
+├── requirements-dev.txt     # Dependências de desenvolvimento (pytest)
 │
 └── output/                  # Sites gerados (gitignored)
 ```
@@ -128,6 +143,12 @@ python generate.py --config config.yaml
 python generate.py --step home     # Só home page
 python generate.py --step pages    # Só subpáginas SEO
 python generate.py --step validate # Só validação
+```
+
+### Testes
+```bash
+make test          # Roda pytest
+make test-cov      # Roda com relatório de cobertura
 ```
 
 ## Configuração

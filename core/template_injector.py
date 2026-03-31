@@ -12,7 +12,6 @@ Output: um index.html completo com design premium SiteGen + dados do cliente.
 import os
 import json
 import shutil
-from pathlib import Path
 
 
 # Caminho padrão do dist/ commitado no repo
@@ -85,10 +84,13 @@ def inject_template(
 
 
 def _inject_meta_tags(html: str, site_data: dict) -> str:
-    """Substitui os marcadores de meta tags pelos valores reais."""
+    """Substitui os marcadores de meta tags pelos valores reais e injeta tags SEO ausentes."""
     seo = site_data.get('seo', {})
     theme = site_data.get('theme', {})
-    
+    empresa = site_data.get('empresa', {})
+    dominio = empresa.get('dominio', '')
+    canonical_url = f"https://{dominio}/" if dominio else ''
+
     replacements = {
         '__SITE_TITLE__': seo.get('title', ''),
         '__SITE_META_DESC__': seo.get('metaDescription', ''),
@@ -97,10 +99,18 @@ def _inject_meta_tags(html: str, site_data: dict) -> str:
         '__SITE_OG_DESC__': seo.get('ogDescription', seo.get('metaDescription', '')),
         '__SITE_THEME_COLOR__': theme.get('color', '#000000'),
     }
-    
+
     for marker, value in replacements.items():
         html = html.replace(marker, _escape_html_attr(str(value)))
-    
+
+    # Injetar canonical, og:url e robots antes do </head>
+    extra_tags = (
+        f'\n    <link rel="canonical" href="{canonical_url}">'
+        f'\n    <meta property="og:url" content="{canonical_url}">'
+        f'\n    <meta name="robots" content="index, follow">'
+    )
+    html = html.replace('</head>', extra_tags + '\n</head>', 1)
+
     return html
 
 

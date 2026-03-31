@@ -55,7 +55,7 @@ def validate_site(output_dir: str, config: dict) -> dict:
     return results
 
 
-def _validate_page(filename: str, content: str, config: dict) -> dict:
+def _validate_page(filename: str, content: str, config: dict = None) -> dict:
     """Valida uma única página."""
     issues = {'errors': [], 'warnings': [], 'word_count': 0}
 
@@ -80,7 +80,7 @@ def _validate_page(filename: str, content: str, config: dict) -> dict:
 
     # Verificar H2s
     h2s = re.findall(r'<h2[^>]*>(.*?)</h2>', content, re.DOTALL)
-    if len(h2s) < 3:
+    if len(h2s) < 6:
         issues['warnings'].append(f"{filename}: Apenas {len(h2s)} H2s (mínimo recomendado: 6)")
 
     # Verificar placeholders não substituídos (ignorar blocos <script> para não confundir com JSON-LD)
@@ -103,7 +103,7 @@ def _validate_page(filename: str, content: str, config: dict) -> dict:
     word_count = len(text.split())
     issues['word_count'] = word_count
 
-    if word_count < 500:
+    if word_count < 900:
         issues['warnings'].append(f"{filename}: Apenas {word_count} palavras (mínimo: 900)")
 
     # Verificar links internos

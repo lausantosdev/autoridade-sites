@@ -9,6 +9,9 @@
     <meta property="og:description" content="@og_description">
     <meta property="og:type" content="website">
     <meta property="og:locale" content="pt_BR">
+    <meta property="og:url" content="{{canonical_url}}">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="{{canonical_url}}">
     <meta name="theme-color" content="{{cor_marca}}">
     <title>@titulo</title>
 
@@ -24,21 +27,29 @@
     <link rel="stylesheet" href="css/reset.css">
     <link rel="stylesheet" href="css/style.css">
 
+    <!-- Dynamic Theme Color -->
+    <style>
+        :root {
+            --primary: {{cor_marca}};
+            --primary-rgb: {{cor_marca_rgb}};
+        }
+    </style>
+
     <!-- Schema Markup -->
     {{schema_markup}}
 </head>
 <body>
 
-    <!-- Header -->
+    <!-- ===== HEADER ===== -->
     <header class="site-header">
         <div class="container header-inner">
-            <a href="index.html" class="header-logo" data-dinamico="empresa_nome">{{empresa_nome}}</a>
+            <a href="index.html" class="header-logo">{{empresa_nome}}</a>
             <nav class="header-nav">
                 <a href="index.html">Início</a>
-                <a href="mapa-do-site.html">Serviços</a>
-                <a href="#seo-content">Sobre</a>
+                <a href="#diferenciais">Diferenciais</a>
+                <a href="#sobre">Sobre</a>
                 <a href="#contato" class="header-cta">
-                    <i class="fab fa-whatsapp"></i> Orçamento
+                    <i class="fab fa-whatsapp"></i> Fale Conosco
                 </a>
             </nav>
             <button class="mobile-toggle" aria-label="Menu">
@@ -47,14 +58,14 @@
         </div>
     </header>
 
-    <!-- Hero -->
+    <!-- ===== HERO ===== -->
     <section class="hero" style="background-image: url('images/hero.jpg');">
         <div class="hero-overlay"></div>
         <div class="container hero-container">
             <div class="hero-content">
                 <div class="hero-badge">
                     <i class="fas fa-check-circle"></i>
-                    <span data-dinamico="empresa_categoria">{{empresa_categoria}}</span> — <span data-dinamico="empresa_nome">{{empresa_nome}}</span>
+                    <span>{{empresa_categoria}} — {{empresa_nome}}</span>
                 </div>
                 <h1 class="hero-title">
                     @hero_titulo_linha_1<br>
@@ -64,137 +75,194 @@
                 <p class="hero-subtitle">@hero_subtitulo</p>
                 <div class="hero-buttons">
                     <a href="@whatsapp_pagina" class="btn btn-primary" target="_blank" rel="noopener">
-                        <i class="fab fa-whatsapp"></i> Solicitar Orçamento
+                        <i class="fab fa-whatsapp"></i> Fale Conosco
                     </a>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Stats -->
-    <section class="stats">
+    <!-- ===== TRUST INDICATORS ===== -->
+    <section class="trust-section">
         <div class="container">
-            <div class="stats-grid reveal">
-                <div class="stat-item">
-                    <div class="stat-number"><i class="fas fa-check-circle" style="font-size: 2.5rem; color: var(--primary);"></i></div>
-                    <div class="stat-label">Atendimento Qualificado</div>
+            <div class="trust-grid reveal">
+                <div class="trust-item">
+                    <div class="trust-icon"><i class="fas fa-check-circle"></i></div>
+                    <div class="trust-label">Atendimento Qualificado</div>
                 </div>
-                <div class="stat-item">
-                    <div class="stat-number"><i class="fas fa-handshake" style="font-size: 2.5rem; color: var(--primary);"></i></div>
-                    <div class="stat-label" style="margin-top: 10px;">Foco na Satisfação</div>
+                <div class="trust-item">
+                    <div class="trust-icon"><i class="fas fa-handshake"></i></div>
+                    <div class="trust-label">Foco na Satisfação</div>
                 </div>
-                <div class="stat-item">
-                    <div class="stat-number"><i class="fas fa-bullseye" style="font-size: 2.5rem; color: var(--primary);"></i></div>
-                    <div class="stat-label" style="margin-top: 10px;">Compromisso com o Resultado</div>
+                <div class="trust-item">
+                    <div class="trust-icon"><i class="fas fa-shield-halved"></i></div>
+                    <div class="trust-label">Garantia do Serviço</div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- SEO Content: Iceberg Strategy (Copy + SEO) -->
-    <section id="seo-content" class="seo-section">
+    <!-- ===== FEATURES / DIFERENCIAIS — 6 cards (espelha a Home) ===== -->
+    <section id="diferenciais" class="features-section">
         <div class="container">
-            <!-- Part 1: The Problem (Copy Focus) -->
-            <div class="seo-intro reveal">
-                <h2 class="section-title">@dor_h2</h2>
-                <div class="intro-text">
-                    <p class="lead">@dor_p1</p>
-                    <p>@dor_p2</p>
-                </div>
-            </div>
-
-            <!-- Part 2: Benefits Grid (Visual Conversion) -->
-            <div class="section-header reveal" style="margin-top: 60px;">
+            <div class="section-header reveal">
                 <span class="section-tag">Por que nos escolher</span>
-                <h3 class="section-title-sm">Diferenciais em @local</h3>
+                <h2 class="section-title">@features_titulo</h2>
+                <p class="section-subtitle">@features_subtitulo</p>
             </div>
-            <div class="diff-grid reveal">
-                <div class="diff-card">
-                    <div class="diff-icon"><i class="@beneficio_1_icone"></i></div>
-                    <h4>@beneficio_1_titulo</h4>
+            <div class="features-grid reveal">
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="@beneficio_1_icone"></i></div>
+                    <h3>@beneficio_1_titulo</h3>
                     <p>@beneficio_1_texto</p>
                 </div>
-                <div class="diff-card">
-                    <div class="diff-icon"><i class="@beneficio_2_icone"></i></div>
-                    <h4>@beneficio_2_titulo</h4>
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="@beneficio_2_icone"></i></div>
+                    <h3>@beneficio_2_titulo</h3>
                     <p>@beneficio_2_texto</p>
                 </div>
-                <div class="diff-card">
-                    <div class="diff-icon"><i class="@beneficio_3_icone"></i></div>
-                    <h4>@beneficio_3_titulo</h4>
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="@beneficio_3_icone"></i></div>
+                    <h3>@beneficio_3_titulo</h3>
                     <p>@beneficio_3_texto</p>
                 </div>
-                <div class="diff-card">
-                    <div class="diff-icon"><i class="@beneficio_4_icone"></i></div>
-                    <h4>@beneficio_4_titulo</h4>
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="@beneficio_4_icone"></i></div>
+                    <h3>@beneficio_4_titulo</h3>
                     <p>@beneficio_4_texto</p>
                 </div>
-            </div>
-
-            <!-- Part 3: Process & Authority (SEO Heavy) -->
-            <div class="seo-deep-content reveal" style="margin-top: 80px;">
-                <div class="seo-block">
-                    <h2>@processo_h2</h2>
-                    <p>@processo_p1</p>
-                    <p>@processo_p2</p>
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="@beneficio_5_icone"></i></div>
+                    <h3>@beneficio_5_titulo</h3>
+                    <p>@beneficio_5_texto</p>
                 </div>
-
-                <div class="seo-block">
-                    <h2>@autoridade_h2</h2>
-                    <p>@autoridade_p1</p>
-                    <p>@autoridade_p2</p>
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="@beneficio_6_icone"></i></div>
+                    <h3>@beneficio_6_titulo</h3>
+                    <p>@beneficio_6_texto</p>
                 </div>
             </div>
+        </div>
+    </section>
 
-            <!-- Part 4: FAQ (Semantic SEO / Voice Search) -->
-            <div class="faq-section reveal" style="margin-top: 80px; padding: 40px; background: var(--bg-alt); border-radius: 20px;">
-                <h2 style="margin-bottom: 30px; text-align: center;">@faq_h2</h2>
-                <div class="faq-item" style="margin-bottom: 25px;">
-                    <h4 style="color: var(--primary); margin-bottom: 10px;">@faq_1_pergunta</h4>
+    <!-- ===== AUTHORITY — espelha "Sobre Nós" da Home ===== -->
+    <section id="sobre" class="authority-section reveal">
+        <div class="container">
+            <div class="authority-inner">
+                <span class="section-tag">@autoridade_eyebrow</span>
+                <h2 class="section-title">@autoridade_titulo</h2>
+                <p class="authority-manifesto">@autoridade_manifesto</p>
+                <a href="@whatsapp_pagina" class="btn btn-primary" target="_blank" rel="noopener">
+                    <i class="fab fa-whatsapp"></i> Falar com Especialista
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== MEGA CTA — espelha home ===== -->
+    <section id="contato" class="cta-section">
+        <div class="container">
+            <h2 class="cta-title">@cta_titulo</h2>
+            <p class="cta-subtitle">@cta_subtitulo</p>
+            <div class="cta-buttons">
+                <a href="@whatsapp_pagina" class="btn btn-white" target="_blank" rel="noopener">
+                    <i class="fab fa-whatsapp"></i> WhatsApp
+                </a>
+                <a href="index.html" class="btn btn-ghost">
+                    <i class="fas fa-arrow-left"></i> Página Inicial
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== FAQ ===== -->
+    <section class="faq-outer">
+        <div class="container">
+            <div class="faq-section reveal">
+                <h2>@faq_h2</h2>
+                <div class="faq-item">
+                    <h4>@faq_1_pergunta</h4>
                     <p>@faq_1_resposta</p>
                 </div>
-                <div class="faq-item" style="margin-bottom: 25px;">
-                    <h4 style="color: var(--primary); margin-bottom: 10px;">@faq_2_pergunta</h4>
+                <div class="faq-item">
+                    <h4>@faq_2_pergunta</h4>
                     <p>@faq_2_resposta</p>
                 </div>
                 <div class="faq-item">
-                    <h4 style="color: var(--primary); margin-bottom: 10px;">@faq_3_pergunta</h4>
+                    <h4>@faq_3_pergunta</h4>
                     <p>@faq_3_resposta</p>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- CTA -->
-    <section id="contato" class="cta-section">
+    <!-- ===== SEO EDITORIAL — Iceberg Zone (6 H2s, 900+ palavras) ===== -->
+    <section class="seo-editorial">
         <div class="container">
-            <h2 class="cta-title">Fale com a equipe: <span data-dinamico="empresa_nome">{{empresa_nome}}</span></h2>
-            <p class="cta-subtitle">Atendimento rápido e profissional. Entre em contato para um orçamento sem compromisso.</p>
-            <div class="cta-buttons">
-                <a href="@whatsapp_pagina" class="btn btn-white" target="_blank" rel="noopener">
-                    <i class="fab fa-whatsapp"></i> WhatsApp
-                </a>
+            <div class="seo-grid">
+
+                <div class="seo-block reveal">
+                    <h2>@seo_h2_1</h2>
+                    <p>@seo_p1</p>
+                </div>
+
+                <div class="seo-block reveal">
+                    <h2>@seo_h2_2</h2>
+                    <p>@seo_p2</p>
+                </div>
+
+                <div class="seo-block reveal">
+                    <h2>@seo_h2_3</h2>
+                    <p>@seo_p3</p>
+                </div>
+
+                <!-- Inline CTA no ponto médio — conversão dentro da zona SEO -->
+                <div class="seo-inline-cta reveal">
+                    <div class="seo-inline-cta-text">
+                        <strong>{{empresa_nome}}</strong> atende em @local e região.<br>
+                        <span>Fale agora com um especialista pelo WhatsApp sem compromisso.</span>
+                    </div>
+                    <a href="@whatsapp_pagina" class="btn btn-primary" target="_blank" rel="noopener">
+                        <i class="fab fa-whatsapp"></i> Falar Agora
+                    </a>
+                </div>
+
+                <div class="seo-block reveal">
+                    <h2>@seo_h2_4</h2>
+                    <p>@seo_p4</p>
+                </div>
+
+                <div class="seo-block reveal">
+                    <h2>@seo_h2_5</h2>
+                    <p>@seo_p5</p>
+                </div>
+
+                <div class="seo-block reveal">
+                    <h2>@seo_h2_6</h2>
+                    <p>@seo_p6</p>
+                </div>
+
             </div>
         </div>
     </section>
 
-    <!-- Map -->
+    <!-- ===== MAP ===== -->
     <section class="map-section">
-        <iframe src="{{google_maps_url}}" data-dinamico-src="google_maps_url" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Localização {{empresa_nome}}"></iframe>
+        <iframe src="{{google_maps_url}}" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Localização {{empresa_nome}}"></iframe>
     </section>
 
-    <!-- Footer -->
+    <!-- ===== FOOTER ===== -->
     <footer class="site-footer">
         <div class="container">
             <div class="footer-grid">
                 <div class="footer-brand">
-                    <h3 data-dinamico="empresa_nome">{{empresa_nome}}</h3>
-                    <p><span data-dinamico="empresa_categoria">{{empresa_categoria}}</span> de excelência. Profissionais qualificados, atendimento personalizado e resultados comprovados.</p>
+                    <h3>{{empresa_nome}}</h3>
+                    <p>{{empresa_categoria}} de excelência. Profissionais qualificados, atendimento personalizado e resultados comprovados.</p>
                 </div>
                 <div class="footer-col">
                     <h4>Contato</h4>
-                    <p><i class="fas fa-phone"></i> <span data-dinamico="telefone_display">{{telefone_display}}</span></p>
-                    <p><i class="fas fa-clock"></i> <span data-dinamico="horario">{{horario}}</span></p>
+                    <p><i class="fas fa-phone"></i> {{telefone_display}}</p>
+                    <p><i class="fas fa-clock"></i> {{horario}}</p>
                     {{endereco_footer}}
                 </div>
                 <div class="footer-col">
@@ -207,13 +275,13 @@
                 </div>
             </div>
             <div class="footer-bottom">
-                <span>© <span data-dinamico="ano">{{ano}}</span> <span data-dinamico="empresa_nome">{{empresa_nome}}</span>. Todos os direitos reservados.</span>
+                <span>© {{ano}} {{empresa_nome}}. Todos os direitos reservados.</span>
                 <a href="#" target="_blank" rel="noopener">AUTORIDADE DIGITAL</a>
             </div>
         </div>
     </footer>
 
-    <!-- WhatsApp Float -->
+    <!-- ===== WHATSAPP FLOAT ===== -->
     <a href="@whatsapp_pagina" class="whatsapp-float" target="_blank" rel="noopener" aria-label="WhatsApp">
         <i class="fab fa-whatsapp"></i>
     </a>
