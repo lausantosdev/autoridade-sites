@@ -1,10 +1,10 @@
 """
-Site Data Builder — Constrói o objeto SiteData (contrato Klema) a partir de config + IA.
+Site Data Builder — Constrói o objeto SiteData (contrato SiteGen) a partir de config + IA.
 
 Este módulo converte os dados do config.yaml e gera conteúdo via IA
-para popular a interface SiteData que o template React Klema espera.
+para popular a interface SiteData que o template React SiteGen espera.
 
-Output: um dict Python compliant com a interface SiteData do Klema.
+Output: um dict Python compliant com a interface SiteData do SiteGen.
 """
 import json
 from urllib.parse import quote
@@ -19,7 +19,7 @@ SYSTEM_PROMPT = (
     "Responda apenas em JSON puro, sem markdown."
 )
 
-# Ícones Lucide disponíveis no template Klema (IconMapper no App.tsx)
+# Ícones Lucide disponíveis no template SiteGen (IconMapper no App.tsx)
 AVAILABLE_ICONS = [
     "Zap", "Cpu", "Fingerprint", "Pencil", "Settings2", "Sparkles",
     "Shield", "Monitor", "Phone", "MapPin", "Building", "Activity",
@@ -37,7 +37,7 @@ def build_site_data(config: dict, client: OpenRouterClient) -> dict:
         client: OpenRouterClient para gerar conteúdo via IA
         
     Returns:
-        dict compliant com a interface SiteData do Klema template
+        dict compliant com a interface SiteData do SiteGen template
     """
     empresa = config['empresa']
     cor = empresa['cor_marca']

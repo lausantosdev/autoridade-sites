@@ -1,13 +1,13 @@
 """
-Template Injector — Injeta dados do site no template Klema pré-buildado.
+Template Injector — Injeta dados do site no template SiteGen pré-buildado.
 
-Pega o dist/index.html (build único do Klema) e injeta:
+Pega o dist/index.html (build único do template) e injeta:
 1. window.__SITE_DATA__ (dados do site em JSON)
 2. Meta tags SEO (<title>, <meta>, og:tags)
 3. Schema JSON-LD (LocalBusiness + FAQPage)
 4. Copia assets (JS/CSS bundled + hero image) para o output
 
-Output: um index.html completo com design premium Klema + dados do cliente.
+Output: um index.html completo com design premium SiteGen + dados do cliente.
 """
 import os
 import json
@@ -16,7 +16,7 @@ from pathlib import Path
 
 
 # Caminho padrão do dist/ commitado no repo
-KLEMA_DIST_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'klema-dist')
+TEMPLATE_DIST_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'template-dist')
 
 
 def inject_template(
@@ -26,24 +26,24 @@ def inject_template(
     hero_image_path: str = None,
 ) -> str:
     """
-    Injeta os dados do site no template Klema pré-buildado.
+    Injeta os dados do site no template SiteGen pré-buildado.
     
     Args:
         site_data: dict compliant com SiteData (gerado por site_data_builder)
         output_dir: diretório de saída (ex: output/cleanproestofados.com.br/)
-        dist_dir: caminho do dist/ Klema (default: klema-dist/ no repo)
+        dist_dir: caminho do dist/ SiteGen (default: template-dist/ no repo)
         hero_image_path: caminho da hero image gerada (copiada para output)
         
     Returns:
         Caminho do index.html gerado
     """
-    dist_dir = dist_dir or KLEMA_DIST_DIR
+    dist_dir = dist_dir or TEMPLATE_DIST_DIR
     dist_index = os.path.join(dist_dir, 'index.html')
     
     if not os.path.exists(dist_index):
         raise FileNotFoundError(
-            f"Template Klema não encontrado em {dist_index}. "
-            f"Execute 'npm run build' na pasta do Klema template e copie o dist/ para klema-dist/."
+            f"Template SiteGen não encontrado em {dist_index}. "
+            f"Execute 'npm run build' na pasta do template e copie o dist/ para template-dist/."
         )
     
     os.makedirs(output_dir, exist_ok=True)
@@ -80,7 +80,7 @@ def inject_template(
     with open(output_path, 'w', encoding='utf-8') as f:
         f.write(html)
     
-    print(f"  ✓ Home page Klema gerada: {output_path}")
+    print(f"  ✓ Home page SiteGen gerada: {output_path}")
     return output_path
 
 

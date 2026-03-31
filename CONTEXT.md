@@ -1,304 +1,178 @@
-# Autoridade Sites — Contexto do Projeto
+# SiteGen — Gerador de Sites SEO para Negócios Locais
 
-> Leia este arquivo no início de toda sessão de trabalho.
-> Leia também `SESSION.md` para saber o que foi feito na última sessão e o que está pendente.
-
----
-
-## O que é este projeto
-
-**Gerador automatizado de sites SEO local para pequenas empresas brasileiras.**
-
-Dado um `config.yaml` com nome da empresa, palavras-chave e cidades, o sistema gera dezenas de páginas HTML estáticas com conteúdo escrito por IA — prontas para subir em qualquer hospedagem.
-
-O produto completo tem três pilares:
-
-```
-┌─────────────────────────────────────────────────┐
-│           AUTORIDADE SITES (produto)             │
-├─────────────────┬───────────────┬────────────────┤
-│  1. SEO Pages   │  2. Widget    │  3. Dashboard  │
-│                 │     24h       │    do Cliente  │
-│  Páginas que    │  Captura lead │  Vê os leads,  │
-│  ranqueiam no   │  qualquer     │  decide se     │
-│  Google         │  hora         │  continua      │
-└─────────────────┴───────────────┴────────────────┘
-```
-
-O dashboard é o que **fecha a recorrência**: o cliente vê quantos leads vieram e a decisão de continuar pagando fica óbvia.
+> **Produto da [Autoridade Digital](https://autoridade.digital)**
+> Gera sites premium, otimizados para SEO e conversão via WhatsApp.
 
 ---
 
-## Genealogia do projeto
+## O que é
 
-```
-site_prompts_v9_template_1-mentoria     (Gen 1 — Protótipo manual, OpenAI)
-         │
-         ▼
-    autoridade-sites                    (Gen 2 — Pipeline automatizado, DeepSeek)
-         │
-         ├── templates/                 (HTML/CSS/JS puro — design Apple-style)
-         │
-         └── Klema Sites/template       (Gen 3 — Template React de referência)
-                 │
-                 ├── SiteData interface (contrato de dados tipado)
-                 ├── 8 componentes UI   (Hero, Features, FAQ, CTA, etc.)
-                 ├── Dark/Light mode    (HSL variables)
-                 └── Framer Motion      (micro-animações premium)
-```
+SiteGen é uma ferramenta que gera automaticamente sites completos para negócios locais brasileiros. O operador preenche os dados do cliente no wizard (nome, nicho, telefone, localidades), clica "Gerar Site", e recebe um ZIP pronto para deploy com:
 
-### O que cada geração trouxe
+- **Home page premium** — design dark mode, animações, glassmorphism (template React pré-buildado)
+- **Subpáginas SEO** — uma para cada combinação keyword × localidade (~1500 palavras cada)
+- **Captura de leads** — formulário WhatsApp com tracking via Cloudflare Worker
+- **Dashboard** — painel para o empresário ver seus leads em tempo real
 
-| Geração | Contribuição principal | Limitação |
-|---------|----------------------|-----------|
-| **Gen 1** (Mentoria) | Conceito: keywords × locais → páginas SEO | Manual, caro (OpenAI), sem leads |
-| **Gen 2** (Autoridade) | Automação total, pipeline modular, leads 24h, custo ~R$1/site | Template HTML básico, sem tipagem |
-| **Gen 3** (Klema) | Contrato `SiteData` tipado, design SaaS premium, componentes reutilizáveis | Stack React incompatível com geração estática |
-
-### O que o Klema template **realmente** trouxe (não é só design)
-
-1. **Contrato de dados `SiteData`** — interface TypeScript com 14 seções que formaliza tudo que o pipeline precisa gerar. É a versão tipada do sistema `{{config}}` + `@ia`.
-2. **Componentes UI premium** — MagicText (scroll reveal), FAQ com tabs, grid com gap-px, glassmorphism no header.
-3. **Theming HSL** — dark/light mode por classe CSS, mais flexível que hex fixo.
-4. **IconMapper** — IA retorna nome de ícone como string, template renderiza o componente. No HTML puro, equivale a `fas fa-*` do FontAwesome.
-
----
-
-## Estratégia de integração (decidida: Híbrida)
-
-O template React (Klema) usa uma stack diferente (React/Vite/Tailwind) da geração estática (HTML puro). A estratégia escolhida é **injeção híbrida em runtime**, que mantém 100% do design sem exigir rebuild por site:
-
-```
-┌──────────────────────────────────────────────────────────────────┐
-│                    FLUXO DE INTEGRAÇÃO                           │
-│                                                                  │
-│  [1] BUILD ÚNICO (dev)          [2] POR-SITE (pipeline Python)   │
-│  ─────────────────────          ──────────────────────────────   │
-│  Klema template                 config.yaml                      │
-│       │                              │                           │
-│  npm run build                  generate.py (IA gera conteúdo)   │
-│       │                              │                           │
-│  dist/index.html ◄──────── Python injeta no HTML pré-buildado:   │
-│  dist/assets/*.js,css           • <script>window.__SITE_DATA__   │
-│                                 • <title>, <meta>, og:tags       │
-│                                 • <script type="ld+json">        │
-│                                      │                           │
-│                                 output/{dominio}/index.html      │
-│                                 (design 100% Klema, dados únicos)│
-│                                                                  │
-│  [3] SUBPÁGINAS SEO (inalterado)                                 │
-│  ────────────────────────────                                    │
-│  templates/page.html + @placeholders → keyword-local.html        │
-│  (continua com HTML puro + CSS Apple-style)                      │
-└──────────────────────────────────────────────────────────────────┘
-```
-
-### Por que esta estratégia
-
-| Alternativa | Problema |
-|------------|---------|
-| **CSS Extract** (extrair visual, reescrever HTML puro) | Perde MagicText, Framer Motion, FAQ tabs, dark/light toggle. Semanas de re-trabalho para resultado inferior |
-| **Build por site** (Vite build para cada cliente) | Exige Node.js no servidor, ~3s build por site. Desnecessário |
-| **Híbrida (escolhida)** ✅ | Uma build serve todos os sites. Python só injeta dados. Design 100%. Sem Node no server |
-
-### O que precisa ser adaptado no Klema template
-
-1. `data.ts` — trocar `export const siteData` por `window.__SITE_DATA__` com fallback para dev
-2. `index.html` — manter markers para Python substituir meta tags
-3. Pipeline Python — novo step `inject_template.py` que monta o index final
-
-### SEO e a renderização client-side
-
-- **Meta tags, `<title>`, Open Graph, Schema JSON-LD** → injetados pelo Python diretamente no HTML (crawlers leem sem JS)
-- **Conteúdo visível** (hero, features, FAQ) → renderizado pelo React em runtime (Googlebot executa JS desde 2019)
-- **Subpáginas keyword×local** → continuam 100% HTML estático (zero JS rendering)
-
----
-
-## Stack técnica
+## Stack
 
 | Camada | Tecnologia |
-|--------|-----------|
-| Pipeline de geração | Python 3 + ThreadPoolExecutor (30 workers) |
-| API de IA | OpenRouter → DeepSeek V3.2 (padrão) + Gemini (disponível) |
-| Geração de imagens | `core/imagen_client.py` |
-| Interface web | FastAPI + WebSocket (progresso em tempo real) |
-| Templates de saída | HTML/CSS/JS puro (sem framework) |
-| Lead capture | Cloudflare Worker (proxy seguro) + Supabase (banco) |
-| Dashboard do cliente | HTML estático + Supabase anon key + RLS |
-| Painel admin | `admin/index.html` (spec em `tasks/TASK_5_ADMIN.md`) |
-| Template de referência | React/Vite/Tailwind (somente design — `Klema Sites/template`) |
+|---|---|
+| Pipeline (backend) | Python 3.11 |
+| IA (conteúdo) | DeepSeek v3 via OpenRouter |
+| IA (imagens) | Google Imagen via Gemini API |
+| Template home page | React 19 + Vite + Tailwind v4 (pré-buildado) |
+| Template subpáginas | HTML/CSS/JS puros |
+| Wizard | FastAPI + WebSocket |
+| Leads | Cloudflare Worker + Supabase |
+| Dashboard | HTML puro (Supabase client) |
 
----
-
-## Pipeline de geração (`generate.py`)
+## Estrutura do Projeto
 
 ```
-config.yaml → mixer → sitemap → topics (cache) → pages (paralelo, IA) → validator → report
+sitegen/
+├── generate.py              # CLI principal (pipeline)
+├── server.py                # Backend do wizard (FastAPI + WebSocket)
+├── config.yaml              # Config de exemplo
+├── requirements.txt         # Dependências Python
+├── .env                     # API keys (OPENROUTER_API_KEY, GEMINI_API_KEY)
+│
+├── core/                    # Módulos do pipeline
+│   ├── config_loader.py     # Parse do config.yaml
+│   ├── mixer.py             # Combina keywords × locais
+│   ├── sitemap_generator.py # Gera sitemap.xml + mapa-do-site.html
+│   ├── topic_generator.py   # Gera tópicos do nicho via IA
+│   ├── page_generator.py    # Gera subpáginas SEO via IA
+│   ├── site_data_builder.py # Constrói SiteData para a home premium
+│   ├── template_injector.py # Injeta dados no template React pré-buildado
+│   ├── imagen_client.py     # Gera hero image via Gemini/Imagen
+│   ├── openrouter_client.py # Client OpenRouter (DeepSeek)
+│   ├── validator.py         # Valida qualidade das páginas geradas
+│   └── utils.py             # Utilitários (hex_to_rgb, etc.)
+│
+├── template-dist/           # Template React pré-buildado (NÃO editar)
+│   ├── index.html           # HTML com marcadores de injeção
+│   └── assets/              # JS/CSS bundled (~134KB gzipped)
+│
+├── templates/               # Templates HTML puros (subpáginas SEO)
+│   ├── index.html           # Home fallback (HTML puro)
+│   ├── page.html            # Template das subpáginas
+│   ├── css/                 # Estilos
+│   ├── js/                  # Scripts
+│   └── images/              # Assets estáticos
+│
+├── frontend/                # UI do wizard
+│   └── index.html           # Formulário + WebSocket
+│
+├── cloudflare-worker/       # Worker de captura de leads
+├── dashboard/               # Dashboard de leads (Supabase)
+├── supabase/                # Schema SQL do banco
+│
+└── output/                  # Sites gerados (gitignored)
 ```
 
-1. `config_loader.py` — carrega YAML, aceita CSV do Google Keyword Planner
-2. `mixer.py` — produto cartesiano keywords × locais → lista de páginas com slug
-3. `sitemap_generator.py` — gera sitemap.xml + mapa-do-site.html
-4. `topic_generator.py` — gera 100 palavras + 100 frases do nicho via IA (cache em `cache/`)
-5. `page_generator.py` — preenche template com conteúdo IA (paralelo)
-6. `validator.py` — checa placeholders órfãos, contagem de palavras, H1/H2, links internos
-
----
-
-## Sistema de placeholders
-
-O pipeline usa dois tipos de placeholder que são resolvidos em momentos diferentes:
-
-| Tipo | Sintaxe | Quando resolve | Fonte | Exemplo |
-|------|---------|---------------|-------|---------| 
-| Config | `{{variavel}}` | Antes da geração (igual em todas as páginas) | config.yaml | `{{empresa_nome}}`, `{{cor_marca}}` |
-| IA | `@placeholder` | Durante a geração (único por página) | DeepSeek/Gemini via OpenRouter | `@titulo`, `@faq_1_resposta` |
-
-`@context` e `@type` no JSON-LD não são placeholders — o validator ignora blocos `<script>`.
-
-### Mapeamento com o contrato Klema `SiteData`
-
-| `SiteData` (Klema) | Placeholder (Autoridade) | Fonte |
-|--------------------|------------------------|-------|
-| `empresa.nome` | `{{empresa_nome}}` | config.yaml |
-| `theme.color` | `{{cor_marca}}` | config.yaml |
-| `hero.titleLine1` | `@hero_titulo_linha_1` | IA |
-| `faqSection.faqs[0].question` | `@faq_1_pergunta` | IA |
-| `links.whatsappPagina` | `@whatsapp_pagina` | Pipeline (gerado) |
-| `schema.localBusiness` | `{{schema_markup}}` | Pipeline (gerado) |
-
----
-
-## Estrutura de conteúdo (Estratégia Iceberg)
-
-Cada página SEO segue esta estrutura de alta conversão:
+## Pipeline (Fluxo de Geração)
 
 ```
-1. Hero          — Título 3 linhas + CTA WhatsApp (conversão imediata)
-2. Trust Bar     — 3 ícones de credibilidade (sem números inventados)
-3. Dor           — Problema do cliente (copy emocional)
-4. Benefícios    — 4 cards com ícone + título + texto (visual + SEO)
-5. Processo      — Como funciona (SEO técnico heavy, 120-150 palavras/bloco)
-6. Autoridade    — Sobre a empresa (credibilidade + SEO semântico)
-7. FAQ           — 3 perguntas (Schema FAQPage + voice search)
-8. CTA Final     — Bloco colorido com WhatsApp
-9. Mapa          — Google Maps embed (dark mode filter)
-10. Footer       — 4 colunas: Sobre / Contato / Serviços / Cidades
+┌─ Wizard (browser) ──────────────────────────────────┐
+│  1. Validar config                                   │
+│  2. Gerar mix keywords × locais                      │
+│  3. Gerar sitemap.xml + mapa-do-site.html            │
+│  4. Gerar hero image (Imagen/Gemini)                 │
+│  5. Gerar home page premium (SiteGen template)       │
+│  6. Gerar inteligência de negócio (tópicos)          │
+│  7. Gerar subpáginas SEO (keyword × local)           │
+│  8. Validar qualidade                                │
+│  9. Empacotar ZIP                                    │
+└──────────────────────────────────────────────────────┘
 ```
 
----
+### Home Page — Injeção Híbrida
 
-## Fluxo de leads
+O template React é buildado **uma única vez** (`npm run build`). O pipeline Python injeta dados dinâmicos sem precisar de Node.js:
 
 ```
-[Site do cliente — HTML público]
-      ↓ POST { nome, whatsapp, dominio, pagina, keyword, local }
-[Cloudflare Worker] ← SUPABASE_SERVICE_KEY fica aqui, nunca no HTML
-      ↓ valida client_token
-[Supabase — tabela leads]
-      ↓
-[Dashboard — HTML estático com anon key + RLS por client_token]
+template-dist/index.html  +  config.yaml + IA
+         │                          │
+         ▼                          ▼
+   HTML com marcadores       site_data_builder.py
+   (__SITE_TITLE__, etc.)    (gera SiteData JSON)
+         │                          │
+         └────────┬─────────────────┘
+                  ▼
+         template_injector.py
+         (substitui marcadores, injeta window.__SITE_DATA__)
+                  │
+                  ▼
+         output/{dominio}/index.html
+         (site completo, pronto para deploy)
 ```
 
-`client_token` é um UUID por cliente. Não é login — é isolamento de dados via RLS.
+## Como Usar
 
----
+### Via Wizard (recomendado)
+```bash
+python server.py
+# Abrir http://localhost:8000
+# Preencher dados → Gerar Site → Download ZIP
+```
 
-## Status das features
+### Via CLI
+```bash
+python generate.py --config config.yaml
+# Output em output/{dominio}/
+```
 
-| Feature | Status | Arquivo principal |
-|---------|--------|------------------|
-| Pipeline CLI | ✅ Pronto | `generate.py` |
-| Wizard web (FastAPI + WebSocket) | ✅ Pronto | `server.py` |
-| Templates HTML/CSS/JS | ✅ Pronto | `templates/` |
-| Schema markup (LocalBusiness + FAQPage) | ✅ Pronto | `templates/page.html` |
-| Design Apple-style (CSS) | ✅ Integrado | `templates/css/style.css` |
-| Widget de captura de leads | ✅ Pronto | `templates/js/widget.js` |
-| Cloudflare Worker | ✅ Pronto | `cloudflare-worker/index.js` |
-| Supabase setup | ✅ Pronto | `supabase/setup.sql` |
-| Dashboard do cliente | ✅ Pronto | `dashboard/index.html` |
-| Geração de imagens (imagen_client) | ✅ Integrado | `core/imagen_client.py` |
-| Gemini como modelo alternativo | ✅ Integrado | `server.py` + `models.json` |
-| Template Klema de referência | ✅ Completo | `Klema Sites/template` (externo) |
-| Integração híbrida Klema → index.html | ⏳ Pendente | `data.ts` → `window.__SITE_DATA__` + `inject_template.py` |
-| Painel Admin | ⏳ Pendente | spec: `tasks/TASK_5_ADMIN.md` |
-| Deploy automático (Cloudflare Pages) | ⏳ Pendente | — |
-| Multi-tenant no wizard | ⏳ Futuro | — |
+### Steps isolados
+```bash
+python generate.py --step home     # Só home page
+python generate.py --step pages    # Só subpáginas SEO
+python generate.py --step validate # Só validação
+```
 
----
+## Configuração
 
-## Infraestrutura manual pendente
+### `.env` (API keys)
+```
+OPENROUTER_API_KEY=sk-or-v1-...
+GEMINI_API_KEY=AIzaSy...
+```
 
-Estas etapas precisam ser feitas uma vez por cliente (ou por ambiente):
+### `config.yaml` (dados do cliente)
+```yaml
+empresa:
+  nome: "Clean Pro"
+  dominio: "cleanpro.com.br"
+  categoria: "Limpeza de Estofados"
+  telefone_whatsapp: "5541999998888"
+  cor_marca: "#2563EB"
 
-1. Criar projeto Supabase → executar `supabase/setup.sql`
-2. Deploy Cloudflare Worker → `cd cloudflare-worker && wrangler deploy`
-3. Configurar secrets do Worker: `SUPABASE_URL` e `SUPABASE_SERVICE_KEY`
-4. Preencher `config.yaml`: `leads.worker_url` e `leads.client_token`
-5. Hospedar `dashboard/` (Cloudflare Pages ou GitHub Pages)
+seo:
+  palavras_chave:
+    - Limpeza de Sofá
+    - Higienização de Estofados
+  locais:
+    - Curitiba
+    - São José dos Pinhais
+```
 
----
+## Custos por Site
 
-## Comandos frequentes
+| Item | Custo |
+|---|---|
+| Conteúdo IA (home + subpáginas) | ~R$0,03 |
+| Hero image (Imagen) | Gratuito (free tier) |
+| **Total** | **~R$0,03** |
+
+## Rebuild do Template (raro)
+
+Só necessário se o design da home mudar:
 
 ```bash
-python generate.py                    # pipeline completo
-python generate.py --step pages       # só gerar páginas
-python generate.py --force-topics     # regenerar cache de tópicos
-python generate.py --config outro.yaml
-python server.py                      # wizard web em localhost:8000
+cd [pasta do template React fonte]
+
+# Editar componentes React...
+
+npm run build
+# Copiar dist/ para template-dist/
 ```
-
----
-
-## Decisões de arquitetura não óbvias
-
-| Decisão | Escolha | Motivo |
-|---------|---------|--------|
-| Output format | HTML estático | Hospedagem grátis, SEO nativo, zero runtime |
-| Modelo IA | DeepSeek V3.2 via OpenRouter | 2.3x mais barato que V3, qualidade superior |
-| Template React | Só referência, não integrado | Incompatível com geração estática multi-page |
-| Leads backend | Cloudflare Worker + Supabase | Grátis (100k req/dia), seguro (key no Worker) |
-| Cache de tópicos | `cache/` local | Evita regerar frases do nicho a cada run |
-| CSS variables | `{{cor_marca}}` substituída na geração | Theming sem JS — CSS puro |
-| Validação | Regex no validator.py | Simples, detecta placeholders órfãos |
-| Estratégia SEO | Iceberg (copy no topo, SEO heavy embaixo) | Conversão + ranqueamento no mesmo page |
-
----
-
-## Regras de roteamento de tarefas
-
-| Situação | Estratégia |
-|----------|-----------|
-| Arquivo novo, lógica isolada, spec clara | Agente barato — criar `tasks/TASK_N.md` primeiro |
-| Arquivo novo, lógica complexa | Claude direto |
-| Modificar arquivo existente | Claude direto — ler o arquivo antes |
-| Volume alto de arquivos similares | Agente barato |
-
-**Formato da spec para agente barato:** contexto em 3-5 linhas + caminhos exatos + schema + pseudocódigo + "O que NÃO fazer".
-
----
-
-## Referência: Contrato SiteData (resumo do Klema)
-
-O template Klema (`Klema Sites/template/src/data.ts`) define a interface mestre que o pipeline deve produzir. Seções principais:
-
-```
-empresa     { nome, dominio, categoria, telefones, horario, endereco, ano }
-theme       { mode: "dark"|"light", color: hex, colorRgb }
-links       { whatsapp, whatsappPagina, telefone, googleMapsEmbed }
-seo         { title, metaDescription, metaKeywords, og*, keyword, local }
-hero        { badgeText, titleLine1, titleLine2, subtitle, heroImagePath }
-features    { title, subtitle, items[]: { title, iconName, description } }
-authority   { eyebrow, title, manifestoText }
-megaCta     { title, subtitle }
-faq         { title, subtitle, categories, faqs: Record<cat, Q&A[]> }
-map         { eyebrow, title, embedUrl }
-footer      { descricao, servicos[], cidades[], credito }
-nav         { links[]: { label, href } }
-schema      { localBusiness: JSON-LD, faqPage: JSON-LD }
-leads       { workerUrl, clientToken }
-```
-
-Consulte o arquivo original para detalhes: `c:\Users\ThinkPad T480\Desktop\Klema\Klema Sites\template\src\data.ts`

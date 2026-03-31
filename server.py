@@ -155,7 +155,7 @@ async def websocket_generate(websocket: WebSocket):
                 max_retries=config['api']['max_retries']
             )
             
-            # Gerar Home Page Premium (Klema Template)
+            # Gerar Home Page Premium (SiteGen Template)
             await websocket.send_json({"type": "step", "step": 5, "message": "Gerando home page premium..."})
             try:
                 site_data = await asyncio.to_thread(build_site_data, config, client)
@@ -166,7 +166,7 @@ async def websocket_generate(websocket: WebSocket):
                     hero_image_path=str(hero_img_path) if hero_img_path.exists() else None,
                 )
             except Exception as e:
-                print(f"Erro na home Klema: {e}. Usando template fallback.")
+                print(f"Erro na home SiteGen: {e}. Usando template fallback.")
                 _generate_index(config, output_dir)
             
             # Topics & Services
@@ -399,11 +399,11 @@ def _setup_output(output_dir: str, config: dict):
     with open(dados_path, 'w', encoding='utf-8') as f:
         f.write(script_content)
         
-    # A home page é gerada pelo step inject_home (Klema template) no websocket flow
+    # A home page é gerada pelo step inject_home (SiteGen template) no websocket flow
 
 
 def _generate_index(config: dict, output_dir: str):
-    """Fallback: gera index.html do template HTML puro (caso Klema falhe)."""
+    """Fallback: gera index.html do template HTML puro (caso SiteGen falhe)."""
     from core.page_generator import _replace_config_vars
     index_template = Path("templates") / "index.html"
     if index_template.exists():

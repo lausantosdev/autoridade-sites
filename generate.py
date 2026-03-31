@@ -6,7 +6,7 @@ Uso:
     python generate.py --step mix        # Só gera o mix
     python generate.py --step sitemap    # Só gera o sitemap
     python generate.py --step topics     # Só gera tópicos
-    python generate.py --step home       # Só gera a home page (Klema)
+    python generate.py --step home       # Só gera a home page (SiteGen)
     python generate.py --step pages      # Só gera as subpáginas SEO
     python generate.py --step validate   # Só valida
     python generate.py --config outro.yaml  # Usa outro arquivo de config
@@ -125,7 +125,7 @@ def main():
             try:
                 from core.imagen_client import GeminiImageClient
                 img_client = GeminiImageClient()
-                # Gera para o caminho Klema (hero-image.jpg)
+                # Gera para o caminho SiteGen (hero-image.jpg)
                 img_client.generate_hero(
                     categoria=config['empresa']['categoria'],
                     nome=config['empresa']['nome'],
@@ -142,9 +142,9 @@ def main():
             print("🎨 Imagem Hero já existe. Pulando geração.")
         print()
 
-    # 6.6 Gerar Home Page (Klema Template)
+    # 6.6 Gerar Home Page (SiteGen Template)
     if args.step in ('all', 'home'):
-        print("🏠 Gerando home page premium (Klema)...")
+        print("🏠 Gerando home page premium (SiteGen)...")
         try:
             site_data = build_site_data(config, client)
             inject_template(
@@ -153,7 +153,7 @@ def main():
                 hero_image_path=str(hero_img_path) if hero_img_path.exists() else None,
             )
         except Exception as e:
-            print(f"  ⚠ Erro na home Klema: {e}")
+            print(f"  ⚠ Erro na home SiteGen: {e}")
             print("  ↳ Gerando home com template HTML fallback...")
             _generate_index(config, output_dir)
         print()
@@ -260,12 +260,12 @@ def _setup_output_dir(output_dir: str, config: dict):
     if img_src.exists() and not img_dst.exists():
         shutil.copytree(str(img_src), str(img_dst))
 
-    # A home page é gerada pelo step inject_home (Klema template)
+    # A home page é gerada pelo step inject_home (SiteGen template)
     # Aqui só copiamos assets para as subpáginas HTML puras
 
 
 def _generate_index(config: dict, output_dir: str):
-    """Fallback: gera index.html do template HTML puro (caso Klema falhe)."""
+    """Fallback: gera index.html do template HTML puro (caso SiteGen falhe)."""
     from core.page_generator import _replace_config_vars
     index_template = TEMPLATES_DIR / "index.html"
     if index_template.exists():
