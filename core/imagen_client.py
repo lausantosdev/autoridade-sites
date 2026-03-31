@@ -26,11 +26,12 @@ class GeminiImageClient:
         servicos = ", ".join(keywords[:3]) if keywords else categoria
         
         prompt = (
-            f"Hyper-realistic macro photography representing tools or abstract concepts in the field of: {categoria}. "
-            f"Lighting: Cinematic, dramatic, very moody. Depth of field: strong bokeh effect on background. "
+            f"Premium cinematic photography representing the final positive outcome, satisfaction, and elegance in the field of: {categoria}. "
+            f"Show beautiful, clean, and positive concepts (e.g. happy clients, healthy pets, pristine environments). Do NOT show raw tools, surgery equipment, or messy work processes. "
+            f"Lighting: Cinematic, dramatic, moody. Depth of field: strong bokeh effect on background. "
             f"Composition: Off-center, leaving massive dark negative space in the middle for text overlays. "
             f"Color palette: dark gray, black, and subtle hints of professional colors. "
-            f"Style: Abstract enterprise technology or professional tools, high end corporate."
+            f"Style: High-end, premium corporate, elegant and modern lifestyle."
         )
 
         try:
