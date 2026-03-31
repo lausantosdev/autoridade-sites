@@ -25,6 +25,8 @@ from core.openrouter_client import OpenRouterClient
 from core.topic_generator import generate_topics
 from core.page_generator import generate_all_pages, _replace_config_vars
 from core.validator import validate_site, generate_report
+from core.site_data_builder import build_site_data
+from core.template_injector import inject_template
 
 
 app = FastAPI(title="Autoridade Sites SEO Generator")
@@ -124,31 +126,26 @@ async def websocket_generate(websocket: WebSocket):
             await asyncio.sleep(0.05)
             generate_sitemap(pages, config, output_dir)
             
-            # Index
-            await websocket.send_json({"type": "step", "step": 4, "message": "Criando página principal..."})
-            await asyncio.sleep(0.05)
-            _generate_index(config, output_dir)
-            
-            # Gerar imagem hero com Gemini (novo passo 4.5)
+            # Gerar imagem hero com Gemini
             await websocket.send_json({"type": "step", "step": 4, "message": "Gerando imagem hero com IA..."})
+            hero_img_path = Path(output_dir) / "hero-image.jpg"
             try:
                 from core.imagen_client import GeminiImageClient
-                import os
-                images_dir = Path(output_dir) / "images"
-                images_dir.mkdir(parents=True, exist_ok=True)
-                
                 img_client = GeminiImageClient()
-                img_path_out = str(images_dir / "hero.jpg")
                 keywords = config.get('seo', {}).get('palavras_chave', [])
                 
-                # Executar em thread para não bloquear o websocket
                 await asyncio.to_thread(
                     img_client.generate_hero,
                     config['empresa']['categoria'],
                     config['empresa']['nome'],
-                    img_path_out,
+                    str(hero_img_path),
                     keywords
                 )
+                # Copiar para caminho legado (subpáginas HTML puras)
+                legacy_path = Path(output_dir) / "images" / "hero.jpg"
+                legacy_path.parent.mkdir(parents=True, exist_ok=True)
+                if hero_img_path.exists():
+                    shutil.copy2(str(hero_img_path), str(legacy_path))
             except Exception as e:
                 print(f"Erro ao gerar imagem AI: {e}")
             
@@ -158,8 +155,22 @@ async def websocket_generate(websocket: WebSocket):
                 max_retries=config['api']['max_retries']
             )
             
+            # Gerar Home Page Premium (Klema Template)
+            await websocket.send_json({"type": "step", "step": 5, "message": "Gerando home page premium..."})
+            try:
+                site_data = await asyncio.to_thread(build_site_data, config, client)
+                await asyncio.to_thread(
+                    inject_template,
+                    site_data=site_data,
+                    output_dir=output_dir,
+                    hero_image_path=str(hero_img_path) if hero_img_path.exists() else None,
+                )
+            except Exception as e:
+                print(f"Erro na home Klema: {e}. Usando template fallback.")
+                _generate_index(config, output_dir)
+            
             # Topics & Services
-            await websocket.send_json({"type": "step", "step": 5, "message": "Gerando inteligência de negócio..."})
+            await websocket.send_json({"type": "step", "step": 6, "message": "Gerando inteligência de negócio..."})
             await asyncio.sleep(0.05)
             topics = await asyncio.to_thread(generate_topics, config, client)
             
@@ -170,9 +181,8 @@ async def websocket_generate(websocket: WebSocket):
                 with open(dados_js_path, "a", encoding="utf-8") as f:
                     f.write(f"\nconst _DADOS_SERVICOS = {json.dumps(servicos_data, ensure_ascii=False)};\n")
             
-            # Pages
-            await websocket.send_json({"type": "step", "step": 6, "message": "Gerando páginas SEO..."})
-            await asyncio.sleep(0.05)
+            # Subpáginas SEO
+            await websocket.send_json({"type": "step", "step": 7, "message": "Gerando páginas SEO..."})
             
             total = len(pages)
             completed = [0]
@@ -227,13 +237,13 @@ async def websocket_generate(websocket: WebSocket):
                 await websocket.send_json(progress_queue.get_nowait())
             
             # Validate
-            await websocket.send_json({"type": "step", "step": 7, "message": "Validando qualidade..."})
+            await websocket.send_json({"type": "step", "step": 8, "message": "Validando qualidade..."})
             results = validate_site(output_dir, config)
             api_stats = client.get_stats()
             generate_report(results, config, api_stats, output_dir)
             
             # ZIP
-            await websocket.send_json({"type": "step", "step": 8, "message": "Empacotando site..."})
+            await websocket.send_json({"type": "step", "step": 9, "message": "Empacotando site..."})
             zip_path = shutil.make_archive(
                 str(Path("output") / f"{dominio}_site"),
                 'zip',
@@ -389,12 +399,11 @@ def _setup_output(output_dir: str, config: dict):
     with open(dados_path, 'w', encoding='utf-8') as f:
         f.write(script_content)
         
-    # Generate index.html after setting up dirs
-    _generate_index(config, output_dir)
+    # A home page é gerada pelo step inject_home (Klema template) no websocket flow
 
 
 def _generate_index(config: dict, output_dir: str):
-    """Gera a index.html a partir do template."""
+    """Fallback: gera index.html do template HTML puro (caso Klema falhe)."""
     from core.page_generator import _replace_config_vars
     index_template = Path("templates") / "index.html"
     if index_template.exists():
@@ -402,6 +411,7 @@ def _generate_index(config: dict, output_dir: str):
         content = _replace_config_vars(content, config)
         output_path = Path(output_dir) / "index.html"
         output_path.write_text(content, encoding='utf-8')
+        print("  Home page fallback gerada (template HTML puro)")
 
 
 if __name__ == "__main__":

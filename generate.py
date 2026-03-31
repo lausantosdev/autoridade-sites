@@ -6,7 +6,8 @@ Uso:
     python generate.py --step mix        # Só gera o mix
     python generate.py --step sitemap    # Só gera o sitemap
     python generate.py --step topics     # Só gera tópicos
-    python generate.py --step pages      # Só gera as páginas
+    python generate.py --step home       # Só gera a home page (Klema)
+    python generate.py --step pages      # Só gera as subpáginas SEO
     python generate.py --step validate   # Só valida
     python generate.py --config outro.yaml  # Usa outro arquivo de config
 """
@@ -23,6 +24,8 @@ from core.openrouter_client import OpenRouterClient
 from core.topic_generator import generate_topics
 from core.page_generator import generate_all_pages
 from core.validator import validate_site, generate_report
+from core.site_data_builder import build_site_data
+from core.template_injector import inject_template
 
 
 TEMPLATES_DIR = Path("templates")
@@ -31,7 +34,7 @@ TEMPLATES_DIR = Path("templates")
 def main():
     parser = argparse.ArgumentParser(description="Autoridade Sites - Gerador de Sites SEO com IA")
     parser.add_argument('--config', default='config.yaml', help='Arquivo de configuração')
-    parser.add_argument('--step', choices=['mix', 'sitemap', 'topics', 'pages', 'validate', 'all'],
+    parser.add_argument('--step', choices=['mix', 'sitemap', 'topics', 'home', 'pages', 'validate', 'all'],
                         default='all', help='Passo específico a executar')
     parser.add_argument('--force-topics', action='store_true', help='Forçar regeneração de tópicos')
     args = parser.parse_args()
@@ -113,24 +116,51 @@ def main():
         return
 
     # 6.5 Gerar Imagem Hero (Imagen 3)
-    if args.step in ('all', 'pages', 'image'):
-        hero_img_path = Path(output_dir) / "images" / "hero.jpg"
-        if not hero_img_path.exists():
+    hero_img_path = Path(output_dir) / "hero-image.jpg"
+    if args.step in ('all', 'home', 'pages', 'image'):
+        # Também gerar em images/hero.jpg para subpáginas HTML puras
+        hero_img_legacy = Path(output_dir) / "images" / "hero.jpg"
+        if not hero_img_path.exists() and not hero_img_legacy.exists():
             print("🎨 Gerando Imagem Hero com Google Gemini...")
             try:
                 from core.imagen_client import GeminiImageClient
                 img_client = GeminiImageClient()
+                # Gera para o caminho Klema (hero-image.jpg)
                 img_client.generate_hero(
                     categoria=config['empresa']['categoria'],
                     nome=config['empresa']['nome'],
                     output_path=str(hero_img_path),
                     keywords=config.get('seo', {}).get('palavras_chave', [])
                 )
+                # Copiar para caminho legado (subpáginas HTML puras)
+                hero_img_legacy.parent.mkdir(parents=True, exist_ok=True)
+                if hero_img_path.exists():
+                    shutil.copy2(str(hero_img_path), str(hero_img_legacy))
             except Exception as e:
                 print(f"  ⚠ Aviso: Não foi possível gerar imagem hero: {e}")
         else:
             print("🎨 Imagem Hero já existe. Pulando geração.")
         print()
+
+    # 6.6 Gerar Home Page (Klema Template)
+    if args.step in ('all', 'home'):
+        print("🏠 Gerando home page premium (Klema)...")
+        try:
+            site_data = build_site_data(config, client)
+            inject_template(
+                site_data=site_data,
+                output_dir=output_dir,
+                hero_image_path=str(hero_img_path) if hero_img_path.exists() else None,
+            )
+        except Exception as e:
+            print(f"  ⚠ Erro na home Klema: {e}")
+            print("  ↳ Gerando home com template HTML fallback...")
+            _generate_index(config, output_dir)
+        print()
+
+    if args.step == 'home':
+        _print_done(start_time)
+        return
 
     # 7. Gerar páginas SEO
     if args.step in ('all', 'pages'):
@@ -230,12 +260,12 @@ def _setup_output_dir(output_dir: str, config: dict):
     if img_src.exists() and not img_dst.exists():
         shutil.copytree(str(img_src), str(img_dst))
 
-    # Import module level function and call it to generate index.html
-    _generate_index(config, output_dir)
+    # A home page é gerada pelo step inject_home (Klema template)
+    # Aqui só copiamos assets para as subpáginas HTML puras
 
 
 def _generate_index(config: dict, output_dir: str):
-    """Gera a index.html a partir do template."""
+    """Fallback: gera index.html do template HTML puro (caso Klema falhe)."""
     from core.page_generator import _replace_config_vars
     index_template = TEMPLATES_DIR / "index.html"
     if index_template.exists():
@@ -243,6 +273,7 @@ def _generate_index(config: dict, output_dir: str):
         content = _replace_config_vars(content, config)
         output_path = Path(output_dir) / "index.html"
         output_path.write_text(content, encoding='utf-8')
+        print("  ✓ Home page fallback gerada (template HTML puro)")
 
 
 def _print_done(start_time: float):
