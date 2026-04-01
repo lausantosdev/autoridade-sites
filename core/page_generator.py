@@ -139,9 +139,8 @@ DIFERENCIAIS (3 itens GENÉRICOS da empresa — NÃO são serviços):
 REGRA: NÃO invente capacidades específicas (atendimento 24h, ISO, certificações).
 Use APENAS diferenciais universais: atendimento personalizado, equipe qualificada, compromisso com resultado, etc.
 
-AUTORIDADE (espelha "Sobre Nós" da home):
-- autoridade_eyebrow (2-3 palavras em maiúsculas)
-- autoridade_titulo (6-9 palavras — por que nos escolher)
+AUTORIDADE (seção "Sobre Nós"):
+- autoridade_titulo (6-9 palavras — sobre a empresa + local)
 - autoridade_manifesto (40-60 palavras — parágrafo profissional e honesto, sem prêmios inventados)
 
 MEGA CTA:

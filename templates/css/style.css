@@ -449,7 +449,7 @@ a {
 }
 
 .btn-white {
-    background: var(--text-white);
+    background: #ffffff;
     color: var(--primary);
     font-weight: 700;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
@@ -1069,7 +1069,8 @@ a {
    ========================================================================== */
 .cta-section {
     padding: 80px 0;
-    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    background: var(--primary); /* Fallback */
+    background: linear-gradient(135deg, var(--primary) 0%, rgba(var(--primary-rgb), 0.8) 100%);
     text-align: center;
     position: relative;
     overflow: hidden;
@@ -1086,7 +1087,7 @@ a {
 .cta-title {
     font-size: clamp(1.6rem, 3vw, 2.2rem);
     font-weight: 800;
-    color: var(--text-white);
+    color: #ffffff !important;
     margin-bottom: 14px;
     position: relative;
     letter-spacing: -0.03em;
@@ -1094,7 +1095,7 @@ a {
 
 .cta-subtitle {
     font-size: 1.05rem;
-    color: rgba(var(--glass-bg), 0.85);
+    color: rgba(255, 255, 255, 0.9) !important;
     margin-bottom: 32px;
     position: relative;
 }
