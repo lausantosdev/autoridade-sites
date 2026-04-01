@@ -85,6 +85,47 @@
     --shadow-xl: 0 20px 50px rgba(0,0,0,0.1);
 }
 
+/* --- Light Theme: Match React Home (Light wash overlay with dark text) --- */
+[data-theme="light"] .hero-overlay {
+    background: linear-gradient(
+        to bottom,
+        rgba(255, 255, 255, 0.85) 0%,
+        rgba(255, 255, 255, 0.7) 35%,
+        rgba(255, 255, 255, 0.95) 65%,
+        var(--bg) 100%
+    ) !important;
+}
+
+[data-theme="light"] .hero .hero-title {
+    color: var(--text) !important;
+}
+
+[data-theme="light"] .hero .hero-subtitle {
+    color: var(--text-secondary) !important;
+}
+
+[data-theme="light"] .hero .hero-badge {
+    color: var(--primary) !important;
+    background: rgba(var(--primary-rgb), 0.1) !important;
+    border-color: transparent !important;
+}
+
+[data-theme="light"] .site-header:not(.scrolled) .header-logo {
+    color: var(--text) !important;
+}
+
+[data-theme="light"] .site-header:not(.scrolled) .header-nav a:not(.header-cta) {
+    color: var(--text-secondary) !important;
+}
+
+[data-theme="light"] .site-header:not(.scrolled) .header-nav a:not(.header-cta):hover {
+    color: var(--text) !important;
+}
+
+[data-theme="light"] .mobile-toggle {
+    color: var(--text) !important;
+}
+
 /* --- Base --- */
 *, *::before, *::after {
     -webkit-font-smoothing: antialiased;
@@ -137,10 +178,23 @@ a {
     padding: 12px 0;
 }
 
+/* Light theme scrolled: revert to dark text for readability */
+[data-theme="light"] .site-header.scrolled .header-logo {
+    color: #0f172a !important;
+}
+
+[data-theme="light"] .site-header.scrolled .header-nav a:not(.header-cta) {
+    color: rgba(15, 23, 42, 0.7) !important;
+}
+
+[data-theme="light"] .site-header.scrolled .header-nav a:not(.header-cta):hover {
+    color: #0f172a !important;
+}
+
 .header-inner {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    gap: 32px;
 }
 
 .header-logo {
@@ -149,6 +203,7 @@ a {
     color: var(--text-white);
     letter-spacing: -0.03em;
     transition: var(--transition);
+    margin-right: auto;
 }
 
 .header-logo:hover {
@@ -179,7 +234,7 @@ a {
     gap: 8px;
     padding: 9px 20px;
     background: var(--primary);
-    color: var(--text-white) !important;
+    color: #ffffff !important;
     font-weight: 600;
     font-size: 0.85rem;
     border-radius: 50px;
@@ -236,12 +291,32 @@ a {
     inset: 0;
     background: linear-gradient(
         to bottom,
-        rgba(var(--overlay-bg), 0.5) 0%,
-        rgba(var(--overlay-bg), 0.25) 35%,
-        rgba(var(--overlay-bg), 0.6) 65%,
+        rgba(11, 13, 17, 0.5) 0%,
+        rgba(11, 13, 17, 0.25) 35%,
+        rgba(11, 13, 17, 0.6) 65%,
         var(--bg) 100%
     );
     z-index: 1;
+}
+
+/* --- Hero text defaults (dark theme: white text over dark image overlay) ---
+   Light theme overrides at higher specificity ([data-theme="light"]) win automatically. */
+.hero .hero-title {
+    color: #ffffff;
+}
+
+.hero .hero-subtitle {
+    color: rgba(255, 255, 255, 0.75);
+}
+
+.hero .hero-badge {
+    color: var(--primary-light);
+    background: rgba(var(--primary-rgb), 0.15);
+    border-color: rgba(var(--primary-rgb), 0.25);
+}
+
+.hero .btn-primary {
+    color: #ffffff;
 }
 
 .hero-container {
@@ -351,7 +426,7 @@ a {
 
 .btn-primary {
     background: var(--primary);
-    color: var(--text-white);
+    color: #ffffff;
     box-shadow: 0 4px 16px rgba(var(--primary-rgb), 0.35);
 }
 

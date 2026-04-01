@@ -25,6 +25,30 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <script type="module" crossorigin src="/assets/index-BYtPjAsq.js"></script>
     <link rel="stylesheet" crossorigin href="/assets/index-CcbYq2K-.css">
+
+    <!-- Layout fixes for React App -->
+    <style>
+      /* Group nav links + CTA together on the right (Apple-style) */
+      @media (min-width: 768px) {
+        header.fixed nav > div {
+          gap: 2rem !important;
+        }
+        header.fixed nav > div > a:first-child {
+          margin-right: auto !important;
+        }
+      }
+
+      /* Mobile-first hero image fix */
+      @media (max-width: 768px) {
+        [class*="hero"] img,
+        [class*="Hero"] img {
+          object-position: 75% center !important;
+        }
+        [style*="background-image"] {
+          background-position: 75% center !important;
+        }
+      }
+    </style>
   </head>
   <body>
     <!-- SITE_DATA_INJECT -->

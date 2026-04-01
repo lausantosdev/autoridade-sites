@@ -192,7 +192,6 @@ def build_site_data(config: dict, client: OpenRouterClient) -> dict:
         "nav": {
             "links": [
                 {"label": "Serviços", "href": "#servicos"},
-                {"label": "Diferenciais", "href": "#diferenciais"},
                 {"label": "Sobre", "href": "#sobre"},
             ],
         },

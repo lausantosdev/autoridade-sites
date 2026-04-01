@@ -27,16 +27,16 @@ class GeminiImageClient:
         
         if theme_mode == 'light':
             palette = "Color palette: bright, clean, airy whites and soft pastels with warm natural light."
-            space = "leaving ample light negative space in the middle for dark text overlays."
         else:
             palette = "Color palette: dark gray, black, and subtle hints of professional colors."
-            space = "leaving massive dark negative space in the middle for text overlays."
         
         prompt = (
             f"Premium cinematic photography representing the final positive outcome, satisfaction, and elegance in the field of: {categoria}. "
             f"Show beautiful, clean, and positive concepts (e.g. happy clients, healthy pets, pristine environments). Do NOT show raw tools, surgery equipment, or messy work processes. "
             f"Lighting: Cinematic, dramatic, moody. Depth of field: strong bokeh effect on background. "
-            f"Composition: Off-center, {space} "
+            f"Composition: CENTER the main subjects (people, animals, objects) in the horizontal middle of the frame. "
+            f"The subjects must be clearly visible even if the image is cropped to a narrow vertical strip from the center. "
+            f"Leave negative space in the UPPER portion of the image for text overlays. "
             f"{palette} "
             f"Style: High-end, premium corporate, elegant and modern lifestyle."
         )
