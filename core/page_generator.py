@@ -129,16 +129,15 @@ HERO (curto e impactante — cada linha separada):
 - hero_titulo_linha_3 (2-4 palavras — fecha com local)
 - hero_subtitulo (MÁXIMO 20 palavras — benefício direto + empresa + local)
 
-FEATURES (6 cards espelhando a home — títulos curtos, textos diretos):
-- features_titulo (6-10 palavras com keyword — ex: "Por que escolher nossa [keyword]?")
-- features_subtitulo (8-12 palavras — complementa o título)
-- beneficio_1_titulo, beneficio_1_texto (MÁXIMO 18 palavras), beneficio_1_icone
-- beneficio_2_titulo, beneficio_2_texto (MÁXIMO 18 palavras), beneficio_2_icone
-- beneficio_3_titulo, beneficio_3_texto (MÁXIMO 18 palavras), beneficio_3_icone
-- beneficio_4_titulo, beneficio_4_texto (MÁXIMO 18 palavras), beneficio_4_icone
-- beneficio_5_titulo, beneficio_5_texto (MÁXIMO 18 palavras), beneficio_5_icone
-- beneficio_6_titulo, beneficio_6_texto (MÁXIMO 18 palavras), beneficio_6_icone
-(Ícones FontAwesome 6 Free SÓLIDOS: fas fa-clock, fas fa-shield-halved, fas fa-truck-fast, fas fa-tools, fas fa-star, fas fa-check-circle, fas fa-bolt, fas fa-headset, fas fa-medal, fas fa-map-marker-alt, fas fa-thumbs-up, fas fa-wrench)
+DIFERENCIAIS (3 itens GENÉRICOS da empresa — NÃO são serviços):
+- diferencial_1_titulo (3-5 palavras — vantagem competitiva genérica)
+- diferencial_1_descricao (máx 15 palavras — frase curta explicando o diferencial)
+- diferencial_1_icone (FontAwesome 6 Free Solid)
+- diferencial_2_titulo, diferencial_2_descricao (máx 15 palavras), diferencial_2_icone
+- diferencial_3_titulo, diferencial_3_descricao (máx 15 palavras), diferencial_3_icone
+(Ícones: fas fa-headset, fas fa-medal, fas fa-check-circle, fas fa-shield-halved, fas fa-star, fas fa-thumbs-up, fas fa-handshake, fas fa-heart)
+REGRA: NÃO invente capacidades específicas (atendimento 24h, ISO, certificações).
+Use APENAS diferenciais universais: atendimento personalizado, equipe qualificada, compromisso com resultado, etc.
 
 AUTORIDADE (espelha "Sobre Nós" da home):
 - autoridade_eyebrow (2-3 palavras em maiúsculas)

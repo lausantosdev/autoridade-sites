@@ -149,10 +149,13 @@ def build_site_data(config: dict, client: OpenRouterClient) -> dict:
             "heroImagePath": "/hero-image.jpg",
         },
         
-        "featuresSection": {
-            "title": ai_content.get('features_title', f"Por que escolher a {empresa['nome']}?"),
-            "subtitle": ai_content.get('features_subtitle', "Profissionalismo, técnica e compromisso com o resultado."),
-            "items": _build_features(ai_content),
+        # NOTA: A chave "featuresSection" é exigida pelo template React (App.tsx).
+        # Semanticamente esta seção exibe SERVIÇOS, mas o React espera este key name.
+        # Renomear para "servicesSection" requer rebuild do React.
+        "featuresSection": {  # ← renderiza como "Serviços" na Home
+            "title": ai_content.get('services_title', f"Soluções em {empresa['categoria']}"),
+            "subtitle": ai_content.get('services_subtitle', "Conheça nossos serviços especializados."),
+            "items": _build_services(palavras, ai_content),
         },
         
         "authoritySection": {
@@ -191,7 +194,9 @@ def build_site_data(config: dict, client: OpenRouterClient) -> dict:
         
         "nav": {
             "links": [
-                {"label": "Serviços", "href": "#servicos"},
+                # href="#diferenciais" porque o React renderiza id="diferenciais" nesta seção.
+                # O label "Serviços" é o que o usuário vê no menu.
+                {"label": "Serviços", "href": "#diferenciais"},
                 {"label": "Sobre", "href": "#sobre"},
             ],
         },
@@ -238,6 +243,12 @@ def _generate_home_content(empresa: dict, palavras: list, locais: list, client: 
     cidade_principal = locais[0] if locais else ''
     icons_str = ', '.join(AVAILABLE_ICONS)
 
+    # Gerar lista numerada de serviços para o prompt
+    servicos_prompt = '\n'.join(
+        f'- Serviço {i}: "{s}" → service_{i}_description (máx 15 palavras), service_{i}_icon'
+        for i, s in enumerate(palavras[:6], 1)
+    )
+
     user_prompt = f"""Gere conteúdo de ALTA CONVERSÃO para a HOME PAGE da empresa '{empresa['nome']}' ({empresa['categoria']}).
 Cidade principal: {cidade_principal}
 Cidades atendidas: {locais_str}
@@ -258,20 +269,19 @@ HERO:
 - hero_title_line_2 (3-5 palavras com destaque colorido — inclui categoria ou cidade)
 - hero_subtitle (20-30 palavras com empresa, categoria e cidade principal)
 
-DIFERENCIAIS (6 itens):
-- feature_1_title, feature_1_description (máx 20 palavras), feature_1_icon
-- feature_2_title, feature_2_description (máx 20 palavras), feature_2_icon
-- feature_3_title, feature_3_description (máx 20 palavras), feature_3_icon
-- feature_4_title, feature_4_description (máx 20 palavras), feature_4_icon
-- feature_5_title, feature_5_description (máx 20 palavras), feature_5_icon
-- feature_6_title, feature_6_description (máx 20 palavras), feature_6_icon
+SERVIÇOS — Gere APENAS descrição curta e ícone para cada serviço listado:
+{servicos_prompt}
 Ícones — use EXATAMENTE um destes: {icons_str}
 
-AUTORIDADE:
+SEÇÃO SERVIÇOS (títulos da seção):
+- services_title (6-10 palavras — ex: "Soluções em [categoria] em [cidade]")
+- services_subtitle (8-12 palavras complementares)
+
+AUTORIDADE (Sobre Nós — inclua messaging de confiança e diferenciais da empresa):
 - authority_title (6-9 palavras — por que nos escolher)
-- authority_manifesto (50-80 palavras — tom profissional, menciona cidade e categoria, sem prêmios inventados)
-- features_title (título da seção de diferenciais, formato pergunta, 6-10 palavras)
-- features_subtitle (1 frase complementar, 8-12 palavras)
+- authority_manifesto (60-90 palavras — tom profissional, menciona cidade e categoria,
+  inclua 2-3 diferenciais genéricos como atendimento personalizado e compromisso com resultado.
+  NÃO invente prêmios, certificações, datas ou horários específicos.)
 
 FAQ — 3 perguntas reais de quem busca {empresa['categoria']} em {cidade_principal}:
 - faq_1_question, faq_1_answer (40-60 palavras)
@@ -292,35 +302,36 @@ TEMA VISUAL:
   Na dúvida: público feminino/família = light, masculino/industrial = dark
 
 REGRAS ABSOLUTAS:
-- NÃO invente prêmios, datas de fundação ou números sem base
+- NÃO invente prêmios, datas de fundação, horários ou números sem base
+- NÃO invente capacidades específicas (certificações, atendimento 24h, etc.)
 - Cidade principal '{cidade_principal}' DEVE aparecer em seo_title, seo_meta_description e hero_subtitle"""
 
     return client.generate_json(SYSTEM_PROMPT, user_prompt) or {}
 
 
-def _build_features(ai_content: dict) -> list:
-    """Monta a lista de features/diferenciais a partir do conteúdo IA."""
-    features = []
-    for i in range(1, 7):
-        title = ai_content.get(f'feature_{i}_title', '')
-        desc = ai_content.get(f'feature_{i}_description', '')
-        icon = ai_content.get(f'feature_{i}_icon', 'Zap')
+def _build_services(palavras: list, ai_content: dict) -> list:
+    """Monta a lista de cards de Serviços a partir das palavras-chave + descrições IA.
+    
+    Títulos vêm de config.yaml (palavras_chave), descrições e ícones da IA.
+    Quantidade é dinâmica: 2, 3, 6... depende do que o operador preencheu.
+    """
+    services = []
+    for i, keyword in enumerate(palavras[:6], 1):
+        desc = ai_content.get(f'service_{i}_description', f'Serviço profissional de {keyword.lower()}.')
+        icon = ai_content.get(f'service_{i}_icon', 'Zap')
         
-        # Validar ícone
+        # Validar ícone (Lucide icon names do template React)
         if icon not in AVAILABLE_ICONS:
             icon = 'Zap'
         
-        if title:
-            features.append({
-                "title": title,
-                "iconName": icon,
-                "description": desc,
-            })
+        services.append({
+            "title": keyword,
+            "iconName": icon,
+            "description": desc,
+        })
     
-    return features if features else [
-        {"title": "Qualidade Profissional", "iconName": "Shield", "description": "Serviço realizado com as melhores técnicas do mercado."},
-        {"title": "Atendimento Rápido", "iconName": "Zap", "description": "Agilidade sem comprometer a qualidade."},
-        {"title": "Atendimento Consultivo", "iconName": "Briefcase", "description": "Fale com nossa equipe sem compromisso."},
+    return services if services else [
+        {"title": "Serviço Profissional", "iconName": "Shield", "description": "Atendimento de qualidade com profissionais experientes."},
     ]
 
 
@@ -387,17 +398,22 @@ def _build_faq_schema(ai_content: dict) -> str:
 
 def _fallback_content(empresa: dict, palavras: list) -> dict:
     """Conteúdo genérico caso a IA falhe."""
-    return {
+    fallback = {
         'hero_badge_text': f"Referência em {empresa['categoria']}",
         'hero_title_line_1': f"{empresa['nome']}",
         'hero_title_line_2': empresa['categoria'],
         'hero_subtitle': f"Profissionais qualificados em {empresa['categoria']}. Fale com um especialista sem compromisso.",
         'whatsapp_cta_text': 'Fale Conosco',
-        'features_title': f"Por que escolher a {empresa['nome']}?",
-        'features_subtitle': "Compromisso com qualidade e resultado.",
+        'services_title': f"Soluções em {empresa['categoria']}",
+        'services_subtitle': 'Conheça nossos serviços especializados.',
         'authority_title': f"Especialistas em {empresa['categoria']}",
-        'authority_manifesto': f"Nossa equipe é especializada em {empresa['categoria']}. Trabalhamos com profissionalismo e compromisso para entregar os melhores resultados.",
+        'authority_manifesto': f"Nossa equipe é especializada em {empresa['categoria']}. Trabalhamos com atendimento personalizado e compromisso com resultado para atender suas necessidades.",
         'mega_cta_title': 'Pronto para começar?',
         'mega_cta_subtitle': 'Fale com nossa equipe pelo WhatsApp sem compromisso.',
         'footer_descricao': f"{empresa['categoria']} de excelência. Resultados comprovados.",
     }
+    # Gerar fallbacks de descrição para cada serviço
+    for i, kw in enumerate(palavras[:6], 1):
+        fallback[f'service_{i}_description'] = f'Serviço profissional de {kw.lower()}.'
+        fallback[f'service_{i}_icon'] = 'Zap'
+    return fallback

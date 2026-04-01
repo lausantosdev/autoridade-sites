@@ -48,6 +48,13 @@
           background-position: 75% center !important;
         }
       }
+
+      /* Adaptive services grid — fits N cards without empty slots */
+      #diferenciais [class*="grid"],
+      [id*="diferenciais"] [class*="Grid"] {
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)) !important;
+        justify-content: center !important;
+      }
     </style>
   </head>
   <body>
