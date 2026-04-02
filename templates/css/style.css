@@ -583,6 +583,7 @@ a {
     line-height: 1.12;
     margin-bottom: 16px;
     color: var(--text-white);
+    text-wrap: balance;
 }
 
 .section-title .accent {

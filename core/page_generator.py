@@ -123,10 +123,10 @@ META TAGS:
 - meta_description (25-30 palavras, chamativo, com keyword + local)
 - meta_keywords (10-15 termos separados por vírgula)
 
-HERO (curto e impactante — cada linha separada):
-- hero_titulo_linha_1 (3-5 palavras — verbo de ação ou pergunta)
+HERO (curto e impactante — cada linha separada, CADA UMA deve caber em UMA ÚNICA linha no celular):
+- hero_titulo_linha_1 (MÁXIMO 3 palavras curtas — verbo de ação ou pergunta CURTA. Ex: "Precisa de", "Quer um novo", "Buscando o melhor". NUNCA mais de 3 palavras.)
 - hero_titulo_destaque (2-4 palavras — o destaque colorido, inclui keyword)
-- hero_titulo_linha_3 (2-4 palavras — fecha com local)
+- hero_titulo_linha_3 (2-3 palavras — fecha com local)
 - hero_subtitulo (MÁXIMO 20 palavras — benefício direto + empresa + local)
 
 DIFERENCIAIS (3 itens GENÉRICOS da empresa — NÃO são serviços):
