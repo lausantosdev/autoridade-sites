@@ -60,6 +60,9 @@ def inject_template(
     # 4. Injetar window.__SITE_DATA__ (o principal)
     html = _inject_site_data(html, site_data)
     
+    # 4.1 Injetar script de footer links SEO
+    html = _inject_footer_links_script(html)
+    
     # 5. Copiar assets (JS/CSS bundles)
     _copy_assets(dist_dir, output_dir)
     
@@ -155,6 +158,61 @@ def _inject_site_data(html: str, site_data: dict) -> str:
     
     script_tag = f'<script>window.__SITE_DATA__={json_str}</script>'
     return html.replace('<!-- SITE_DATA_INJECT -->', script_tag)
+
+
+def _inject_footer_links_script(html: str) -> str:
+    """Injeta micro-script que transforma textos do footer em links SEO após o React renderizar."""
+    script = """
+<script>
+(function() {
+  function linkifyFooter() {
+    var d = window.__SITE_DATA__;
+    if (!d || !d.footer || !d.footer.slugMap) return;
+    var map = d.footer.slugMap;
+    var footer = document.querySelector('footer');
+    if (!footer) return;
+    var cols = footer.querySelectorAll('div');
+    cols.forEach(function(col) {
+      var h = col.querySelector('h4');
+      if (!h) return;
+      var label = h.textContent.trim().toLowerCase();
+      var slugObj = null;
+      var titlePrefix = '';
+      if (label.indexOf('servi') > -1 && map.servicos) {
+        slugObj = map.servicos;
+        titlePrefix = '{srv} em ' + (d.seo && d.seo.local ? d.seo.local : '');
+      } else if (label.indexOf('cidade') > -1 && map.cidades) {
+        slugObj = map.cidades;
+        titlePrefix = (d.empresa && d.empresa.categoria ? d.empresa.categoria : '') + ' em {city}';
+      }
+      if (!slugObj) return;
+      var items = col.querySelectorAll('span, p');
+      items.forEach(function(el) {
+        var txt = el.textContent.trim();
+        if (slugObj[txt]) {
+          var a = document.createElement('a');
+          a.href = slugObj[txt];
+          a.title = titlePrefix.indexOf('{srv}') > -1
+            ? titlePrefix.replace('{srv}', txt)
+            : titlePrefix.replace('{city}', txt);
+          a.textContent = el.textContent;
+          a.style.cssText = el.style.cssText;
+          a.className = el.className;
+          el.parentNode.replaceChild(a, el);
+        }
+      });
+    });
+  }
+  if (document.readyState === 'complete') {
+    setTimeout(linkifyFooter, 500);
+  } else {
+    window.addEventListener('load', function() {
+      setTimeout(linkifyFooter, 500);
+    });
+  }
+})();
+</script>"""
+    return html.replace('</body>', script + '\n</body>')
 
 
 def _copy_assets(dist_dir: str, output_dir: str):
