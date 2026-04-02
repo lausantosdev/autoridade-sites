@@ -6,7 +6,7 @@ Utilizado pelo page_generator, generate e server para processar qualquer templat
 """
 from datetime import datetime
 from core.config_loader import get_whatsapp_link, get_phone_display
-from core.utils import hex_to_rgb
+from core.utils import hex_to_rgb, slugify
 
 
 def replace_config_vars(template: str, config: dict) -> str:
@@ -39,12 +39,21 @@ def replace_config_vars(template: str, config: dict) -> str:
         f'<p><i class="fas fa-location-dot"></i> {endereco}</p>' if endereco else ''
     )
 
-    servicos_footer = '\n'.join(
-        f'<a href="mapa-do-site.html">{p}</a>' for p in palavras
-    )
+    cidade_principal = locais[0] if locais else ''
+    if cidade_principal:
+        servicos_footer = '\n'.join(
+            f'<a href="{slugify(f"{p} {cidade_principal}")}.html" title="{p} em {cidade_principal}">{p}</a>'
+            for p in palavras
+        )
+    else:
+        servicos_footer = '\n'.join(
+            f'<a href="mapa-do-site.html">{p}</a>' for p in palavras
+        )
 
+    categoria = empresa['categoria']
     locais_footer = '\n'.join(
-        f'<p><i class="fas fa-check"></i> {local}</p>' for local in locais
+        f'<a href="{slugify(f"{categoria} {local}")}.html" title="{categoria} em {local}"><i class="fas fa-map-marker-alt"></i> {local}</a>'
+        for local in locais
     )
 
     replacements = {
