@@ -12,6 +12,7 @@ from core.openrouter_client import OpenRouterClient
 from core.config_loader import get_whatsapp_link, get_phone_display
 from core.utils import hex_to_rgb
 from datetime import datetime
+from core.utils import slugify
 
 
 SYSTEM_PROMPT = (
@@ -101,6 +102,8 @@ def build_site_data(config: dict, client: OpenRouterClient) -> dict:
     # WhatsApp link com mensagem genérica (home page)
     msg_home = f"Olá, gostaria de saber mais sobre os serviços de {empresa['categoria']}."
     whatsapp_home = f"https://wa.me/{phone_raw}?text={quote(msg_home)}"
+    cidade_principal = locais[0] if locais else ''
+    categoria_nome = empresa.get('categoria', '')
     
     # Montar o objeto SiteData
     site_data = {
@@ -190,7 +193,19 @@ def build_site_data(config: dict, client: OpenRouterClient) -> dict:
             "cidades": locais[:8],
             "creditoTexto": "AUTORIDADE DIGITAL",
             "creditoLink": "#",
+            "slugMap": {
+                "servicos": {
+                    p: f"{slugify(f'{p} {cidade_principal}')}.html"
+                    for p in palavras[:6]
+                } if cidade_principal else {},
+                "cidades": {
+                    loc: f"{slugify(f'{categoria_nome} {loc}')}.html"
+                    for loc in locais[:8]
+                },
+            },
         },
+        
+
         
         "nav": {
             "links": [
