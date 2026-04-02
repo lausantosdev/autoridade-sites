@@ -144,7 +144,7 @@ def build_site_data(config: dict, client: OpenRouterClient) -> dict:
         "whatsappCtaText": "Fale Conosco",
         
         "hero": {
-            "badgeText": ai_content.get('hero_badge_text', f"Referência em {empresa['categoria']}"),
+            "badgeText": ai_content.get('hero_badge_text', f"Referência em {empresa['categoria'].split()[0]}"),
             "badgeLinkText": "Saiba mais",
             "titleLine1": ai_content.get('hero_title_line_1', empresa['nome']),
             "titleLine2": ai_content.get('hero_title_line_2', empresa['categoria']),
@@ -279,7 +279,7 @@ SEO (cidade principal OBRIGATÓRIA em title e meta_description):
 - seo_og_description (15-20 palavras chamativas com categoria + cidade)
 
 HERO:
-- hero_badge_text (3-5 palavras de autoridade, ex: "Referência em {empresa['categoria']}")
+- hero_badge_text (máx 3 palavras, máx 25 caracteres totais, ex: "Qualidade Premium" ou "Especialistas Locais")
 - hero_title_line_1 (3-5 palavras impactantes)
 - hero_title_line_2 (3-5 palavras com destaque colorido — inclui categoria ou cidade)
 - hero_subtitle (20-30 palavras com empresa, categoria e cidade principal)
@@ -414,7 +414,7 @@ def _build_faq_schema(ai_content: dict) -> str:
 def _fallback_content(empresa: dict, palavras: list) -> dict:
     """Conteúdo genérico caso a IA falhe."""
     fallback = {
-        'hero_badge_text': f"Referência em {empresa['categoria']}",
+        'hero_badge_text': f"Referência em {empresa['categoria'].split()[0]}",
         'hero_title_line_1': f"{empresa['nome']}",
         'hero_title_line_2': empresa['categoria'],
         'hero_subtitle': f"Profissionais qualificados em {empresa['categoria']}. Fale com um especialista sem compromisso.",

@@ -59,6 +59,7 @@ def replace_config_vars(template: str, config: dict) -> str:
     replacements = {
         '{{empresa_nome}}':     empresa['nome'],
         '{{empresa_categoria}}': empresa['categoria'],
+        '{{empresa_categoria_curta}}': empresa.get('categoria', '').split()[0] if empresa.get('categoria') else '',
         '{{cidade_principal}}': locais[0] if locais else '',
         '{{telefone_whatsapp}}': empresa['telefone_whatsapp'],
         '{{telefone_display}}': get_phone_display(config),
