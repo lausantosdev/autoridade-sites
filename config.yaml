@@ -1,13 +1,13 @@
 # ===== DADOS DA EMPRESA =====
 empresa:
-  nome: "CleanPro Estofados"
-  dominio: "cleanproestofados.com.br"
-  categoria: "Limpeza de Estofados"
-  telefone_whatsapp: "5541999998888"
-  telefone_ligar: "(41) 99999-8888"
-  horario: "Segunda a Sábado, 8h às 18h"
-  cor_marca: "#2563EB"
-  endereco: ""  # Ex: "Rua das Flores, 123 - Curitiba, PR"
+  nome: "Barbearia Imperial"
+  dominio: "barbeariaimperial.test"
+  categoria: "Barbearia Clássica e Moderna"
+  telefone_whatsapp: "5561999998888"
+  telefone_ligar: "(61) 99999-8888"
+  horario: "Segunda a Sábado, 9h às 21h"
+  cor_marca: "#d4af37"
+  endereco: "Plano Piloto, Brasília - DF"
   google_maps_embed: ""
 
 # ===== SEO =====
@@ -17,24 +17,15 @@ seo:
 
   # Opção 2: Lista manual
   palavras_chave:
-    - Limpeza de Sofá
-    - Higienização de Estofados
-    - Lavagem de Colchão
-    - Impermeabilização de Sofá
-    - Limpeza de Cadeiras
-    - Lavagem de Tapete
-    - Higienização de Colchão
-    - Limpeza de Poltrona
-    - Limpeza de Estofado Automotivo
-    - Lavagem a Seco de Sofá
+    - Barbearia
+    - Corte De Cabelo Masculino
+    - Barba
+    - Estilo Masculino
 
   locais:
-    - Curitiba
-    - São José dos Pinhais
-    - Colombo
-    - Araucária
-    - Pinhais
-    - Campo Largo
+    - Brasília
+    - Plano Piloto
+    - Lago Sul
 
 # ===== API =====
 api:

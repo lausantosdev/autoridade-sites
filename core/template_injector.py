@@ -226,6 +226,10 @@ def _copy_assets(dist_dir: str, output_dir: str):
             shutil.rmtree(dst_assets)
         shutil.copytree(src_assets, dst_assets)
 
+    hero_fix_src = os.path.join(dist_dir, 'hero-mobile-fix.css')
+    if os.path.exists(hero_fix_src):
+        shutil.copy2(hero_fix_src, os.path.join(output_dir, 'hero-mobile-fix.css'))
+
 
 def _escape_html_attr(value: str) -> str:
     """Escapa caracteres especiais para uso em atributos HTML."""
