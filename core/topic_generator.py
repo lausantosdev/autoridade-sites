@@ -7,6 +7,8 @@ import random
 from core.openrouter_client import OpenRouterClient
 import re
 import unicodedata
+from core.logger import get_logger
+logger = get_logger(__name__)
 
 
 CACHE_DIR = "cache"
@@ -27,10 +29,10 @@ def generate_topics(config: dict, client: OpenRouterClient, force: bool = False)
     if not force and os.path.exists(cache_path):
         with open(cache_path, 'r', encoding='utf-8') as f:
             cached = json.load(f)
-        print(f"  ✓ Tópicos carregados do cache ({len(cached['palavras'])} palavras, {len(cached['frases'])} frases)")
+        logger.info("Tópicos carregados do cache: %d palavras, %d frases", len(cached['palavras']), len(cached['frases']))
         return cached
 
-    print(f"  ⏳ Gerando tópicos para o nicho: {categoria}...")
+    logger.info("Gerando tópicos para o nicho: %s", categoria)
 
     system_prompt = "Você é um especialista em SEO e marketing de conteúdo. Responda apenas em JSON."
 
@@ -54,7 +56,7 @@ Formato esperado:
     result = client.generate_json(system_prompt, user_prompt)
 
     if not result or 'palavras' not in result or 'frases' not in result:
-        print("  ⚠ Falha ao gerar tópicos. Usando tópicos genéricos.")
+        logger.warning("Falha ao gerar tópicos. Usando fallback genérico")
         result = _fallback_topics(categoria)
 
     # Cachear resultado
@@ -62,7 +64,7 @@ Formato esperado:
     with open(cache_path, 'w', encoding='utf-8') as f:
         json.dump(result, f, ensure_ascii=False, indent=2)
 
-    print(f"  ✓ Tópicos gerados: {len(result['palavras'])} palavras, {len(result['frases'])} frases")
+    logger.info("Tópicos gerados: %d palavras, %d frases", len(result['palavras']), len(result['frases']))
     return result
 
 

@@ -8,6 +8,9 @@ from google.genai import types
 from PIL import Image
 from dotenv import load_dotenv
 import io
+from core.logger import get_logger
+from core.exceptions import ConfigError
+logger = get_logger(__name__)
 
 load_dotenv()
 
@@ -15,7 +18,7 @@ class GeminiImageClient:
     def __init__(self):
         self.api_key = os.getenv("GEMINI_API_KEY")
         if not self.api_key:
-            raise ValueError("GEMINI_API_KEY não configurada no .env")
+            raise ConfigError("GEMINI_API_KEY não configurada no .env")
         
         self.client = genai.Client(api_key=self.api_key)
 
@@ -43,7 +46,7 @@ class GeminiImageClient:
         )
 
         try:
-            print(f"  📸 Solicitando imagem via SDK (Imagen 3) para marca: {nome}...")
+            logger.info("Solicitando imagem via Imagen para marca: %s", nome)
             
             result = self.client.models.generate_images(
                 model='imagen-4.0-generate-001',
@@ -66,12 +69,12 @@ class GeminiImageClient:
                 pil_img = Image.open(io.BytesIO(raw_bytes))
                 pil_img.convert("RGB").save(output_path, format="JPEG", quality=90)
                 
-                print(f"  ✓ Imagem gerada com sucesso: {output_path}")
+                logger.info("Imagem gerada: %s", output_path)
                 return True
                 
-            print("  ❌ Nenhuma imagem retornada pela API.")
+            logger.error("Nenhuma imagem retornada pela API")
             return False
 
         except Exception as e:
-            print(f"  ❌ Exceção ao gerar imagem: {e}")
+            logger.error("Exceção ao gerar imagem: %s", e)
             return False

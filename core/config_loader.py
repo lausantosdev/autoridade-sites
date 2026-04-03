@@ -6,12 +6,15 @@ import csv
 import yaml
 from pathlib import Path
 import urllib.parse
+from core.logger import get_logger
+from core.exceptions import ConfigError
+logger = get_logger(__name__)
 
 
 def load_config(config_path: str = "config.yaml") -> dict:
     """Carrega o arquivo config.yaml e valida os campos obrigatórios."""
     if not os.path.exists(config_path):
-        raise FileNotFoundError(f"Arquivo de configuração não encontrado: {config_path}")
+        raise ConfigError(f"Arquivo de configuração não encontrado: {config_path}")
 
     with open(config_path, 'r', encoding='utf-8') as f:
         config = yaml.safe_load(f)
@@ -20,16 +23,16 @@ def load_config(config_path: str = "config.yaml") -> dict:
     required_empresa = ['nome', 'dominio', 'categoria', 'telefone_whatsapp']
     for field in required_empresa:
         if not config.get('empresa', {}).get(field):
-            raise ValueError(f"Campo obrigatório ausente: empresa.{field}")
+            raise ConfigError(f"Campo obrigatório ausente: empresa.{field}")
 
     # Carregar palavras-chave (do CSV ou da lista manual)
     config['seo']['palavras_chave'] = _load_keywords(config.get('seo', {}))
 
     # Validar que temos palavras-chave e locais
     if not config['seo'].get('palavras_chave'):
-        raise ValueError("Nenhuma palavra-chave encontrada. Adicione em seo.palavras_chave ou seo.palavras_chave_csv")
+        raise ConfigError("Nenhuma palavra-chave encontrada. Adicione em seo.palavras_chave ou seo.palavras_chave_csv")
     if not config['seo'].get('locais'):
-        raise ValueError("Nenhum local encontrado. Adicione em seo.locais")
+        raise ConfigError("Nenhum local encontrado. Adicione em seo.locais")
 
     # Defaults para campos opcionais
     config.setdefault('api', {})
@@ -61,7 +64,7 @@ def _load_keywords(seo_config: dict) -> list:
     csv_path = seo_config.get('palavras_chave_csv')
     if csv_path and os.path.exists(csv_path):
         keywords = _parse_keyword_csv(csv_path)
-        print(f"  ✓ {len(keywords)} palavras-chave importadas do CSV: {csv_path}")
+        logger.info("Palavras-chave importadas do CSV: %d (%s)", len(keywords), csv_path)
 
     # Se não tem CSV, usa a lista manual
     if not keywords:

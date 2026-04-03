@@ -14,6 +14,9 @@ from core.openrouter_client import OpenRouterClient
 from core.topic_generator import get_random_mix
 from core.config_loader import get_phone_display
 from core.template_renderer import replace_config_vars as _replace_config_vars
+from core.logger import get_logger
+from core.exceptions import APIError
+logger = get_logger(__name__)
 
 
 # --- Retry tracking (thread-safe) ---
@@ -84,13 +87,13 @@ def generate_all_pages(
 
     skipped = len(pages) - len(pending)
     if skipped > 0:
-        print(f"  ⏭ {skipped} páginas já existem (pulando)")
+        logger.info("Páginas existentes (pulando): %d", skipped)
 
     if not pending:
-        print("  ✓ Todas as páginas já foram geradas!")
+        logger.info("Todas as páginas já foram geradas")
         return
 
-    print(f"  ⏳ Gerando {len(pending)} páginas com {config['api']['max_workers']} workers...")
+    logger.info("Gerando %d páginas com %d workers", len(pending), config['api']['max_workers'])
 
     _counter_lock = threading.Lock()
     completed = [0]
@@ -121,12 +124,12 @@ def generate_all_pages(
             for future in concurrent.futures.as_completed(futures):
                 pbar.update(1)
 
-    print(f"  ✓ {completed[0]} páginas geradas, {errors[0]} erros")
+    logger.info("Páginas geradas: %d, erros: %d", completed[0], errors[0])
 
     retry_data = get_retry_log()
     if retry_data:
         recovered = len([r for r in retry_data if r['attempt'] < config['api']['max_retries']])
-        print(f"  🔄 {len(retry_data)} retries realizados ({recovered} páginas recuperadas)")
+        logger.info("Retries realizados: %d (%d recuperadas)", len(retry_data), recovered)
 
 
 def _generate_single_page(
@@ -226,7 +229,7 @@ REGRAS ABSOLUTAS:
 
             result = client.generate_json(SYSTEM_PROMPT, user_prompt)
             if not result:
-                raise Exception("API retornou resposta vazia")
+                raise APIError("API retornou resposta vazia")
 
             # Achatar JSON aninhado (DeepSeek pode retornar estrutura aninhada)
             flat_result = _flatten_json(result)
@@ -284,7 +287,7 @@ REGRAS ABSOLUTAS:
             # ❌ Validação falhou
             last_errors = validation['errors']
             _track_retry(page['title'], attempt + 1, validation['errors'])
-            print(f"    🔄 {page['filename']}: retry {attempt + 1}/{max_retries} — {validation['errors'][0]}")
+            logger.info("%s: retry %d/%d — %s", page['filename'], attempt + 1, max_retries, validation['errors'][0])
 
             if attempt < max_retries - 1:
                 time.sleep(2 ** attempt)  # Backoff: 1s, 2s, 4s
@@ -293,13 +296,13 @@ REGRAS ABSOLUTAS:
             last_errors = [str(e)]
             if attempt < max_retries - 1:
                 _track_retry(page['title'], attempt + 1, [str(e)])
-                print(f"    🔄 {page['filename']}: retry {attempt + 1}/{max_retries} — {e}")
+                logger.warning("%s: retry %d/%d — %s", page['filename'], attempt + 1, max_retries, e)
                 time.sleep(2 ** attempt)
             else:
                 _track_retry(page['title'], attempt + 1, [str(e)])
 
     # Falhou em todas as tentativas — NÃO salvar
-    raise Exception(f"Falhou após {max_retries} tentativas: {last_errors}")
+    raise APIError(f"Falhou após {max_retries} tentativas: {last_errors}")
 
 
 

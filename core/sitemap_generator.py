@@ -3,6 +3,8 @@ Sitemap Generator - Gera sitemap.xml e mapa-do-site.html
 """
 import os
 from datetime import datetime
+from core.logger import get_logger
+logger = get_logger(__name__)
 
 
 def generate_sitemap(pages: list, config: dict, output_dir: str):
@@ -50,7 +52,7 @@ def _generate_sitemap_xml(pages: list, domain: str, output_dir: str):
     with open(path, 'w', encoding='utf-8') as f:
         f.write(xml)
 
-    print(f"  ✓ sitemap.xml gerado com {len(pages) + 2} URLs")
+    logger.info("sitemap.xml gerado com %d URLs", len(pages) + 2)
 
 
 def _generate_sitemap_html(pages: list, domain: str, config: dict, output_dir: str):
@@ -109,4 +111,4 @@ def _generate_sitemap_html(pages: list, domain: str, config: dict, output_dir: s
     with open(path, 'w', encoding='utf-8') as f:
         f.write(html)
 
-    print(f"  ✓ mapa-do-site.html gerado com {len(pages)} links")
+    logger.info("mapa-do-site.html gerado com %d links", len(pages))

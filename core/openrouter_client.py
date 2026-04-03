@@ -7,6 +7,9 @@ import time
 import threading
 from openai import OpenAI
 from dotenv import load_dotenv
+from core.logger import get_logger
+from core.exceptions import ConfigError
+logger = get_logger(__name__)
 
 load_dotenv()
 
@@ -17,7 +20,7 @@ class OpenRouterClient:
     def __init__(self, model: str = "deepseek/deepseek-chat", max_retries: int = 3):
         api_key = os.environ.get('OPENROUTER_API_KEY')
         if not api_key:
-            raise ValueError(
+            raise ConfigError(
                 "OPENROUTER_API_KEY não encontrada. "
                 "Crie um arquivo .env com: OPENROUTER_API_KEY=sk-or-v1-sua-chave"
             )
@@ -64,7 +67,7 @@ class OpenRouterClient:
                 return json.loads(response.choices[0].message.content)
 
             except Exception as e:
-                print(f"    ⚠ Tentativa {attempt + 1}/{self.max_retries} falhou: {e}")
+                logger.warning("Tentativa %d/%d falhou: %s", attempt + 1, self.max_retries, e)
                 if attempt < self.max_retries - 1:
                     time.sleep(2 ** attempt)  # Exponential backoff
 
@@ -95,7 +98,7 @@ class OpenRouterClient:
                 return response.choices[0].message.content
 
             except Exception as e:
-                print(f"    ⚠ Tentativa {attempt + 1}/{self.max_retries} falhou: {e}")
+                logger.warning("Tentativa %d/%d falhou: %s", attempt + 1, self.max_retries, e)
                 if attempt < self.max_retries - 1:
                     time.sleep(2 ** attempt)
 

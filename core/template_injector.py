@@ -12,6 +12,9 @@ Output: um index.html completo com design premium SiteGen + dados do cliente.
 import os
 import json
 import shutil
+from core.logger import get_logger
+from core.exceptions import TemplateError
+logger = get_logger(__name__)
 
 
 # Caminho padrão do dist/ commitado no repo
@@ -40,7 +43,7 @@ def inject_template(
     dist_index = os.path.join(dist_dir, 'index.html')
     
     if not os.path.exists(dist_index):
-        raise FileNotFoundError(
+        raise TemplateError(
             f"Template SiteGen não encontrado em {dist_index}. "
             f"Execute 'npm run build' na pasta do template e copie o dist/ para template-dist/."
         )
@@ -82,7 +85,7 @@ def inject_template(
     with open(output_path, 'w', encoding='utf-8') as f:
         f.write(html)
     
-    print(f"  ✓ Home page SiteGen gerada: {output_path}")
+    logger.info("Home page SiteGen gerada: %s", output_path)
     return output_path
 
 

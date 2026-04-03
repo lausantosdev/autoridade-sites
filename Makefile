@@ -7,10 +7,10 @@ help: ## Mostra este menu de ajuda
 	@echo "    make install && cp config.example.yaml config.yaml && make serve"
 
 install: ## Instala dependências de produção
-	pip install -r requirements.txt
+	pip install -e .
 
-install-dev: ## Instala dependências de produção + desenvolvimento (pytest)
-	pip install -r requirements.txt -r requirements-dev.txt
+install-dev: ## Instala dependências de produção + desenvolvimento (pytest, ruff, coverage)
+	pip install -e .[dev]
 
 serve: ## Inicia o wizard (http://localhost:8000)
 	python server.py
@@ -35,6 +35,9 @@ test: ## Roda todos os testes unitários
 
 test-cov: ## Roda os testes com relatório de cobertura
 	pytest tests/ -v --cov=core --cov-report=term-missing
+
+lint: ## Roda o linter ruff nos arquivos Python
+	ruff check core/ tests/ generate.py server.py
 
 clean: ## Remove outputs, cache e uploads gerados
 	rm -rf output/ cache/ uploads/ reports/

@@ -2,6 +2,7 @@
 import pytest
 import yaml
 from core.config_loader import load_config, get_phone_display, get_whatsapp_link
+from core.exceptions import ConfigError
 
 
 def _make_config(tmp_path, overrides=None):
@@ -33,7 +34,7 @@ class TestLoadConfig:
         assert config["empresa"]["nome"] == "PisoPro"
 
     def test_raises_if_file_missing(self, tmp_path):
-        with pytest.raises(FileNotFoundError):
+        with pytest.raises(ConfigError):
             load_config(str(tmp_path / "nao_existe.yaml"))
 
     def test_raises_if_nome_missing(self, tmp_path):
@@ -47,7 +48,7 @@ class TestLoadConfig:
         }
         path = tmp_path / "config.yaml"
         path.write_text(yaml.dump(data), encoding="utf-8")
-        with pytest.raises(ValueError, match="empresa.nome"):
+        with pytest.raises(ConfigError, match="empresa.nome"):
             load_config(str(path))
 
     def test_applies_defaults(self, tmp_path):
@@ -68,7 +69,7 @@ class TestLoadConfig:
         }
         path = tmp_path / "config.yaml"
         path.write_text(yaml.dump(data), encoding="utf-8")
-        with pytest.raises(ValueError, match="palavra"):
+        with pytest.raises(ConfigError, match="palavra"):
             load_config(str(path))
 
 

@@ -4,6 +4,8 @@ Validator - Valida qualidade das páginas geradas
 import os
 import re
 from datetime import datetime
+from core.logger import get_logger
+logger = get_logger(__name__)
 
 
 # Campos obrigatórios que a IA deve retornar no JSON.
@@ -288,5 +290,5 @@ def generate_report(results: dict, config: dict, api_stats: dict, output_dir: st
     with open(report_path, 'w', encoding='utf-8') as f:
         f.write(report)
 
-    print(f"  ✓ Relatório salvo em: {report_path}")
+    logger.info("Relatório salvo em: %s", report_path)
     return report

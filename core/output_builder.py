@@ -8,6 +8,8 @@ from datetime import datetime
 
 from core.config_loader import get_whatsapp_link, get_phone_display
 from core.template_renderer import replace_config_vars
+from core.logger import get_logger
+logger = get_logger(__name__)
 
 
 TEMPLATES_DIR = Path("templates")
@@ -65,4 +67,4 @@ def generate_fallback_index(config: dict, output_dir: str):
         content = replace_config_vars(content, config)
         output_path = Path(output_dir) / "index.html"
         output_path.write_text(content, encoding='utf-8')
-        print("  ✓ Home page fallback gerada (template HTML puro)")
+        logger.info("Home page fallback gerada (template HTML puro)")

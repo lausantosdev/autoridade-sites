@@ -13,6 +13,8 @@ from core.config_loader import get_whatsapp_link, get_phone_display
 from core.utils import hex_to_rgb
 from datetime import datetime
 from core.utils import slugify
+from core.logger import get_logger
+logger = get_logger(__name__)
 
 
 SYSTEM_PROMPT = (
@@ -40,12 +42,12 @@ def resolve_theme_mode(config: dict, client: OpenRouterClient) -> str:
     # 1. Config manual tem prioridade absoluta
     config_theme = config.get('theme', {}).get('mode', '')
     if config_theme in ('light', 'dark'):
-        print(f"  🎨 Tema definido: {config_theme} (via config.yaml)")
+        logger.info("Tema definido: %s (via config.yaml)", config_theme)
         return config_theme
     
     # 2. Pergunta rápida para a IA (~2-3 segundos)
     categoria = config['empresa']['categoria']
-    print(f"  🎨 Consultando IA sobre tema ideal para: {categoria}...")
+    logger.info("Consultando IA sobre tema ideal para: %s", categoria)
     try:
         result = client.generate_json(
             "Responda APENAS em JSON puro: {\"theme_mode\": \"light\" ou \"dark\"}",
@@ -65,7 +67,7 @@ def resolve_theme_mode(config: dict, client: OpenRouterClient) -> str:
         config['theme'] = {}
     config['theme']['mode'] = theme_mode
     
-    print(f"  🎨 Tema definido: {theme_mode} (via IA)")
+    logger.info("Tema definido: %s (via IA)", theme_mode)
     return theme_mode
 
 
@@ -92,11 +94,11 @@ def build_site_data(config: dict, client: OpenRouterClient) -> dict:
     whatsapp_link = get_whatsapp_link(config)
     
     # Gerar conteúdo da home via IA
-    print("  🏠 Gerando conteúdo da home page via IA...")
+    logger.info("Gerando conteúdo da home page via IA")
     ai_content = _generate_home_content(empresa, palavras, locais, client)
     
     if not ai_content:
-        print("  ⚠ IA retornou vazio. Usando fallbacks genéricos.")
+        logger.warning("IA retornou vazio. Usando fallbacks genéricos")
         ai_content = _fallback_content(empresa, palavras)
     
     # WhatsApp link com mensagem genérica (home page)
@@ -246,7 +248,7 @@ def build_site_data(config: dict, client: OpenRouterClient) -> dict:
         config['theme'] = {}
     config['theme']['mode'] = theme_mode
     
-    print(f"  🎨 Tema definido: {theme_mode} ({'via config.yaml' if config_theme else 'via IA'})")
+    logger.info("Tema definido: %s (%s)", theme_mode, 'via config.yaml' if config_theme else 'via IA')
     
     return site_data
 
