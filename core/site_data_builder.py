@@ -289,9 +289,9 @@ SEO (cidade principal OBRIGATÓRIA em title e meta_description):
 - seo_og_description (15-20 palavras chamativas com categoria + cidade)
 
 HERO:
-- hero_badge_text (máx 3 palavras, máx 25 caracteres totais, ex: "Qualidade Premium" ou "Especialistas Locais")
-- hero_title_line_1 (3-5 palavras impactantes)
-- hero_title_line_2 (3-5 palavras com destaque colorido — inclui categoria ou cidade)
+- hero_badge_text (máx 4 palavras — DEVE incluir categoria ou cidade. Ex: "Petshop em Moema", "Mecânica em Vila Industrial", "Clínica Veterinária em [cidade]". NUNCA usar frases genéricas como "Especialistas Locais" ou "Qualidade Premium")
+- hero_title_line_1 (3-5 palavras — fala do DESEJO DO CLIENTE, não da empresa. Ex: "Seu Pet Merece", "Procurando um bom", "Cansado de procurar?". PROIBIDO: "Cuidados de Alto Nível", "Soluções Completas", "Qualidade Premium", frases institucionais)
+- hero_title_line_2 (3-5 palavras com destaque colorido — inclui categoria ou cidade. Complementa linha_1 formando frase coesa)
 - hero_subtitle (20-30 palavras com empresa, categoria e cidade principal)
 
 SERVIÇOS — Gere APENAS descrição curta e ícone para cada serviço listado:
@@ -424,9 +424,9 @@ def _build_faq_schema(ai_content: dict) -> str:
 def _fallback_content(empresa: dict, palavras: list) -> dict:
     """Conteúdo genérico caso a IA falhe."""
     fallback = {
-        'hero_badge_text': f"Referência em {empresa['categoria'].split()[0]}",
-        'hero_title_line_1': f"{empresa['nome']}",
-        'hero_title_line_2': empresa['categoria'],
+        'hero_badge_text': f"{empresa['categoria'].split()[0]} em {palavras[0] if palavras else empresa['categoria']}",
+        'hero_title_line_1': f"Procurando {empresa['categoria'].split()[0]}",
+        'hero_title_line_2': f"em {empresa.get('endereco', empresa['nome'])}?",
         'hero_subtitle': f"Profissionais qualificados em {empresa['categoria']}. Fale com um especialista sem compromisso.",
         'whatsapp_cta_text': 'Fale Conosco',
         'services_title': f"Soluções em {empresa['categoria']}",

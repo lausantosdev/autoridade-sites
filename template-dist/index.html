@@ -85,10 +85,29 @@
         grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)) !important;
         justify-content: center !important;
       }
+      /* Hide ghost/empty cards when count doesn't fill last row (React placeholder) */
+      #diferenciais [class*="grid"] > *:not(:has(h3, h4, p, span)),
+      [id*="diferenciais"] [class*="Grid"] > *:not(:has(h3, h4, p, span)) {
+        display: none !important;
+      }
     </style>
   </head>
   <body>
-    <!-- SITE_DATA_INJECT -->
     <div id="root"></div>
+  <!-- SITE_DATA_INJECT -->
+<script>
+// Remove ghost/empty service cards after React renders
+window.addEventListener('load', function() {
+  setTimeout(function() {
+    var grid = document.querySelector('#diferenciais [class*="grid"], [id*="diferenciais"] [class*="Grid"]');
+    if (!grid) return;
+    Array.from(grid.children).forEach(function(card) {
+      if (!card.textContent.trim()) {
+        card.style.display = 'none';
+      }
+    });
+  }, 300);
+});
+</script>
   </body>
 </html>

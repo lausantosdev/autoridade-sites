@@ -166,10 +166,12 @@ META TAGS:
 - meta_description (25-30 palavras, chamativo, com keyword + local)
 - meta_keywords (10-15 termos separados por vírgula)
 
-HERO (curto e impactante — cada linha separada, CADA UMA deve caber em UMA ÚNICA linha no celular):
-- hero_titulo_linha_1 (MÁXIMO 3 palavras curtas — verbo de ação ou pergunta CURTA. Ex: "Precisa de", "Quer um novo", "Buscando o melhor". NUNCA mais de 3 palavras.)
-- hero_titulo_destaque (2-4 palavras — o destaque colorido, inclui keyword)
-- hero_titulo_linha_3 (2-3 palavras — fecha com local)
+HERO (curto e impactante — ATENÇÃO: as 3 linhas do título devem formar UMA FRASE GRAMATICALMENTE CORRETA quando lidas em sequência):
+- hero_titulo_linha_1 (MÁXIMO 3 palavras — início da frase. Ex: "Precisa de", "Seu carro precisa de", "Buscando o melhor")
+- hero_titulo_destaque (2-4 palavras — a keyword em destaque, parte do meio da frase. Ex: "Revisão Completa")
+- hero_titulo_linha_3 (2-4 palavras — fecha a frase com local. Ex: "em Vila Industrial?", "na sua cidade?")
+EXEMPLO CORRETO: "Precisa de" + "Revisão Completa" + "em Vila Industrial?" = "Precisa de Revisão Completa em Vila Industrial?" ✅
+EXEMPLO ERRADO: "Seu carro está" + "Revisão Completa" + "na Vila Industrial?" = incoerente ❌
 - hero_subtitulo (MÁXIMO 20 palavras — benefício direto + empresa + local)
 
 DIFERENCIAIS (3 itens GENÉRICOS da empresa — NÃO são serviços):
