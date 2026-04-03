@@ -24,7 +24,7 @@ from core.mixer import mix_keywords_locations, get_summary
 from core.sitemap_generator import generate_sitemap
 from core.openrouter_client import OpenRouterClient
 from core.topic_generator import generate_topics
-from core.page_generator import generate_all_pages, _replace_config_vars
+from core.page_generator import generate_all_pages, get_retry_log, _replace_config_vars
 from core.validator import validate_site, generate_report
 from core.site_data_builder import build_site_data
 from core.template_injector import inject_template
@@ -196,7 +196,7 @@ def main():
         print("🔍 Validando qualidade...")
         results = validate_site(output_dir, config)
         api_stats = client.get_stats()
-        report = generate_report(results, config, api_stats, output_dir)
+        report = generate_report(results, config, api_stats, output_dir, retry_log=get_retry_log())
 
         print(f"  ✓ {results['valid_pages']}/{results['total_pages']} páginas válidas")
         if results['errors']:

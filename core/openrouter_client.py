@@ -24,6 +24,7 @@ class OpenRouterClient:
         self.client = OpenAI(
             base_url="https://openrouter.ai/api/v1",
             api_key=api_key,
+            timeout=40.0,
         )
         self.model = model
         self.max_retries = max_retries

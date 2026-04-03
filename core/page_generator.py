@@ -7,10 +7,33 @@ import random
 import concurrent.futures
 from urllib.parse import quote
 from tqdm import tqdm
+import time
+import threading
+from core.validator import validate_page_html
 from core.openrouter_client import OpenRouterClient
 from core.topic_generator import get_random_mix
 from core.config_loader import get_phone_display
 from core.template_renderer import replace_config_vars as _replace_config_vars
+
+
+# --- Retry tracking (thread-safe) ---
+_retry_log = []
+_retry_lock = threading.Lock()
+
+
+def get_retry_log() -> list:
+    """Retorna o log de retries para uso no relatório."""
+    return list(_retry_log)
+
+
+def _track_retry(page_title: str, attempt: int, errors: list):
+    """Registra uma tentativa de retry (thread-safe)."""
+    with _retry_lock:
+        _retry_log.append({
+            'page': page_title,
+            'attempt': attempt,
+            'errors': errors,
+        })
 
 
 # System prompt fixo (cacheado pelo DeepSeek para economia)
@@ -93,14 +116,20 @@ def generate_all_pages(
 
     print(f"  ✓ {completed} páginas geradas, {errors} erros")
 
+    retry_data = get_retry_log()
+    if retry_data:
+        recovered = len([r for r in retry_data if r['attempt'] < config['api']['max_retries']])
+        print(f"  🔄 {len(retry_data)} retries realizados ({recovered} páginas recuperadas)")
+
 
 def _generate_single_page(
     page: dict, all_pages: list, config: dict, topics: dict,
     client: OpenRouterClient, template: str, output_dir: str
 ):
-    """Gera uma única página SEO."""
+    """Gera uma única página SEO com validação e retry automático."""
     empresa = config['empresa']['nome']
     categoria = config['empresa']['categoria']
+    max_retries = config['api']['max_retries']
 
     # Selecionar páginas aleatórias para interlinking (excluindo a atual)
     other_pages = [p for p in all_pages if p['filename'] != page['filename']]
@@ -113,7 +142,11 @@ def _generate_single_page(
     mixes = get_random_mix(topics, 6)
     mixes_str = "\n".join(f"- {m}" for m in mixes)
 
-    user_prompt = f"""Gere conteúdo de ALTA CONVERSÃO + SEO para a empresa '{empresa}' ({categoria}).
+    last_errors = []
+
+    for attempt in range(max_retries):
+        try:
+            user_prompt = f"""Gere conteúdo de ALTA CONVERSÃO + SEO para a empresa '{empresa}' ({categoria}).
 Página: '{page['title']}' (keyword: '{page['keyword']}', local: '{page['location']}')
 
 Retorne ESTRITAMENTE um JSON FLAT (nível único, sem aninhamento) com estas chaves exatas:
@@ -184,55 +217,82 @@ REGRAS ABSOLUTAS:
 - LINKS: somente em seo_p1 e seo_p5, usando HTML puro <a href="filename.html">âncora relevante</a>
 - GEO: FAQ deve responder perguntas reais que alguém faria a uma IA sobre esse serviço nessa cidade"""
 
-    result = client.generate_json(SYSTEM_PROMPT, user_prompt)
-    if not result:
-        raise Exception("API retornou resposta vazia")
+            result = client.generate_json(SYSTEM_PROMPT, user_prompt)
+            if not result:
+                raise Exception("API retornou resposta vazia")
 
-    # Achatar JSON aninhado (DeepSeek pode retornar estrutura aninhada)
-    flat_result = _flatten_json(result)
+            # Achatar JSON aninhado (DeepSeek pode retornar estrutura aninhada)
+            flat_result = _flatten_json(result)
 
-    # Substituir placeholders do GPT no template
-    html = template
+            # Substituir placeholders do GPT no template
+            html = template
 
-    # Injetar Schema Markup (LocalBusiness + FAQPage + BreadcrumbList)
-    schema = _build_schema_markup(page, config, flat_result)
-    html = html.replace('{{schema_markup}}', schema)
+            # Injetar Schema Markup (LocalBusiness + FAQPage + BreadcrumbList)
+            schema = _build_schema_markup(page, config, flat_result)
+            html = html.replace('{{schema_markup}}', schema)
 
-    # Canonical URL por página
-    canonical_url = f"https://{config['empresa']['dominio']}/{page['filename']}"
-    html = html.replace("{{canonical_url}}", canonical_url)
+            # Canonical URL por página
+            canonical_url = f"https://{config['empresa']['dominio']}/{page['filename']}"
+            html = html.replace("{{canonical_url}}", canonical_url)
 
-    # Injetar variáveis de contexto da página primeiro
-    html = html.replace("@local", page['location'])
-    html = html.replace("@keyword", page['keyword'])
+            # Injetar variáveis de contexto da página primeiro
+            html = html.replace("@local", page['location'])
+            html = html.replace("@keyword", page['keyword'])
 
-    # Gerar link de WhatsApp personalizado para esta página
-    phone_raw = config['empresa']['telefone_whatsapp']
-    msg_pagina = f"Olá, quero saber sobre {page['keyword']} em {page['location']}"
-    whatsapp_pagina = f"https://wa.me/{phone_raw}?text={quote(msg_pagina)}"
-    html = html.replace("@whatsapp_pagina", whatsapp_pagina)
-    
-    replaced_count = 0
-    for key, value in flat_result.items():
-        # Normalizar key: lowercase, sem espaços
-        normalized_key = key.lower().strip()
-        placeholder = f"@{normalized_key}"
-        if placeholder in html:
-            html = html.replace(placeholder, str(value))
-            replaced_count += 1
+            # Gerar link de WhatsApp personalizado para esta página
+            phone_raw = config['empresa']['telefone_whatsapp']
+            msg_pagina = f"Olá, quero saber sobre {page['keyword']} em {page['location']}"
+            whatsapp_pagina = f"https://wa.me/{phone_raw}?text={quote(msg_pagina)}"
+            html = html.replace("@whatsapp_pagina", whatsapp_pagina)
 
-    # Fallback: OG tags derivados dos campos principais
-    if "@og_title" in html:
-        og_title = flat_result.get('titulo', page['title'])
-        html = html.replace("@og_title", str(og_title))
-    if "@og_description" in html:
-        og_desc = flat_result.get('meta_description', f"{page['keyword']} em {page['location']}")
-        html = html.replace("@og_description", str(og_desc))
+            replaced_count = 0
+            for key, value in flat_result.items():
+                normalized_key = key.lower().strip()
+                placeholder = f"@{normalized_key}"
+                if placeholder in html:
+                    html = html.replace(placeholder, str(value))
+                    replaced_count += 1
 
-    # Salvar
-    output_path = os.path.join(output_dir, page['filename'])
-    with open(output_path, 'w', encoding='utf-8') as f:
-        f.write(html)
+            # Fallback: OG tags derivados dos campos principais
+            if "@og_title" in html:
+                og_title = flat_result.get('titulo', page['title'])
+                html = html.replace("@og_title", str(og_title))
+            if "@og_description" in html:
+                og_desc = flat_result.get('meta_description', f"{page['keyword']} em {page['location']}")
+                html = html.replace("@og_description", str(og_desc))
+
+            # Injetar links internos programaticamente (garante links em seo_p1 e seo_p5)
+            html = _ensure_internal_links(html, flat_result, interlink_pool)
+
+            # VALIDAR antes de salvar
+            validation = validate_page_html(page['filename'], html)
+
+            if validation['valid']:
+                # ✅ Página aprovada — salvar
+                output_path = os.path.join(output_dir, page['filename'])
+                with open(output_path, 'w', encoding='utf-8') as f:
+                    f.write(html)
+                return  # Sucesso
+
+            # ❌ Validação falhou
+            last_errors = validation['errors']
+            _track_retry(page['title'], attempt + 1, validation['errors'])
+            print(f"    🔄 {page['filename']}: retry {attempt + 1}/{max_retries} — {validation['errors'][0]}")
+
+            if attempt < max_retries - 1:
+                time.sleep(2 ** attempt)  # Backoff: 1s, 2s, 4s
+
+        except Exception as e:
+            last_errors = [str(e)]
+            if attempt < max_retries - 1:
+                _track_retry(page['title'], attempt + 1, [str(e)])
+                print(f"    🔄 {page['filename']}: retry {attempt + 1}/{max_retries} — {e}")
+                time.sleep(2 ** attempt)
+            else:
+                _track_retry(page['title'], attempt + 1, [str(e)])
+
+    # Falhou em todas as tentativas — NÃO salvar
+    raise Exception(f"Falhou após {max_retries} tentativas: {last_errors}")
 
 
 
@@ -376,3 +436,24 @@ def _log_error(page_title: str, error: str, output_dir: str):
     log_path = os.path.join(output_dir, '..', 'error_log.txt')
     with open(log_path, 'a', encoding='utf-8') as f:
         f.write(f"\n--- ERROR: {page_title} ---\n{error}\n")
+
+
+def _ensure_internal_links(html: str, flat_result: dict, interlink_pool: list) -> str:
+    """
+    Garante que seo_p1 e seo_p5 contenham pelo menos 1 link interno cada.
+    Se a IA não incluiu links, injeta programaticamente.
+    """
+    if not interlink_pool:
+        return html
+
+    for field, pool_idx in [('seo_p1', 0), ('seo_p5', 5)]:
+        content = flat_result.get(field, '')
+        if not content or '<a href=' in content:
+            continue  # Já tem link ou campo vazio
+        
+        link_page = interlink_pool[pool_idx % len(interlink_pool)]
+        anchor = f' Conheça também nosso serviço de <a href="{link_page["filename"]}">{link_page["title"]}</a>.'
+        enriched = content + anchor
+        html = html.replace(content, enriched)
+
+    return html
