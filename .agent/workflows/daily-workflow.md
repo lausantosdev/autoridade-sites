@@ -25,7 +25,9 @@ Siga este fluxo em **toda sessão de trabalho**, sem exceção.
    Peça ao agente:
    > *"Leia CONTEXT.md, SESSIONS_LOG.md e ROADMAP.md. Com base na próxima entrega prioritária, faça o brainstorm técnico e apresente um Plano de Implementação para minha aprovação. Não execute nada ainda."*
 
-   O agente apresenta o **`implementation_plan.md`** com:
+   > ⚠️ **Uma atividade por plano.** Se a próxima entrega for grande (ex: Wizard + Leads + Dashboard), quebre em 3 planos separados. Comece pelo primeiro.
+
+   O agente apresenta o plano com:
    - O que será feito e por quê
    - Arquivos afetados
    - Riscos e decisões em aberto (Open Questions)
@@ -37,7 +39,7 @@ Siga este fluxo em **toda sessão de trabalho**, sem exceção.
 
 5. **Spec de Execução**
    Após aprovação do plano, peça ao agente:
-   > *"Plano aprovado. Crie a spec detalhada `SPEC_SESSAO<N>_<DD_MM_AAAA>.md` pronta para execução."*
+   > *"Plano aprovado. Crie a spec detalhada `SPEC_SESSAO<N>_<DD_MM_AAAA>.md` pronta para execução e salve junto com o plano em `docs/<nome-atividade>/`."*
 
    A spec deve conter:
    - Código exato a escrever
@@ -92,13 +94,28 @@ Siga este fluxo em **toda sessão de trabalho**, sem exceção.
 CONTEXT.md              → Arquitetura     (O que é e como funciona — raramente muda)
 ROADMAP.md              → Produto         (Para onde vai — atualiza por feature entregue)
 SESSIONS_LOG.md         → Tático          (O que fizemos hoje — atualiza todo dia)
-SPEC_SESSAO<N>_<DATA>   → Execução        (Como fazer exatamente — criado por sessão)
+docs/<atividade>/       → Execução        (Plano + Specs de cada atividade)
 ```
 
 **Regra:** Cada documento orienta o próximo.
-`ROADMAP` → orienta o brainstorm → orienta a `SPEC` → orienta o agente executor.
+`ROADMAP` → orienta o brainstorm → orienta o `PLAN` → orienta a `SPEC` → orienta o agente executor.
+
+## Estrutura de `docs/`
+
+```
+docs/
+└── <nome-atividade>/          ← uma pasta por atividade do ROADMAP
+    ├── PLAN_<ATIVIDADE>_<DATA>.md   ← plano de implementação aprovado
+    ├── SPEC_SESSAO1_<DATA>.md       ← spec da primeira sessão
+    └── SPEC_SESSAO2_<DATA>.md       ← spec da segunda sessão (se necessário)
+```
+
+**Exemplos de nomes de pasta:**
+- `docs/wizard-e2e/`
+- `docs/leads-integration/`
+- `docs/dashboard/`
+- `docs/polimento-tecnico/`
 
 **Convenção de nomes para specs:**
 - `SPEC_SESSAO1_03_04_2026.md` — primeira sessão do dia
 - `SPEC_SESSAO2_03_04_2026.md` — segunda sessão do mesmo dia
-- `SPEC_POLIMENTO_TECNICO.md` — spec sem prazo (executar quando a prioridade permitir)
