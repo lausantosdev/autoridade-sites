@@ -136,7 +136,8 @@ def main():
                     nome=config['empresa']['nome'],
                     output_path=str(hero_img_path),
                     keywords=config.get('seo', {}).get('palavras_chave', []),
-                    theme_mode=theme_mode
+                    theme_mode=theme_mode,
+                    llm_client=client,  # few-shot de cena
                 )
                 # Copiar para caminho legado (subpáginas HTML puras)
                 hero_img_legacy.parent.mkdir(parents=True, exist_ok=True)

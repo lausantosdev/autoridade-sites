@@ -11,6 +11,7 @@ from urllib.parse import quote
 from core.openrouter_client import OpenRouterClient
 from core.config_loader import get_whatsapp_link, get_phone_display
 from core.utils import hex_to_rgb
+from core.color_utils import ensure_text_contrast
 from datetime import datetime
 from core.utils import slugify
 from core.logger import get_logger
@@ -124,6 +125,7 @@ def build_site_data(config: dict, client: OpenRouterClient) -> dict:
             "mode": "dark",  # será sobrescrito pela lógica config > IA > fallback
             "color": cor,
             "colorRgb": f"{r}, {g}, {b}",
+            "colorText": cor,  # será sobrescrito após resolver o tema
         },
         
         "links": {
@@ -151,7 +153,7 @@ def build_site_data(config: dict, client: OpenRouterClient) -> dict:
             "titleLine1": ai_content.get('hero_title_line_1', empresa['nome']),
             "titleLine2": ai_content.get('hero_title_line_2', empresa['categoria']),
             "subtitle": ai_content.get('hero_subtitle', f"{empresa['nome']} — profissionais qualificados e resultados comprovados."),
-            "heroImagePath": "/hero-image.jpg",
+            "heroImagePath": "./hero-image.jpg",
         },
         
         # NOTA: A chave "featuresSection" é exigida pelo template React (App.tsx).
@@ -242,12 +244,18 @@ def build_site_data(config: dict, client: OpenRouterClient) -> dict:
             theme_mode = 'dark'
     
     site_data["theme"]["mode"] = theme_mode
-    
+
+    # Derivar colorText: versão da cor ajustada para garantir WCAG AA como texto
+    color_text = ensure_text_contrast(cor, theme_mode)
+    site_data["theme"]["colorText"] = color_text
+    if color_text != cor:
+        logger.info("Cor ajustada para contraste WCAG AA: %s → %s (tema %s)", cor, color_text, theme_mode)
+
     # Propagar para config (usado pelo template_renderer nas subpáginas)
     if 'theme' not in config:
         config['theme'] = {}
     config['theme']['mode'] = theme_mode
-    
+
     logger.info("Tema definido: %s (%s)", theme_mode, 'via config.yaml' if config_theme else 'via IA')
     
     return site_data

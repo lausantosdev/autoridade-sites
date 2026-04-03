@@ -5,11 +5,19 @@ import os
 import json
 import time
 import threading
-from openai import OpenAI
+from openai import OpenAI, RateLimitError
 from dotenv import load_dotenv
+from json_repair import repair_json
 from core.logger import get_logger
 from core.exceptions import ConfigError
 logger = get_logger(__name__)
+
+# Cascata de modelos usada quando o modelo primário gera JSON malformado.
+# Ordem: barato/rápido → mais confiável para JSON com pt-BR utf-8
+_FALLBACK_MODELS = [
+    "google/gemini-2.0-flash-001",   # fallback 1: excelente UTF-8, muito barato
+    "openai/gpt-4o-mini",            # fallback 2: JSON extremamente consistente
+]
 
 load_dotenv()
 
@@ -29,8 +37,10 @@ class OpenRouterClient:
             base_url="https://openrouter.ai/api/v1",
             api_key=api_key,
             timeout=40.0,
+            max_retries=0,  # Desativa retry interno do SDK (usamos o nosso customizado)
         )
         self.model = model
+        self.fallback_models = _FALLBACK_MODELS
         self.max_retries = max_retries
         self._call_count = 0
         self._total_input_tokens = 0
@@ -40,37 +50,82 @@ class OpenRouterClient:
     def generate_json(self, system_prompt: str, user_prompt: str) -> dict | None:
         """
         Chama a API e retorna a resposta parseada como JSON.
-        Usa response_format JSON e retry automático.
-        """
 
-        for attempt in range(self.max_retries):
-            try:
-                response = self.client.chat.completions.create(
-                    model=self.model,
-                    messages=[
-                        {"role": "system", "content": system_prompt},
-                        {"role": "user", "content": user_prompt}
-                    ],
-                    response_format={"type": "json_object"},
-                    extra_headers={
-                        "HTTP-Referer": "https://autoridade-sites.local",
-                        "X-Title": "Autoridade Sites SEO Generator"
-                    }
+        Estratégia de resiliência em duas camadas:
+        - Opção A: json_repair tenta consertar JSON malformado (escapes Unicode inválidos,
+          vírgulas extras, etc.) antes de escalar para um modelo diferente.
+        - Opção B: Model Fallback Cascading — se o modelo primário falhar por JSON mesmo
+          após reparo, tenta modelos fallback (gemini-flash -> gpt-4o-mini).
+
+        Rate limit e erros de rede continuam com retry no modelo atual.
+        """
+        models_to_try = [self.model] + self.fallback_models
+
+        for model_idx, current_model in enumerate(models_to_try):
+            # Modelo primário usa max_retries; modelos fallback têm 1 tentativa cada
+            max_tries = self.max_retries if model_idx == 0 else 1
+
+            for attempt in range(max_tries):
+                try:
+                    response = self.client.chat.completions.create(
+                        model=current_model,
+                        messages=[
+                            {"role": "system", "content": system_prompt},
+                            {"role": "user", "content": user_prompt}
+                        ],
+                        response_format={"type": "json_object"},
+                        extra_headers={
+                            "HTTP-Referer": "https://autoridade-sites.local",
+                            "X-Title": "Autoridade Sites SEO Generator"
+                        }
+                    )
+
+                    with self._lock:
+                        self._call_count += 1
+                        if response.usage:
+                            self._total_input_tokens += response.usage.prompt_tokens
+                            self._total_output_tokens += response.usage.completion_tokens
+
+                    content = response.choices[0].message.content
+
+                    # Opção A: parse direto; se falhar, tenta json_repair
+                    try:
+                        return json.loads(content)
+                    except json.JSONDecodeError:
+                        repaired = repair_json(content)
+                        parsed = json.loads(repaired)
+                        logger.warning(
+                            "JSON reparado via json_repair [model: %s, attempt: %d]",
+                            current_model, attempt + 1
+                        )
+                        return parsed
+
+                except RateLimitError:
+                    wait = 20 + (attempt * 10)
+                    logger.warning(
+                        "Rate limit (429) [%s] — aguardando %ds antes do retry %d/%d",
+                        current_model, wait, attempt + 1, max_tries
+                    )
+                    if attempt < max_tries - 1:
+                        time.sleep(wait)
+
+                except Exception as e:
+                    logger.warning(
+                        "Tentativa %d/%d [%s] falhou: %s",
+                        attempt + 1, max_tries, current_model, e
+                    )
+                    if attempt < max_tries - 1:
+                        time.sleep(2 ** attempt)
+
+            # Opção B: modelo atual esgotou tentativas — escala para próximo
+            if model_idx < len(models_to_try) - 1:
+                next_model = models_to_try[model_idx + 1]
+                logger.warning(
+                    "Modelo '%s' falhou — escalando para fallback: %s",
+                    current_model, next_model
                 )
 
-                with self._lock:
-                    self._call_count += 1
-                    if response.usage:
-                        self._total_input_tokens += response.usage.prompt_tokens
-                        self._total_output_tokens += response.usage.completion_tokens
-
-                return json.loads(response.choices[0].message.content)
-
-            except Exception as e:
-                logger.warning("Tentativa %d/%d falhou: %s", attempt + 1, self.max_retries, e)
-                if attempt < self.max_retries - 1:
-                    time.sleep(2 ** attempt)  # Exponential backoff
-
+        logger.error("Todos os modelos falharam ao gerar JSON válido")
         return None
 
     def generate_text(self, system_prompt: str, user_prompt: str) -> str | None:
@@ -97,6 +152,11 @@ class OpenRouterClient:
 
                 return response.choices[0].message.content
 
+            except RateLimitError as e:
+                wait = 20 + (attempt * 10)
+                logger.warning("Rate limit (429) — aguardando %ds antes do retry %d/%d", wait, attempt + 1, self.max_retries)
+                if attempt < self.max_retries - 1:
+                    time.sleep(wait)
             except Exception as e:
                 logger.warning("Tentativa %d/%d falhou: %s", attempt + 1, self.max_retries, e)
                 if attempt < self.max_retries - 1:

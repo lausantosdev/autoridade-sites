@@ -132,6 +132,12 @@ async def websocket_generate(websocket: WebSocket):
             await asyncio.sleep(0.05)
             generate_sitemap(pages, config, output_dir)
             
+            # API Client (criado cedo — necessário para few-shot da imagem hero)
+            client = OpenRouterClient(
+                model=config['api']['model'],
+                max_retries=config['api']['max_retries']
+            )
+
             # Gerar imagem hero com Gemini
             await websocket.send_json({"type": "step", "step": 4, "message": "Gerando imagem hero com IA..."})
             hero_img_path = Path(output_dir) / "hero-image.jpg"
@@ -144,7 +150,9 @@ async def websocket_generate(websocket: WebSocket):
                     config['empresa']['categoria'],
                     config['empresa']['nome'],
                     str(hero_img_path),
-                    keywords
+                    keywords,
+                    config.get('theme', {}).get('mode', 'dark'),
+                    client,  # llm_client para few-shot de cena
                 )
                 # Copiar para caminho legado (subpáginas HTML puras)
                 legacy_path = Path(output_dir) / "images" / "hero.jpg"
@@ -154,12 +162,7 @@ async def websocket_generate(websocket: WebSocket):
             except Exception as e:
                 logger.error("Erro ao gerar imagem AI: %s", e)
             
-            # API Client
-            client = OpenRouterClient(
-                model=config['api']['model'],
-                max_retries=config['api']['max_retries']
-            )
-            
+
             # Gerar Home Page Premium (SiteGen Template)
             await websocket.send_json({"type": "step", "step": 5, "message": "Gerando home page premium..."})
             try:

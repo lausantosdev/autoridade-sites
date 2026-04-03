@@ -5,6 +5,15 @@
 
 ---
 
+## 03/04/2026 — Sessão 2: Wizard E2E e Leads
+
+**Status:** 🔄 Em andamento
+
+### ✅ Feito (Nesta Sessão)
+- **Feature**: Wizard E2E (Fases 1, 2 e 3). Sincronização de passos no frontend, tratamento de fallback/ws.onclose, validações de step e adição da interface de captura de leads.
+
+---
+
 ## 03/04/2026 — Auditoria PLAN_10_10 + Sprint de Estabilização
 
 **Status:** ✅ Concluída | **Rating do projeto:** 10/10 (era 7/10) | **Cobertura de testes:** 79%

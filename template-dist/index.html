@@ -41,10 +41,11 @@
       /* Mobile-first hero image fix */
       @media (max-width: 768px) {
         main > section:first-of-type img {
-          object-position: center 30% !important;
+          object-position: center center !important;
         }
-        /* Igualar dark overlay no mobile com subpaginas */
-        main > section:first-of-type > div.absolute.inset-0.z-\[1\] {
+
+        /* === DARK THEME MOBILE === */
+        html[data-theme="dark"] main > section:first-of-type > div.absolute.inset-0.z-\[1\] {
           background: linear-gradient(
             to bottom,
             rgba(0, 0, 0, 0.85) 0%,
@@ -52,12 +53,29 @@
             #0b0d11 100%
           ) !important;
         }
-        /* Texto mais vívido: H1 branco puro, parágrafo de 70% para 90% */
-        main > section:first-of-type h1 {
+        html[data-theme="dark"] main > section:first-of-type h1 {
           color: #ffffff !important;
         }
-        main > section:first-of-type p {
+        html[data-theme="dark"] main > section:first-of-type p {
           color: rgba(255, 255, 255, 0.90) !important;
+        }
+
+        /* === LIGHT THEME MOBILE === */
+        html[data-theme="light"] main > section:first-of-type > div.absolute.inset-0.z-\[1\] {
+          background: linear-gradient(
+            to bottom,
+            rgba(255, 255, 255, 0.88) 0%,
+            rgba(255, 255, 255, 0.82) 50%,
+            rgba(248, 250, 252, 0.97) 100%
+          ) !important;
+        }
+        html[data-theme="light"] main > section:first-of-type h1 {
+          color: #0f172a !important;
+          text-shadow: 0 1px 4px rgba(255,255,255,0.8);
+        }
+        html[data-theme="light"] main > section:first-of-type p {
+          color: rgba(15, 23, 42, 0.88) !important;
+          text-shadow: 0 1px 3px rgba(255,255,255,0.7);
         }
       }
 

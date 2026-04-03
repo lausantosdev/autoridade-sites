@@ -1,40 +1,36 @@
 # ===== DADOS DA EMPRESA =====
 empresa:
-  nome: "Barbearia Imperial"
-  dominio: "barbeariaimperial.test"
-  categoria: "Barbearia Clássica e Moderna"
-  telefone_whatsapp: "5561999998888"
-  telefone_ligar: "(61) 99999-8888"
-  horario: "Segunda a Sábado, 9h às 21h"
-  cor_marca: "#d4af37"
-  endereco: "Plano Piloto, Brasília - DF"
+  nome: "PetVida Premium"
+  dominio: "petvidapremium.com.br"
+  categoria: "Petshop e Clínica Veterinária"
+  telefone_whatsapp: "5511987654321"
+  telefone_ligar: "(11) 98765-4321"
+  horario: "Segunda a Sábado, 8h às 20h"
+  cor_marca: "#F97316"
+  endereco: "Avenida Ibirapuera, 1234 - Moema, São Paulo, SP"
   google_maps_embed: ""
 
 # ===== SEO =====
 seo:
-  # Opção 1: Importar do CSV do Google Keyword Planner
-  # palavras_chave_csv: "keywords.csv"
-
-  # Opção 2: Lista manual
   palavras_chave:
-    - Barbearia
-    - Corte De Cabelo Masculino
-    - Barba
-    - Estilo Masculino
+    - Banho e Tosa
+    - Clínica Veterinária 24h
+    - Vacinação e Exames Pet
+    - Ração Super Premium
 
   locais:
-    - Brasília
-    - Plano Piloto
-    - Lago Sul
+    - Moema
+    - Itaim Bibi
+    - Vila Olímpia
 
 # ===== API =====
 api:
   provider: "openrouter"
   model: "deepseek/deepseek-v3.2"
-  max_workers: 30
+  max_workers: 5
   max_retries: 3
 
 # ===== LEADS =====
 leads:
-  worker_url: ""        # URL do Cloudflare Worker (deixe vazio para desativar o widget)
-  client_token: ""      # Token único deste cliente (UUID)
+  worker_url: ""
+  client_token: ""
