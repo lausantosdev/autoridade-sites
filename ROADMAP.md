@@ -37,26 +37,25 @@
 
 ## 🚧 Em Progresso
 
-### Sprint: Polimento Estrutural (Sessão: 04/04/2026)
-> Spec detalhada em: `SPEC_SESSAO_04_04_2026.md`
+### Sprint: Finalização de Produto (Sessão 1 — 03/04/2026)
+> Foco: Tornar a captura de leads, dashboard e a interface do Wizard 100% funcionais.
 
-- [ ] `core/types.py` — TypedDict para contratos de dados (SiteConfig, SiteData, PageTemplate)
-- [ ] Error handling granular no WebSocket (CONFIG_ERROR, API_ERROR, TEMPLATE_ERROR)
-- [ ] `tests/test_template_injector.py` — cobertura das funções puras de injeção
-- [ ] `tests/test_server.py` — FastAPI TestClient (path traversal, 404)
-- [ ] `ruff check --fix` — limpeza de imports e type hints
+- [ ] **Wizard Web** — teste de geração E2E real (gerar site completo via UI e validar o ZIP)
+- [ ] **Captura de leads** — integrar frontend com Cloudflare Worker + documentar setup manual do Supabase
+- [ ] **Dashboard do empresário** — revisar, otimizar e validar com dados reais
 
 ---
 
 ## 📋 Backlog (Priorizado)
 
-### 🔴 Alta Prioridade — Features Incompletas (Produto não está 100% entregável)
+### 🟡 Alta Prioridade — Qualidade de Engenharia
 
-- [ ] **Captura de leads** — integrar frontend com Cloudflare Worker + documentar setup manual do Supabase
-- [ ] **Dashboard do empresário** — revisar, otimizar e validar com dados reais
-- [ ] **Wizard Web** — teste de geração E2E real (gerar site completo via UI e validar o ZIP)
+> Spec detalhada em: `SPEC_POLIMENTO_TECNICO.md` (Aguardando slot de execução)
+- [ ] `core/types.py` — TypedDict para contratos de dados (SiteConfig, SiteData, PageTemplate)
+- [ ] Error handling granular no WebSocket (CONFIG_ERROR, API_ERROR, TEMPLATE_ERROR)
+- [ ] Expansão de Coverage — `test_template_injector.py` + `test_server.py`
+- [ ] Clean up — `ruff check --fix`
 
-### 🟡 Alta Prioridade — Qualidade de Engenharia (Próximas 2-3 sessões)
 - [ ] **Monitoramento em produção** (Sentry ou similar) — rastrear erros reais em deploy
 - [ ] **Script de deploy automático** — rsync / FTP / Cloudflare Pages com um comando
 - [ ] **Testes E2E do pipeline** — fixtures com config real, sem chamar APIs externas
