@@ -1,15 +1,24 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Autoridade Sites — Gerador SEO com IA</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
         /* ===== RESET + BASE ===== */
-        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        *,
+        *::before,
+        *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
             font-family: 'Inter', -apple-system, sans-serif;
             background: #0a0e1a;
@@ -37,7 +46,9 @@
             margin-bottom: 8px;
         }
 
-        .app-logo span { color: #6366f1; }
+        .app-logo span {
+            color: #6366f1;
+        }
 
         .app-tagline {
             font-size: 0.9rem;
@@ -75,11 +86,20 @@
             animation: fadeIn 0.4s ease;
         }
 
-        .panel.active { display: block; }
+        .panel.active {
+            display: block;
+        }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(16px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(16px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .panel-title {
@@ -111,7 +131,9 @@
             margin-bottom: 8px;
         }
 
-        .field input, .field textarea, .field select {
+        .field input,
+        .field textarea,
+        .field select {
             width: 100%;
             padding: 14px 16px;
             background: #111827;
@@ -123,12 +145,15 @@
             outline: none;
         }
 
-        .field input:focus, .field textarea:focus, .field select:focus {
+        .field input:focus,
+        .field textarea:focus,
+        .field select:focus {
             border-color: #6366f1;
             box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
         }
 
-        .field input::placeholder, .field textarea::placeholder {
+        .field input::placeholder,
+        .field textarea::placeholder {
             color: #334155;
         }
 
@@ -187,7 +212,8 @@
             position: relative;
         }
 
-        .upload-zone:hover, .upload-zone.dragover {
+        .upload-zone:hover,
+        .upload-zone.dragover {
             border-color: #6366f1;
             background: rgba(99, 102, 241, 0.05);
         }
@@ -227,7 +253,11 @@
             display: none;
         }
 
-        .upload-result.show { display: flex; align-items: center; gap: 10px; }
+        .upload-result.show {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
 
         /* Tags display */
         .tags-preview {
@@ -273,7 +303,9 @@
             color: #94a3b8;
         }
 
-        .btn-back:hover { background: #334155; }
+        .btn-back:hover {
+            background: #334155;
+        }
 
         .btn-next {
             background: #6366f1;
@@ -332,9 +364,18 @@
             font-size: 0.9rem;
         }
 
-        .review-item:last-child { border-bottom: none; }
-        .review-item span:first-child { color: #94a3b8; }
-        .review-item span:last-child { color: #e2e8f0; font-weight: 500; }
+        .review-item:last-child {
+            border-bottom: none;
+        }
+
+        .review-item span:first-child {
+            color: #94a3b8;
+        }
+
+        .review-item span:last-child {
+            color: #e2e8f0;
+            font-weight: 500;
+        }
 
         .review-estimate {
             text-align: center;
@@ -385,7 +426,10 @@
             stroke-width: 8;
         }
 
-        .progress-bg { stroke: #1e293b; }
+        .progress-bg {
+            stroke: #1e293b;
+        }
+
         .progress-bar {
             stroke: #6366f1;
             stroke-linecap: round;
@@ -436,8 +480,13 @@
             transition: all 0.3s ease;
         }
 
-        .p-step.active { color: #e2e8f0; }
-        .p-step.done { color: #4ade80; }
+        .p-step.active {
+            color: #e2e8f0;
+        }
+
+        .p-step.done {
+            color: #4ade80;
+        }
 
         .p-step i {
             width: 20px;
@@ -527,18 +576,35 @@
             transition: all 0.3s ease;
         }
 
-        .btn-new:hover { background: #334155; }
+        .btn-new:hover {
+            background: #334155;
+        }
 
         /* ===== RESPONSIVE ===== */
         @media (max-width: 640px) {
-            .app { padding: 24px 16px 60px; }
-            .field-row { grid-template-columns: 1fr; }
-            .stats-grid { grid-template-columns: 1fr; }
-            .btn-row { flex-direction: column-reverse; }
-            .btn-next { max-width: 100%; }
+            .app {
+                padding: 24px 16px 60px;
+            }
+
+            .field-row {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .btn-row {
+                flex-direction: column-reverse;
+            }
+
+            .btn-next {
+                max-width: 100%;
+            }
         }
     </style>
 </head>
+
 <body>
     <div class="app">
         <!-- Header -->
@@ -582,18 +648,22 @@
                 </div>
                 <div class="field">
                     <label>Horário de Funcionamento</label>
-                    <input type="text" id="horario" placeholder="Seg a Sex, 8h às 18h" value="Segunda a Sábado, 8h às 18h">
+                    <input type="text" id="horario" placeholder="Seg a Sex, 8h às 18h"
+                        value="Segunda a Sábado, 8h às 18h">
                 </div>
             </div>
 
             <div class="field" style="margin-top: 20px;">
-                <label>Endereço <span style="font-size:0.8rem; font-weight:normal;">(opcional — aparece no rodapé e ajuda no SEO local)</span></label>
+                <label>Endereço <span style="font-size:0.8rem; font-weight:normal;">(opcional — aparece no rodapé e
+                        ajuda no SEO local)</span></label>
                 <input type="text" id="endereco" placeholder="Rua das Flores, 123 - Curitiba, PR">
             </div>
 
             <div class="field" style="margin-top: 20px;">
-                <label>Principais Serviços <span style="font-size:0.8rem; font-weight:normal;">(Um serviço por linha. Ex: Troca de Fiação)</span></label>
-                <textarea id="servicos" placeholder="Troca de fiação completa&#10;Conserto de curtos-circuitos&#10;Instalação de refletores"></textarea>
+                <label>Principais Serviços <span style="font-size:0.8rem; font-weight:normal;">(Um serviço por linha.
+                        Ex: Troca de Fiação)</span></label>
+                <textarea id="servicos"
+                    placeholder="Troca de fiação completa&#10;Conserto de curtos-circuitos&#10;Instalação de refletores"></textarea>
             </div>
 
             <div class="btn-row">
@@ -605,12 +675,14 @@
         <!-- ===== STEP 1: Palavras-chave ===== -->
         <div class="panel" data-panel="1">
             <h2 class="panel-title">Palavras-chave</h2>
-            <p class="panel-desc">Importe do Google Keyword Planner (CSV) ou adicione manualmente. Cada keyword vira uma página do site.</p>
+            <p class="panel-desc">Importe do Google Keyword Planner (CSV) ou adicione manualmente. Cada keyword vira uma
+                página do site.</p>
 
             <div class="upload-zone" id="uploadZone">
                 <i class="fas fa-cloud-upload-alt"></i>
                 <p>Arraste o CSV aqui ou <span class="upload-btn">clique para selecionar</span></p>
-                <p style="font-size:0.75rem; color:#334155; margin-top:8px;">Google Keyword Planner, Ubersuggest ou CSV simples</p>
+                <p style="font-size:0.75rem; color:#334155; margin-top:8px;">Google Keyword Planner, Ubersuggest ou CSV
+                    simples</p>
                 <input type="file" id="csvFile" accept=".csv,.txt">
             </div>
             <div class="upload-result" id="uploadResult">
@@ -620,7 +692,8 @@
 
             <div class="field" style="margin-top:24px;">
                 <label>Ou adicione manualmente (uma por linha)</label>
-                <textarea id="keywords_manual" placeholder="Limpeza de Sofá&#10;Higienização de Estofados&#10;Lavagem de Colchão&#10;Impermeabilização de Sofá"></textarea>
+                <textarea id="keywords_manual"
+                    placeholder="Limpeza de Sofá&#10;Higienização de Estofados&#10;Lavagem de Colchão&#10;Impermeabilização de Sofá"></textarea>
                 <p class="field-hint">Dica: Use as keywords mais buscadas do Google Keyword Planner</p>
             </div>
 
@@ -639,10 +712,13 @@
 
             <div class="field">
                 <label>Cidades / Bairros (um por linha)</label>
-                <textarea id="locais" placeholder="Curitiba&#10;São José dos Pinhais&#10;Colombo&#10;Araucária&#10;Pinhais" style="min-height:180px;"></textarea>
+                <textarea id="locais"
+                    placeholder="Curitiba&#10;São José dos Pinhais&#10;Colombo&#10;Araucária&#10;Pinhais"
+                    style="min-height:180px;"></textarea>
             </div>
 
-            <div id="pagesEstimate" style="padding:14px 18px; background:rgba(99,102,241,0.08); border:1px solid rgba(99,102,241,0.2); border-radius:12px; font-size:0.9rem; color:#a5b4fc; display:none;">
+            <div id="pagesEstimate"
+                style="padding:14px 18px; background:rgba(99,102,241,0.08); border:1px solid rgba(99,102,241,0.2); border-radius:12px; font-size:0.9rem; color:#a5b4fc; display:none;">
                 <i class="fas fa-calculator"></i> <span id="pagesCount"></span>
             </div>
 
@@ -667,8 +743,25 @@
 
             <div class="field">
                 <label>Embed do Google Maps (opcional)</label>
-                <textarea id="google_maps" placeholder="Cole o link de embed do Google Maps..." style="min-height:80px;"></textarea>
+                <textarea id="google_maps" placeholder="Cole o link de embed do Google Maps..."
+                    style="min-height:80px;"></textarea>
                 <p class="field-hint">Google Maps → Compartilhar → Incorporar mapa → Copie o URL do src</p>
+            </div>
+
+            <div style="margin-top:32px; padding-top:24px; border-top:1px solid #1e293b;">
+                <h3 style="font-size:1.1rem; font-weight:600; margin-bottom:6px;">Captura de Leads</h3>
+                <p style="font-size:0.85rem; color:#64748b; margin-bottom:20px;">Opcional — conecte ao Cloudflare Worker para rastrear leads do WhatsApp.</p>
+
+                <div class="field">
+                    <label>URL do Cloudflare Worker</label>
+                    <input type="text" id="worker_url" placeholder="https://leads.meusite.workers.dev">
+                    <p class="field-hint">Endpoint do Worker que recebe os dados do formulário</p>
+                </div>
+                <div class="field">
+                    <label>Token do Cliente</label>
+                    <input type="text" id="client_token" placeholder="token-unico-do-cliente">
+                    <p class="field-hint">Identificador único para filtrar leads no Dashboard</p>
+                </div>
             </div>
 
             <div class="btn-row">
@@ -707,7 +800,8 @@
             </button>
 
             <div class="btn-row" style="margin-top:16px;">
-                <button class="btn btn-back" onclick="prevStep()"><i class="fas fa-arrow-left"></i> Voltar e editar</button>
+                <button class="btn btn-back" onclick="prevStep()"><i class="fas fa-arrow-left"></i> Voltar e
+                    editar</button>
                 <div></div>
             </div>
         </div>
@@ -717,9 +811,9 @@
             <div class="progress-container">
                 <div class="progress-ring-wrap">
                     <svg class="progress-ring" width="200" height="200">
-                        <circle class="progress-bg" cx="100" cy="100" r="88"/>
-                        <circle class="progress-bar" id="progressCircle" cx="100" cy="100" r="88"
-                            stroke-dasharray="553" stroke-dashoffset="553"/>
+                        <circle class="progress-bg" cx="100" cy="100" r="88" />
+                        <circle class="progress-bar" id="progressCircle" cx="100" cy="100" r="88" stroke-dasharray="553"
+                            stroke-dashoffset="553" />
                     </svg>
                     <div class="progress-text">
                         <div class="progress-percent" id="progressPercent">0%</div>
@@ -733,11 +827,12 @@
                     <div class="p-step" data-pstep="1"><i class="fas fa-circle-dot"></i> Validar configuração</div>
                     <div class="p-step" data-pstep="2"><i class="fas fa-circle-dot"></i> Gerar combinações</div>
                     <div class="p-step" data-pstep="3"><i class="fas fa-circle-dot"></i> Criar sitemap</div>
-                    <div class="p-step" data-pstep="4"><i class="fas fa-circle-dot"></i> Criar página principal</div>
-                    <div class="p-step" data-pstep="5"><i class="fas fa-circle-dot"></i> Gerar tópicos do nicho</div>
-                    <div class="p-step" data-pstep="6"><i class="fas fa-circle-dot"></i> Gerar páginas SEO</div>
-                    <div class="p-step" data-pstep="7"><i class="fas fa-circle-dot"></i> Validar qualidade</div>
-                    <div class="p-step" data-pstep="8"><i class="fas fa-circle-dot"></i> Empacotar site</div>
+                    <div class="p-step" data-pstep="4"><i class="fas fa-circle-dot"></i> Gerar imagem hero</div>
+                    <div class="p-step" data-pstep="5"><i class="fas fa-circle-dot"></i> Criar home page premium</div>
+                    <div class="p-step" data-pstep="6"><i class="fas fa-circle-dot"></i> Gerar inteligência de negócio</div>
+                    <div class="p-step" data-pstep="7"><i class="fas fa-circle-dot"></i> Gerar páginas SEO</div>
+                    <div class="p-step" data-pstep="8"><i class="fas fa-circle-dot"></i> Validar qualidade</div>
+                    <div class="p-step" data-pstep="9"><i class="fas fa-circle-dot"></i> Empacotar site</div>
                 </div>
             </div>
         </div>
@@ -786,8 +881,14 @@
 
         function nextStep() {
             if (currentStep === 0 && !validateStep0()) return;
-            if (currentStep === 1) updateKeywordsPreview();
-            if (currentStep === 2) updatePagesEstimate();
+            if (currentStep === 1) {
+                updateKeywordsPreview();
+                if (!validateStep1()) return;
+            }
+            if (currentStep === 2) {
+                updatePagesEstimate();
+                if (!validateStep2()) return;
+            }
             if (currentStep === 3) updateReview();
 
             currentStep = Math.min(currentStep + 1, totalSteps - 1);
@@ -802,9 +903,32 @@
         // ===== VALIDATION =====
         function validateStep0() {
             const nome = document.getElementById('empresa_nome').value.trim();
+            const dominio = document.getElementById('dominio').value.trim();
             const categoria = document.getElementById('categoria').value.trim();
+            const telefone = document.getElementById('telefone').value.trim();
             if (!nome) { alert('Preencha o nome da empresa'); return false; }
+            if (!dominio) { alert('Preencha o domínio do site'); return false; }
             if (!categoria) { alert('Preencha o nicho/categoria'); return false; }
+            if (!telefone) { alert('Preencha o WhatsApp'); return false; }
+            return true;
+        }
+
+        function validateStep1() {
+            const keywords = getAllKeywords();
+            if (keywords.length === 0) {
+                alert('Adicione pelo menos uma palavra-chave (CSV ou manual)');
+                return false;
+            }
+            return true;
+        }
+
+        function validateStep2() {
+            const locais = document.getElementById('locais').value
+                .split('\n').map(l => l.trim()).filter(l => l);
+            if (locais.length === 0) {
+                alert('Adicione pelo menos uma cidade ou bairro');
+                return false;
+            }
             return true;
         }
 
@@ -909,6 +1033,14 @@
             const cost = ((inputTokens / 1e6) * 0.28 + (outputTokens / 1e6) * 0.42).toFixed(2);
             const costBrl = (parseFloat(cost) * 5.8).toFixed(2);
             document.getElementById('r_cost').textContent = `Custo estimado: ~$${cost} USD (~R$${costBrl})`;
+
+            // Leads
+            const workerUrl = document.getElementById('worker_url').value.trim();
+            if (workerUrl) {
+                document.getElementById('r_cost').insertAdjacentHTML('afterend',
+                    '<div style="font-size:0.85rem; color:#a5b4fc; margin-top:8px;">🔗 Captura de leads ativada</div>'
+                );
+            }
         }
 
         // ===== GENERATION =====
@@ -930,8 +1062,10 @@
                 keywords_csv_path: csvFilePath,
                 keywords_manual: document.getElementById('keywords_manual').value,
                 locations: document.getElementById('locais').value,
-                model: 'deepseek/deepseek-chat',
-                max_workers: 30
+                model: 'deepseek/deepseek-v3.2',
+                max_workers: 30,
+                worker_url: document.getElementById('worker_url').value.trim(),
+                client_token: document.getElementById('client_token').value.trim()
             };
 
             // Mostrar painel de progresso
@@ -954,6 +1088,15 @@
             ws.onerror = () => {
                 document.getElementById('progressStatus').textContent = '❌ Erro de conexão com o servidor';
             };
+
+            ws.onclose = (event) => {
+                if (!event.wasClean) {
+                    document.getElementById('progressStatus').innerHTML =
+                        '❌ Conexão perdida com o servidor. ' +
+                        '<button class="btn btn-back" onclick="location.reload()" style="margin-top:12px;">' +
+                        '<i class="fas fa-redo"></i> Tentar novamente</button>';
+                }
+            };
         }
 
         function updateProgressCircle(pct, labelText) {
@@ -970,15 +1113,15 @@
             // Mapeamento de progresso inicial para cada passo (0 a 100%)
             // O passo 7 (gerar páginas) vai de 40% a 85%.
             const stepPercentages = {
-                1: 5,   // Validar config
-                2: 10,  // Gerar combinacoes
-                3: 15,  // Criar sitemap
-                4: 25,  // Criar imagem hero
-                5: 30,  // Home page premium
-                6: 35,  // Tópicos do nicho
-                7: 40,  // Páginas SEO (começa em 40%)
-                8: 90,  // Validar qualidade
-                9: 95   // Empacotar site
+                1: 5,
+                2: 8,
+                3: 12,
+                4: 20,   // Gerar imagem hero
+                5: 28,   // Home page premium
+                6: 35,   // Inteligência de negócio
+                7: 40,   // Páginas SEO (começa em 40%)
+                8: 90,   // Validar qualidade
+                9: 95    // Empacotar site
             };
 
             switch (msg.type) {
@@ -996,7 +1139,7 @@
                         }
                     });
                     document.getElementById('progressStatus').textContent = msg.message;
-                    
+
                     if (stepPercentages[msg.step]) {
                         // Resgata o nome do passo atual da lista HTML para mostrar abaixo da porcentagem
                         const activeEl = document.querySelector(`.p-step[data-pstep="${msg.step}"]`);
@@ -1008,9 +1151,9 @@
                 case 'progress':
                     // O progresso de páginas varia de 0 a 100%. 
                     // Vamos mapear isso para encher a fatia global de 40% até 85%.
-                    const pagesProg = msg.percentage; 
-                    const globalPct = 40 + (pagesProg * 0.45); 
-                    
+                    const pagesProg = msg.percentage;
+                    const globalPct = 40 + (pagesProg * 0.45);
+
                     updateProgressCircle(globalPct, `${msg.current}/${msg.total} páginas`);
                     break;
 
@@ -1033,10 +1176,14 @@
                     break;
 
                 case 'error':
-                    document.getElementById('progressStatus').textContent = `❌ ${msg.message}`;
+                    document.getElementById('progressStatus').innerHTML =
+                        `❌ ${msg.message}<br>` +
+                        `<button class="btn btn-back" onclick="location.reload()" style="margin-top:12px;">` +
+                        `<i class="fas fa-redo"></i> Tentar novamente</button>`;
                     break;
             }
         }
     </script>
 </body>
+
 </html>

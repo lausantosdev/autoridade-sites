@@ -56,8 +56,8 @@ pytest tests/ --cov=core --cov-fail-under=75
 
 ## Status
 
-- [ ] Fase 1: Bug Fixes
-- [ ] Fase 2: Validações
-- [ ] Fase 3: Campos de Leads
+- [x] Fase 1: Bug Fixes
+- [x] Fase 2: Validações
+- [x] Fase 3: Campos de Leads
 - [ ] Fase 4: Testes Automatizados
 - [ ] Fase 5: Teste E2E Manual
