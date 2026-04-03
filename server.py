@@ -27,6 +27,11 @@ from core.page_generator import generate_all_pages, _replace_config_vars
 from core.validator import validate_site, generate_report
 from core.site_data_builder import build_site_data
 from core.template_injector import inject_template
+import re
+from core.config_loader import _parse_keyword_csv
+from core.imagen_client import GeminiImageClient
+from core.topic_generator import generate_services_data
+from core.output_builder import setup_output_dir, generate_fallback_index
 
 
 app = FastAPI(title="Autoridade Sites SEO Generator")
@@ -62,7 +67,6 @@ async def upload_csv(file: UploadFile = File(...)):
         f.write(content)
     
     # Parse para preview
-    from core.config_loader import _parse_keyword_csv
     keywords = _parse_keyword_csv(str(filepath))
     
     return {
@@ -119,7 +123,7 @@ async def websocket_generate(websocket: WebSocket):
             await asyncio.sleep(0.05)
             
             # Setup output
-            _setup_output(output_dir, config)
+            setup_output_dir(output_dir, config)
             
             # Sitemap
             await websocket.send_json({"type": "step", "step": 3, "message": "Gerando sitemap..."})
@@ -130,7 +134,6 @@ async def websocket_generate(websocket: WebSocket):
             await websocket.send_json({"type": "step", "step": 4, "message": "Gerando imagem hero com IA..."})
             hero_img_path = Path(output_dir) / "hero-image.jpg"
             try:
-                from core.imagen_client import GeminiImageClient
                 img_client = GeminiImageClient()
                 keywords = config.get('seo', {}).get('palavras_chave', [])
                 
@@ -167,14 +170,13 @@ async def websocket_generate(websocket: WebSocket):
                 )
             except Exception as e:
                 print(f"Erro na home SiteGen: {e}. Usando template fallback.")
-                _generate_index(config, output_dir)
+                generate_fallback_index(config, output_dir)
             
             # Topics & Services
             await websocket.send_json({"type": "step", "step": 6, "message": "Gerando inteligência de negócio..."})
             await asyncio.sleep(0.05)
             topics = await asyncio.to_thread(generate_topics, config, client)
             
-            from core.topic_generator import generate_services_data
             servicos_data = await asyncio.to_thread(generate_services_data, config, client)
             if servicos_data:
                 dados_js_path = Path(output_dir) / "js" / "dados.js"
@@ -291,6 +293,9 @@ async def websocket_generate(websocket: WebSocket):
 @app.get("/api/download/{dominio}")
 async def download_site(dominio: str):
     """Download do site gerado como ZIP."""
+    # Sanitizar: bloquear path traversal
+    if '..' in dominio or '/' in dominio or '\\' in dominio:
+        raise HTTPException(400, "Domínio inválido")
     zip_path = Path("output") / f"{dominio}_site.zip"
     if not zip_path.exists():
         raise HTTPException(404, "Arquivo não encontrado")
@@ -306,7 +311,6 @@ def _build_config(data: dict) -> dict:
     # Parse keywords
     keywords = []
     if data.get('keywords_csv_path'):
-        from core.config_loader import _parse_keyword_csv
         keywords = _parse_keyword_csv(data['keywords_csv_path'])
     
     if data.get('keywords_manual'):
@@ -316,7 +320,6 @@ def _build_config(data: dict) -> dict:
     # Parse locations
     locations = [l.strip() for l in data.get('locations', '').split('\n') if l.strip()]
     
-    import re
     google_maps_input = data.get('google_maps', '')
     if '<iframe' in google_maps_input:
         match = re.search(r'src="([^"]+)"', google_maps_input)
@@ -353,65 +356,7 @@ def _build_config(data: dict) -> dict:
     }
 
 
-def _setup_output(output_dir: str, config: dict):
-    """Copia assets do template para o output e cria o JS de dados."""
-    output_path = Path(output_dir)
-    output_path.mkdir(parents=True, exist_ok=True)
-    
-    templates = Path("templates")
-    for subdir in ['css', 'js', 'images']:
-        src = templates / subdir
-        dst = output_path / subdir
-        if src.exists() and not dst.exists():
-            shutil.copytree(str(src), str(dst))
 
-    # Processar variáveis no arquivo CSS copiado
-    css_path = output_path / "css" / "style.css"
-    if css_path.exists():
-        from core.page_generator import _replace_config_vars
-        css_content = css_path.read_text(encoding='utf-8')
-        css_content = _replace_config_vars(css_content, config)
-        css_path.write_text(css_content, encoding='utf-8')
-
-    # Criar js/dados.js dinamicamente com base nas configurações
-    from core.config_loader import get_whatsapp_link, get_phone_display
-
-    dados_js = {
-        "empresa_nome": config['empresa']['nome'],
-        "empresa_categoria": config['empresa']['categoria'],
-        "telefone_whatsapp": config['empresa']['telefone_whatsapp'],
-        "telefone_link": f"tel:{config['empresa']['telefone_whatsapp']}",
-        "telefone_display": get_phone_display(config),
-        "whatsapp_link": get_whatsapp_link(config),
-        "horario": config['empresa'].get('horario', ''),
-        "google_maps_url": config['empresa'].get('google_maps_embed', ''),
-        "dominio": config['empresa']['dominio'],
-        "ano": str(datetime.now().year)
-    }
-
-    js_dst = output_path / "js"
-    js_dst.mkdir(parents=True, exist_ok=True)
-    dados_path = js_dst / "dados.js"
-    
-    script_content = f"// Criado automaticamente - Autoridade Sites\n"
-    script_content += f"const DadosSite = {json.dumps(dados_js, indent=4, ensure_ascii=False)};\n"
-    
-    with open(dados_path, 'w', encoding='utf-8') as f:
-        f.write(script_content)
-        
-    # A home page é gerada pelo step inject_home (SiteGen template) no websocket flow
-
-
-def _generate_index(config: dict, output_dir: str):
-    """Fallback: gera index.html do template HTML puro (caso SiteGen falhe)."""
-    from core.page_generator import _replace_config_vars
-    index_template = Path("templates") / "index.html"
-    if index_template.exists():
-        content = index_template.read_text(encoding='utf-8')
-        content = _replace_config_vars(content, config)
-        output_path = Path(output_dir) / "index.html"
-        output_path.write_text(content, encoding='utf-8')
-        print("  Home page fallback gerada (template HTML puro)")
 
 
 if __name__ == "__main__":

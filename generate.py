@@ -28,9 +28,7 @@ from core.page_generator import generate_all_pages, get_retry_log, _replace_conf
 from core.validator import validate_site, generate_report
 from core.site_data_builder import build_site_data
 from core.template_injector import inject_template
-
-
-TEMPLATES_DIR = Path("templates")
+from core.output_builder import setup_output_dir, generate_fallback_index
 
 
 def main():
@@ -87,7 +85,7 @@ def main():
 
     # 3. Copiar assets do template para output
     if args.step in ('all', 'sitemap', 'pages'):
-        _setup_output_dir(output_dir, config)
+        setup_output_dir(output_dir, config)
 
     # 4. Gerar sitemap
     if args.step in ('all', 'sitemap'):
@@ -166,7 +164,7 @@ def main():
         except Exception as e:
             print(f"  ⚠ Erro na home SiteGen: {e}")
             print("  ↳ Gerando home com template HTML fallback...")
-            _generate_index(config, output_dir)
+            generate_fallback_index(config, output_dir)
         print()
 
     if args.step == 'home':
@@ -176,7 +174,7 @@ def main():
     # 7. Gerar páginas SEO
     if args.step in ('all', 'pages'):
         print("⚡ Gerando páginas SEO...")
-        template_path = TEMPLATES_DIR / "page.html"
+        template_path = Path("templates") / "page.html"
         if not template_path.exists():
             print(f"  ❌ Template não encontrado: {template_path}")
             sys.exit(1)
@@ -212,75 +210,7 @@ def main():
         print(f"   Tokens: {stats['total_tokens']:,} ({stats['input_tokens']:,} in / {stats['output_tokens']:,} out)")
 
 
-def _setup_output_dir(output_dir: str, config: dict):
-    """Copia assets estáticos do template para o diretório de saída."""
-    output_path = Path(output_dir)
-    output_path.mkdir(parents=True, exist_ok=True)
 
-    # Copiar CSS
-    css_src = TEMPLATES_DIR / "css"
-    css_dst = output_path / "css"
-    if css_src.exists() and not css_dst.exists():
-        shutil.copytree(str(css_src), str(css_dst))
-        
-    # Processar variáveis no arquivo CSS copiado sempre
-    css_path = css_dst / "style.css"
-    if css_path.exists():
-        css_content = css_path.read_text(encoding='utf-8')
-        css_content = _replace_config_vars(css_content, config)
-        css_path.write_text(css_content, encoding='utf-8')
-
-    # Copiar JS
-    js_src = TEMPLATES_DIR / "js"
-    js_dst = output_path / "js"
-    if js_src.exists() and not js_dst.exists():
-        shutil.copytree(str(js_src), str(js_dst))
-
-    # Criar js/dados.js dinamicamente com base nas configurações
-
-    dados_js = {
-        "empresa_nome": config['empresa']['nome'],
-        "empresa_categoria": config['empresa']['categoria'],
-        "telefone_whatsapp": config['empresa']['telefone_whatsapp'],
-        "telefone_link": f"tel:{config['empresa']['telefone_whatsapp']}",
-        "telefone_display": get_phone_display(config),
-        "whatsapp_link": get_whatsapp_link(config),
-        "horario": config['empresa'].get('horario', ''),
-        "google_maps_url": config['empresa'].get('google_maps_embed', ''),
-        "dominio": config['empresa']['dominio'],
-        "ano": str(datetime.now().year)
-    }
-
-    # Assegurar que pasta JS existe
-    js_dst.mkdir(parents=True, exist_ok=True)
-    dados_path = js_dst / "dados.js"
-    
-    # Criar conteúdo do script
-    script_content = f"// Criado automaticamente - Autoridade Sites\n"
-    script_content += f"const DadosSite = {json.dumps(dados_js, indent=4, ensure_ascii=False)};\n"
-    
-    with open(dados_path, 'w', encoding='utf-8') as f:
-        f.write(script_content)
-
-    # Copiar images (se existirem)
-    img_src = TEMPLATES_DIR / "images"
-    img_dst = output_path / "images"
-    if img_src.exists() and not img_dst.exists():
-        shutil.copytree(str(img_src), str(img_dst))
-
-    # A home page é gerada pelo step inject_home (SiteGen template)
-    # Aqui só copiamos assets para as subpáginas HTML puras
-
-
-def _generate_index(config: dict, output_dir: str):
-    """Fallback: gera index.html do template HTML puro (caso SiteGen falhe)."""
-    index_template = TEMPLATES_DIR / "index.html"
-    if index_template.exists():
-        content = index_template.read_text(encoding='utf-8')
-        content = _replace_config_vars(content, config)
-        output_path = Path(output_dir) / "index.html"
-        output_path.write_text(content, encoding='utf-8')
-        print("  ✓ Home page fallback gerada (template HTML puro)")
 
 
 def _print_done(start_time: float):

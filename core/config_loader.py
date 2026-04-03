@@ -5,6 +5,7 @@ import os
 import csv
 import yaml
 from pathlib import Path
+import urllib.parse
 
 
 def load_config(config_path: str = "config.yaml") -> dict:
@@ -75,50 +76,52 @@ def _load_keywords(seo_config: dict) -> list:
 def _parse_keyword_csv(csv_path: str) -> list:
     """
     Faz parsing do CSV exportado pelo Google Keyword Planner.
-    Formatos suportados:
-    - Google Keyword Planner (colunas: Keyword, Avg. monthly searches, ...)
-    - Ubersuggest (colunas: Keyword, Search Volume, ...)
-    - CSV simples (uma keyword por linha)
+    Tenta UTF-8 primeiro, depois Latin-1 (comum em exports do Windows BR).
     """
+    for encoding in ('utf-8-sig', 'latin-1'):
+        try:
+            with open(csv_path, 'r', encoding=encoding) as f:
+                return _parse_csv_content(f)
+        except UnicodeDecodeError:
+            continue
+    return []
+
+
+def _parse_csv_content(f) -> list:
+    """Parse do conteúdo CSV já aberto."""
     keywords = []
+    # Tenta detectar se é CSV com headers
+    sample = f.read(2048)
+    f.seek(0)
 
-    with open(csv_path, 'r', encoding='utf-8-sig') as f:
-        # Tenta detectar se é CSV com headers
-        sample = f.read(2048)
-        f.seek(0)
+    if ',' in sample.split('\n')[0]:
+        reader = csv.DictReader(f)
+        headers = [h.lower().strip() for h in (reader.fieldnames or [])]
 
-        # Se tem vírgula, provavelmente é CSV estruturado
-        if ',' in sample.split('\n')[0]:
-            reader = csv.DictReader(f)
-            headers = [h.lower().strip() for h in (reader.fieldnames or [])]
+        keyword_col = None
+        for h in headers:
+            if h in ('keyword', 'keywords', 'palavra-chave', 'palavra chave', 'term'):
+                keyword_col = h
+                break
 
-            # Detecta a coluna de keyword
-            keyword_col = None
-            for h in headers:
-                if h in ('keyword', 'keywords', 'palavra-chave', 'palavra chave', 'term'):
-                    keyword_col = h
-                    break
+        if keyword_col is None and headers:
+            keyword_col = headers[0]
 
-            if keyword_col is None and headers:
-                keyword_col = headers[0]  # Assume primeira coluna
+        volume_col = None
+        for h in headers:
+            if any(v in h for v in ('volume', 'searches', 'search vol', 'avg.')):
+                volume_col = h
+                break
 
-            # Detecta a coluna de volume (para ordenação futura)
-            volume_col = None
-            for h in headers:
-                if any(v in h for v in ('volume', 'searches', 'search vol', 'avg.')):
-                    volume_col = h
-                    break
-
-            for row in reader:
-                kw = row.get(keyword_col, '').strip()
-                if kw and not kw.startswith('#'):
-                    keywords.append(kw)
-        else:
-            # CSV simples: uma keyword por linha
-            for line in f:
-                line = line.strip()
-                if line and not line.startswith('#'):
-                    keywords.append(line)
+        for row in reader:
+            kw = row.get(keyword_col, '').strip()
+            if kw and not kw.startswith('#'):
+                keywords.append(kw)
+    else:
+        for line in f:
+            line = line.strip()
+            if line and not line.startswith('#'):
+                keywords.append(line)
 
     return keywords
 
@@ -126,7 +129,6 @@ def _parse_keyword_csv(csv_path: str) -> list:
 def get_whatsapp_link(config: dict, message: str = "Olá, gostaria de mais informações.") -> str:
     """Gera link do WhatsApp com mensagem pré-formatada."""
     phone = config['empresa']['telefone_whatsapp']
-    import urllib.parse
     encoded_msg = urllib.parse.quote(message)
     return f"https://wa.me/{phone}?text={encoded_msg}"
 

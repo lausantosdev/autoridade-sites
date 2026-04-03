@@ -4,6 +4,7 @@ OpenRouter Client - Client unificado para API do OpenRouter (compatível com Ope
 import os
 import json
 import time
+import threading
 from openai import OpenAI
 from dotenv import load_dotenv
 
@@ -31,13 +32,13 @@ class OpenRouterClient:
         self._call_count = 0
         self._total_input_tokens = 0
         self._total_output_tokens = 0
+        self._lock = threading.Lock()
 
     def generate_json(self, system_prompt: str, user_prompt: str) -> dict | None:
         """
         Chama a API e retorna a resposta parseada como JSON.
         Usa response_format JSON e retry automático.
         """
-        import json
 
         for attempt in range(self.max_retries):
             try:
@@ -54,10 +55,11 @@ class OpenRouterClient:
                     }
                 )
 
-                self._call_count += 1
-                if response.usage:
-                    self._total_input_tokens += response.usage.prompt_tokens
-                    self._total_output_tokens += response.usage.completion_tokens
+                with self._lock:
+                    self._call_count += 1
+                    if response.usage:
+                        self._total_input_tokens += response.usage.prompt_tokens
+                        self._total_output_tokens += response.usage.completion_tokens
 
                 return json.loads(response.choices[0].message.content)
 
@@ -84,10 +86,11 @@ class OpenRouterClient:
                     }
                 )
 
-                self._call_count += 1
-                if response.usage:
-                    self._total_input_tokens += response.usage.prompt_tokens
-                    self._total_output_tokens += response.usage.completion_tokens
+                with self._lock:
+                    self._call_count += 1
+                    if response.usage:
+                        self._total_input_tokens += response.usage.prompt_tokens
+                        self._total_output_tokens += response.usage.completion_tokens
 
                 return response.choices[0].message.content
 

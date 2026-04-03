@@ -5,6 +5,8 @@ import os
 import json
 import random
 from core.openrouter_client import OpenRouterClient
+import re
+import unicodedata
 
 
 CACHE_DIR = "cache"
@@ -83,8 +85,6 @@ def get_random_mix(topics: dict, count: int = 6) -> list:
 
 def _safe_filename(text: str) -> str:
     """Converte texto para nome de arquivo seguro."""
-    import re
-    import unicodedata
     text = unicodedata.normalize('NFKD', text).encode('ascii', 'ignore').decode('ascii')
     return re.sub(r'[^a-z0-9]+', '_', text.lower()).strip('_')
 

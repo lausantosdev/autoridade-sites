@@ -63,6 +63,10 @@ def generate_all_pages(
     """
     os.makedirs(output_dir, exist_ok=True)
 
+    # Limpar log de retries da geração anterior
+    with _retry_lock:
+        _retry_log.clear()
+
     # Carregar template
     with open(template_path, 'r', encoding='utf-8') as f:
         template = f.read()
@@ -88,20 +92,23 @@ def generate_all_pages(
 
     print(f"  ⏳ Gerando {len(pending)} páginas com {config['api']['max_workers']} workers...")
 
-    completed = 0
-    errors = 0
+    _counter_lock = threading.Lock()
+    completed = [0]
+    errors = [0]
 
     def process_page(page):
-        nonlocal completed, errors
         try:
             _generate_single_page(
                 page, pages, config, topics, client, template, output_dir
             )
-            completed += 1
+            with _counter_lock:
+                completed[0] += 1
+                current = completed[0]
             if progress_callback:
-                progress_callback(completed, len(pending), page['title'])
+                progress_callback(current, len(pending), page['title'])
         except Exception as e:
-            errors += 1
+            with _counter_lock:
+                errors[0] += 1
             _log_error(page['title'], str(e), output_dir)
 
     max_workers = min(config['api']['max_workers'], len(pending))
@@ -114,7 +121,7 @@ def generate_all_pages(
             for future in concurrent.futures.as_completed(futures):
                 pbar.update(1)
 
-    print(f"  ✓ {completed} páginas geradas, {errors} erros")
+    print(f"  ✓ {completed[0]} páginas geradas, {errors[0]} erros")
 
     retry_data = get_retry_log()
     if retry_data:

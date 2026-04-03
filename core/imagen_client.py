@@ -56,8 +56,6 @@ class GeminiImageClient:
             )
 
             for generated_image in result.generated_images:
-                import io
-                from PIL import Image
                 
                 # O SDK retorna a imagem customizada
                 raw_bytes = generated_image.image.image_bytes
