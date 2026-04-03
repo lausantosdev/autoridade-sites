@@ -32,6 +32,8 @@ from core.config_loader import _parse_keyword_csv
 from core.imagen_client import GeminiImageClient
 from core.topic_generator import generate_services_data
 from core.output_builder import setup_output_dir, generate_fallback_index
+from core.logger import get_logger
+logger = get_logger(__name__)
 
 
 app = FastAPI(title="Autoridade Sites SEO Generator")
@@ -150,7 +152,7 @@ async def websocket_generate(websocket: WebSocket):
                 if hero_img_path.exists():
                     shutil.copy2(str(hero_img_path), str(legacy_path))
             except Exception as e:
-                print(f"Erro ao gerar imagem AI: {e}")
+                logger.error("Erro ao gerar imagem AI: %s", e)
             
             # API Client
             client = OpenRouterClient(
@@ -169,7 +171,7 @@ async def websocket_generate(websocket: WebSocket):
                     hero_image_path=str(hero_img_path) if hero_img_path.exists() else None,
                 )
             except Exception as e:
-                print(f"Erro na home SiteGen: {e}. Usando template fallback.")
+                logger.error("Erro na home SiteGen: %s. Usando template fallback.", e)
                 generate_fallback_index(config, output_dir)
             
             # Topics & Services

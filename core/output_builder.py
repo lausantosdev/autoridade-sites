@@ -58,6 +58,18 @@ def setup_output_dir(output_dir: str, config: dict):
     with open(dados_path, 'w', encoding='utf-8') as f:
         f.write(script_content)
 
+    # Gerar robots.txt (essencial para SEO)
+    domain = config['empresa']['dominio']
+    robots_content = (
+        "User-agent: *\n"
+        "Allow: /\n"
+        "\n"
+        f"Sitemap: https://{domain}/sitemap.xml\n"
+    )
+    robots_path = output_path / "robots.txt"
+    if not robots_path.exists():
+        robots_path.write_text(robots_content, encoding='utf-8')
+
 
 def generate_fallback_index(config: dict, output_dir: str):
     """Fallback: gera index.html do template HTML puro (caso SiteGen falhe)."""

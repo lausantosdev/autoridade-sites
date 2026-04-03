@@ -78,6 +78,15 @@ class TestSetupOutputDir:
         assert '#FF0000' in css
         assert '{{cor_marca}}' not in css
 
+    def test_generates_robots_txt(self, tmp_path):
+        out = tmp_path / "out"
+        setup_output_dir(str(out), _make_config())
+        robots = out / "robots.txt"
+        assert robots.exists()
+        content = robots.read_text(encoding='utf-8')
+        assert 'User-agent: *' in content
+        assert 'Sitemap: https://test.com.br/sitemap.xml' in content
+
 
 class TestGenerateFallbackIndex:
     def test_generates_index_from_template(self, tmp_path):

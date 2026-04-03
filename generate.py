@@ -26,8 +26,9 @@ from core.openrouter_client import OpenRouterClient
 from core.topic_generator import generate_topics
 from core.page_generator import generate_all_pages, get_retry_log, _replace_config_vars
 from core.validator import validate_site, generate_report
-from core.site_data_builder import build_site_data
+from core.site_data_builder import build_site_data, resolve_theme_mode
 from core.template_injector import inject_template
+from core.imagen_client import GeminiImageClient
 from core.output_builder import setup_output_dir, generate_fallback_index
 
 
@@ -117,8 +118,7 @@ def main():
 
     # 6.5 Resolver tema (leve — ~3s) — necessário para imagem, home e subpáginas
     if args.step in ('all', 'home', 'pages', 'image'):
-        from core.site_data_builder import resolve_theme_mode
-        theme_mode = resolve_theme_mode(config, client)
+        resolve_theme_mode(config, client)
         print()
 
     # 6.6 Gerar Imagem Hero (Imagen 3) — usa theme_mode já resolvido
@@ -130,7 +130,6 @@ def main():
         if not hero_img_path.exists() and not hero_img_legacy.exists():
             print("🎨 Gerando Imagem Hero com Google Gemini...")
             try:
-                from core.imagen_client import GeminiImageClient
                 img_client = GeminiImageClient()
                 img_client.generate_hero(
                     categoria=config['empresa']['categoria'],

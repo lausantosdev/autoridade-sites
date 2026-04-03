@@ -91,7 +91,13 @@ def _parse_keyword_csv(csv_path: str) -> list:
 
 
 def _parse_csv_content(f) -> list:
-    """Parse do conteúdo CSV já aberto."""
+    """Parse do conteúdo CSV já aberto.
+
+    Suporta:
+    - CSV com header reconhecido (keyword, palavra-chave, term, etc.)
+    - CSV com header desconhecido (usa primeira coluna como fallback)
+    - Texto puro com uma keyword por linha
+    """
     keywords = []
     # Tenta detectar se é CSV com headers
     sample = f.read(2048)
@@ -99,25 +105,24 @@ def _parse_csv_content(f) -> list:
 
     if ',' in sample.split('\n')[0]:
         reader = csv.DictReader(f)
-        headers = [h.lower().strip() for h in (reader.fieldnames or [])]
+        raw_fieldnames = reader.fieldnames or []
 
-        keyword_col = None
-        for h in headers:
+        # Mapear lowercase → nome original do DictReader
+        # (DictReader usa o nome original como chave do dict em cada row)
+        lower_to_original = {h.lower().strip(): h for h in raw_fieldnames}
+        headers_lower = list(lower_to_original.keys())
+
+        keyword_col_original = None
+        for h in headers_lower:
             if h in ('keyword', 'keywords', 'palavra-chave', 'palavra chave', 'term'):
-                keyword_col = h
+                keyword_col_original = lower_to_original[h]
                 break
 
-        if keyword_col is None and headers:
-            keyword_col = headers[0]
-
-        volume_col = None
-        for h in headers:
-            if any(v in h for v in ('volume', 'searches', 'search vol', 'avg.')):
-                volume_col = h
-                break
+        if keyword_col_original is None and headers_lower:
+            keyword_col_original = lower_to_original[headers_lower[0]]
 
         for row in reader:
-            kw = row.get(keyword_col, '').strip()
+            kw = row.get(keyword_col_original, '').strip()
             if kw and not kw.startswith('#'):
                 keywords.append(kw)
     else:
