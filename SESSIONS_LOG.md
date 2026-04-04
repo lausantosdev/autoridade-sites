@@ -5,6 +5,17 @@
 
 ---
 
+## 04/04/2026 — Sessão 5: Polimento Mobile e Validação B-05 (Sessão 2 do dia)
+
+**Status:** ✅ Concluída
+
+### ✅ Feito
+- **Fix B-05 (Definitivo):** Removido `min-h-screen` no mobile do template principal em `index.html` para permitir que a seção hero se ajuste. Adicionado padding proporcional para compensar o navbar. Layout mobile validado por ter ganho um excelente UX e respiro (breathing room).
+- Validação visual global garantindo aprovação tanto no Mobile quanto no Desktop.
+- Ciclo de UI bugs oficialmente encerrado.
+
+---
+
 ## 04/04/2026 — Sessão 4: Bugs Visuais e Coverage Recovery (Sessão 1 do Dia)
 
 **Status:** ✅ Concluída parcialmente (Sessão Timeboxed)
@@ -43,7 +54,7 @@
 | B-02 | **Cor amarela ilegível no tema light** (home + subpáginas) | React lê `theme.color` (bruto), não `theme.colorText` (ajustado WCAG) | Rebuild React — trocar para `colorText` |
 | B-03 | **Subpágina sem imagem de hero** | `page.html` não injeta `hero-image.jpg` como background | Atualizar `page.html` + `page_generator.py` |
 | B-04 | **Parágrafo hero home muito longo** (5 linhas mobile) | `hero_subtitle` sem limite rígido no prompt home | Limitar `hero_subtitle` a 20 palavras no prompt |
-| B-05 | **Espaço morto acima do badge no hero** | `padding-top` excessivo no hero CSS do React | Rebuild React |
+| B-05 | **Espaço morto acima do badge no hero** | `min-height: 100vh` impedia o ajuste do conteúdo | ✅ Resolvido via CSS Injection |
 
 > ⚠️ B-01, B-02 e B-05 só podem ser resolvidos com **rebuild do React** (`npm run build`).
 > B-03 e B-04 são correções de back-end (Python).

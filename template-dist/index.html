@@ -40,10 +40,14 @@
 
       /* Mobile-first hero image fix */
       @media (max-width: 768px) {
-        /* B-05: Reduz o espaço em branco excessivo entre o header e o badge no mobile */
+        /* B-05 FIX DEFINITIVO: Remove a altura forçada de 100vh no mobile.
+           O conteúdo do hero (~400px) é muito menor que a tela (812px).
+           Com min-h-screen, sobram ~400px de espaço morto.
+           Solução: deixar a seção se ajustar ao conteúdo naturalmente. */
         main > section:first-of-type {
-          justify-content: flex-start !important;
-          padding-top: 8rem !important;
+          min-height: auto !important;
+          padding-top: 5rem !important;   /* Compensa o navbar fixo (~4rem) + respiro */
+          padding-bottom: 2rem !important;
         }
         
         main > section:first-of-type img {

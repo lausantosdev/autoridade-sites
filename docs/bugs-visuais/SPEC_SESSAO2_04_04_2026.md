@@ -7,9 +7,9 @@
 
 ## Sumário de Fases
 
-- [ ] Fase 1: Validação visual rigorosa do B-05 (Hero mobile padding)
-- [ ] Fase 2: Polimento final e Auditoria do Design Premium em todos os viewports
-- [ ] Fase 3: Encerramento do ciclo de bugs visuais e Merge final
+- [x] Fase 1: Validação visual rigorosa do B-05 (Hero mobile padding)
+- [x] Fase 2: Polimento final e Auditoria do Design Premium em todos os viewports
+- [x] Fase 3: Encerramento do ciclo de bugs visuais e Merge final
 
 ---
 
@@ -36,7 +36,7 @@ O último fix alterou o `<style>` em `template-dist/index.html` para:
 3. Espera-se uma margem controlada (em torno de 3~4rem a partir debaixo do navbar, dando um respiro adequado sem criar um grande vazio branco).
 4. **Se reprovado**, ajustar iterativamente com `padding-top: 6rem !important` (ou usar `padding-top: max(6rem, 15vh)` se necessário).
 
-**Status:** [ ]
+**Status:** [x]
 
 ---
 
@@ -46,7 +46,7 @@ Uma vez validado o B-05, revisar se não houve quebras secundárias por conta da
 - Checar Desktop Hero (`padding-top: 10rem` mantido?)
 - O Navbar sobrepõe algum conteúdo importante?
 
-**Status:** [ ]
+**Status:** [x]
 
 ---
 
