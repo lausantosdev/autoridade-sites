@@ -40,7 +40,7 @@
 ### Sprint: Finalização de Produto (Sessão 1 — 03/04/2026)
 > Foco: Tornar a captura de leads, dashboard e a interface do Wizard 100% funcionais.
 
-- [ ] **Wizard Web** — teste de geração E2E real (gerar site completo via UI e validar o ZIP)
+- [x] **Wizard Web** — teste de geração E2E real (gerar site completo via UI e validar o ZIP)
 - [ ] **Captura de leads** — integrar frontend com Cloudflare Worker + documentar setup manual do Supabase
 - [ ] **Dashboard do empresário** — revisar, otimizar e validar com dados reais
 
