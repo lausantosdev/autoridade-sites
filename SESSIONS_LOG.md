@@ -5,6 +5,23 @@
 
 ---
 
+## 04/04/2026 — Sessão 7: Especificação Captura de Leads (Sessão 4 do dia)
+
+**Status:** 🔄 Em andamento
+
+### ✅ Feito
+- **Análise & Brainstorm:** Revisão da UX do widget original de interceptação modal, substituído arquiteturalmente pelo padrão de Formulário Embutido.
+- **Plano Aprovado (Opção C):** Focar na captação 100% dos usuários que chamam o contato com design mais fluído e orgânico e fallback sem bloquear WhatsApp.
+- **Specs Criadas:** `PLAN_CAPTURA_LEADS_04_04_2026.md` e `SPEC_SESSAO1_04_04_2026.md` disponíveis no diretório `docs/captura-leads/`.
+- **Roadmap:** Atualizado para refletir o ínicio iminente da execução da Fase 1 (CSS).
+
+### 🔜 Próxima Sessão (Imediato)
+- Executar e validar Fase 1: CSS (arquivo `widget.css` auto-contido e ajustes em `style.css`).
+- Executar Fase 2: Templates (ajuste de page.html e index.html com `<form>`).
+- Executar Fase 3: js rewrite e Fase 4: Template Injector.
+
+---
+
 ## 04/04/2026 — Sessão 6: Conclusão Teste E2E do Wizard (Sessão 3 do dia)
 
 **Status:** ✅ Concluída
