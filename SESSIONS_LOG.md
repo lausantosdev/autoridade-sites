@@ -5,6 +5,23 @@
 
 ---
 
+## 04/04/2026 — Sessão 4: Bugs Visuais e Coverage Recovery (Sessão 1 do Dia)
+
+**Status:** ✅ Concluída parcialmente (Sessão Timeboxed)
+
+### ✅ Feito
+- **Coverage Recovered:** Testes puramente matemáticos adicionados em `test_color_utils.py` (Coverage restaurado acima de 75%).
+- **Fix B-04:** Subtítulo do hero limitado a 15 palavras no prompt, impedindo quebra de layout no mobile.
+- **Fix B-03:** `page.html` modificado para injetar o background correto nas subpáginas.
+- **Fix B-01:** Grid do React reescrito para Cards Flutuantes Premium via injeção CSS/JS, erradicando os blocos cinzas / ghost cards.
+- **Fix B-02:** Constraste WCAG validado e operante pós-fix do backend (de `#F59E0B` para `#9E6506`).
+- **Teste E2E do Wizard:** Completado com sucesso gerando zip premium validado.
+
+### ⚠️ Transferido para Sessão 5 (Sessão 2 do dia)
+- **B-05 (Padding Excessivo Mobile):** Tentativa implementada substituindo `justify-center` por `flex-start` no container `min-h-screen`. Requer validação do Usuário na próxima sessão isolada.
+
+---
+
 ## 03/04/2026 — Sessão 3: Auditoria Visual E2E Light & Dark
 
 **Status:** ✅ Concluída com bugs documentados

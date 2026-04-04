@@ -292,7 +292,7 @@ HERO:
 - hero_badge_text (máx 4 palavras — DEVE incluir categoria ou cidade. Ex: "Petshop em Moema", "Mecânica em Vila Industrial", "Clínica Veterinária em [cidade]". NUNCA usar frases genéricas como "Especialistas Locais" ou "Qualidade Premium")
 - hero_title_line_1 (3-5 palavras — fala do DESEJO DO CLIENTE, não da empresa. Ex: "Seu Pet Merece", "Procurando um bom", "Cansado de procurar?". PROIBIDO: "Cuidados de Alto Nível", "Soluções Completas", "Qualidade Premium", frases institucionais)
 - hero_title_line_2 (3-5 palavras com destaque colorido — inclui categoria ou cidade. Complementa linha_1 formando frase coesa)
-- hero_subtitle (20-30 palavras com empresa, categoria e cidade principal)
+- hero_subtitle (10-15 palavras no MÁXIMO. Frase direta, sem textão. ERRADO: "Oferecemos atendimento completo com toda a equipe especializada no cuidado do seu animal, com carinho desde 2010". CERTO: "Atendimento veterinário especializado com carinho e profissionalismo.")
 
 SERVIÇOS — Gere APENAS descrição curta e ícone para cada serviço listado:
 {servicos_prompt}

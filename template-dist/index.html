@@ -40,6 +40,12 @@
 
       /* Mobile-first hero image fix */
       @media (max-width: 768px) {
+        /* B-05: Reduz o espaço em branco excessivo entre o header e o badge no mobile */
+        main > section:first-of-type {
+          justify-content: flex-start !important;
+          padding-top: 8rem !important;
+        }
+        
         main > section:first-of-type img {
           object-position: center center !important;
         }
@@ -78,17 +84,17 @@
           text-shadow: 0 1px 3px rgba(255,255,255,0.7);
         }
       }
-
-      /* Adaptive services grid — fits N cards without empty slots */
-      #diferenciais [class*="grid"],
-      [id*="diferenciais"] [class*="Grid"] {
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)) !important;
-        justify-content: center !important;
+      /* B-01: Adaptação de layout Premium para os Serviços (Flex Floating Cards) */
+      /* Base sizing for the new individual flex cards */
+      .premium-service-card {
+        flex: 1 1 calc(33.333% - 1.5rem);
+        min-width: 280px;
+        max-width: 380px;
+        /* Suavidade no hover */
+        transition: transform 0.2s, box-shadow 0.2s;
       }
-      /* Hide ghost/empty cards when count doesn't fill last row (React placeholder) */
-      #diferenciais [class*="grid"] > *:not(:has(h3, h4, p, span)),
-      [id*="diferenciais"] [class*="Grid"] > *:not(:has(h3, h4, p, span)) {
-        display: none !important;
+      .premium-service-card:hover {
+        transform: translateY(-4px);
       }
     </style>
   </head>
@@ -96,17 +102,49 @@
     <div id="root"></div>
   <!-- SITE_DATA_INJECT -->
 <script>
-// Remove ghost/empty service cards after React renders
+// B-01 FIX DEFINITIVO: Converte layout de 'Tabela/Grid' para 'Cards Flutuantes Premium'
+// Resolve de uma vez o problema de slots vazios, bordas aparentes e alinhamento
 window.addEventListener('load', function() {
-  setTimeout(function() {
-    var grid = document.querySelector('#diferenciais [class*="grid"], [id*="diferenciais"] [class*="Grid"]');
-    if (!grid) return;
-    Array.from(grid.children).forEach(function(card) {
-      if (!card.textContent.trim()) {
-        card.style.display = 'none';
-      }
+  function upgradeToPremiumCards() {
+    // Alvo estrito: Apenas a div que era o grid real (evita pegar os títulos do cabeçalho)
+    var gridContainers = document.querySelectorAll('#diferenciais .grid, [id*="diferenciais"] .grid, .grid.grid-cols-1.sm\\:grid-cols-2');
+    
+    // Fallback: se não achar pela classe .grid exata, pega o container que tem os cards
+    if (gridContainers.length === 0) {
+      gridContainers = Array.from(document.querySelectorAll('[id*="diferenciais"] > div > div')).filter(function(el) {
+        // O grid de cards sempre tem mais de 3 elementos filhos (os cards em si)
+        return el.children.length > 3;
+      });
+    }
+
+    gridContainers.forEach(function(grid) {
+      // 1. Remove as classes que formam a "Tabela" e os fundos cinzas
+      grid.className = grid.className.replace(/grid(\s|-cols-[a-z0-9:-]+)/g, '');
+      grid.classList.remove('gap-px', 'bg-border', 'border', 'border-border', 'overflow-hidden', 'rounded-2xl', 'grid');
+      
+      // 2. Transforma o container num Flexbox livre para distribuir os cards soltos
+      grid.classList.add('flex', 'flex-wrap', 'justify-center');
+      grid.style.gap = '1.5rem';
+      grid.style.background = 'transparent';
+
+      // 3. Eleva cada filho(serviço) ao status de Card independente
+      Array.from(grid.children).forEach(function(card) {
+        // Verifica se é um filler/ghost card ou tem conteúdo real
+        var hasContent = card.textContent.trim().length > 0 || card.querySelector('svg, img');
+        
+        if (!hasContent || card.getAttribute('aria-hidden') === 'true') {
+          card.style.display = 'none'; // Some permanentemente com ghosts/brancos
+        } else {
+          // Adiciona as classes Tailwind para criar a caixinha bonitinha
+          card.classList.add('border', 'border-border', 'rounded-2xl', 'shadow-sm', 'bg-background', 'premium-service-card');
+        }
+      });
     });
-  }, 300);
+  }
+  
+  // Roda assim que o react gerar o DOM
+  setTimeout(upgradeToPremiumCards, 300);
+  setTimeout(upgradeToPremiumCards, 800);
 });
 </script>
   </body>
