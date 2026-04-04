@@ -5,6 +5,17 @@
 
 ---
 
+## 04/04/2026 — Sessão 9: UX Formulário de Leads — Home React (Sessão 6 do dia)
+
+**Status:** 🔜 A iniciar (Próxima Sessão)
+
+### 📋 Planejamento
+- A Sessão 8 concluiu com sucesso toda a lógica HTML/CSS pura no `widget.css`, `widget.js` e em subpáginas.
+- Esta sessão focará exclusivamente em alinhar a Home gerada pelo React (`frontend/src/components/ContactForm.jsx`) ao nosso novo padrão visual e de fluxo de UX (Fale Conosco genérico).
+- **Spec Guia:** `docs/captura-leads/SPEC_SESSAO2_04_04_2026.md`
+
+---
+
 ## 04/04/2026 — Sessão 8: UX Formulário de Leads — Subpáginas OK (Sessão 5 do dia)
 
 **Status:** ✅ Commited — `a0bb9bf`
