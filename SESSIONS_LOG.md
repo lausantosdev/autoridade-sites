@@ -5,6 +5,25 @@
 
 ---
 
+## 04/04/2026 — Sessão 8: UX Formulário de Leads — Subpáginas OK (Sessão 5 do dia)
+
+**Status:** ✅ Commited — `a0bb9bf`
+
+### ✅ Feito
+- **widget.css:** Card branco sólido, botão cinza inativo → verde ao preencher nome+whatsapp (CSS `:valid`)
+- **widget.js:** Validação customizada: mensagem de erro contextual + borda vermelha + animação shake nos campos vazios
+- **style.css:** Sincronização dos estilos de validação + `scroll-margin-top: 72px` no `#contato` (corrige corte do título ao ancorar via link)
+- **page.html:** Título CTA substituído por `Fale Conosco` + subtítulo suave (não pressiona agendamento)
+- **index.html (template):** Idem ao page.html
+- **Teste E2E from scratch:** Pipeline regenerado do zero, encoding UTF-8 correto validado
+
+### ⚠️ Pendente — HOME (index.html gerado pelo React)
+- O formulário da home usa `frontend/src/components/ContactForm.jsx` (React), **não** o `page.html`
+- Problemas observados no mobile: form card transbordando/flutuando fora dos limites da seção; título "Agende" ainda não substituído por "Fale Conosco"
+- **Próximo passo:** Localizar e editar `ContactForm.jsx` + CSS correspondente na pasta `frontend/`
+
+---
+
 ## 04/04/2026 — Sessão 7: Especificação Captura de Leads (Sessão 4 do dia)
 
 **Status:** 🔄 Em andamento
