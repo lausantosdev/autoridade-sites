@@ -67,7 +67,7 @@ Todos os CTAs de WhatsApp (hero, inline, floating button) passam a redirecionar 
 - Cópia auto-contida dos mesmos estilos de form, mas com **fallbacks** em todas as variáveis (para funcionar na Home Premium que não carrega `style.css`)
 - Usado exclusivamente pela injeção do `template_injector.py`
 
-**Status:** [ ]
+**Status:** [x]
 
 ---
 
@@ -116,7 +116,7 @@ Todos os CTAs de WhatsApp (hero, inline, floating button) passam a redirecionar 
 - Mesmo tratamento: CTA vira form, links viram `#contato`
 - Linhas 82, 187, 230 (hero, CTA button, float)
 
-**Status:** [ ]
+**Status:** [x]
 
 ---
 
@@ -216,7 +216,7 @@ Reescrita total. O script vira um handler de formulário (não mais um intercept
 
 **Decisão arquitetural:** O form **sempre funciona** (redireciona para WhatsApp com mensagem pré-preenchida). O POST para o Worker é **condicional** (`if config.workerUrl`). Isso significa que mesmo sem backend de tracking, o form agrega valor (mensagem personalizada pro empresário).
 
-**Status:** [ ]
+**Status:** [x]
 
 ---
 
@@ -244,7 +244,7 @@ Adicionar função `_inject_leads_form()` ao pipeline de injeção.
 
 O formulário na Home Premium usa dados do `site_data.megaCtaSection` para título/subtítulo, mantendo consistência com o conteúdo gerado pela IA.
 
-**Status:** [ ]
+**Status:** [x]
 
 ---
 
@@ -297,8 +297,8 @@ O formulário na Home Premium usa dados do `site_data.megaCtaSection` para títu
 
 ## Status Geral das Fases
 
-- [ ] Fase 1: CSS do formulário
-- [ ] Fase 2: Templates (page.html + index.html)
-- [ ] Fase 3: Reescrita widget.js
-- [ ] Fase 4: Injeção na Home Premium (template_injector.py)
+- [x] Fase 1: CSS do formulário
+- [x] Fase 2: Templates (page.html + index.html)
+- [x] Fase 3: Reescrita widget.js
+- [x] Fase 4: Injeção na Home Premium (template_injector.py)
 - [ ] Fase 5: Validação visual e E2E

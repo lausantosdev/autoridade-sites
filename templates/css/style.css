@@ -1077,6 +1077,7 @@ a {
     text-align: center;
     position: relative;
     overflow: hidden;
+    scroll-margin-top: 72px; /* Compensa o header fixo ao navegar por âncora */
 }
 
 .cta-section::before {
@@ -1209,127 +1210,221 @@ a {
 }
 
 /* ==========================================================================
-   WIDGET — Lead Capture Modal
+   LEAD CAPTURE FORM — Embedded in CTA Section
    ========================================================================== */
-.aw-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.6);
-    z-index: 9999;
+.lead-form {
+    max-width: 560px;
+    margin: 0 auto;
     display: flex;
-    align-items: center;
-    justify-content: center;
-    backdrop-filter: blur(4px);
-}
-
-.aw-overlay[hidden] { display: none; }
-
-.aw-modal {
-    background: var(--bg-card);
-    border-radius: var(--radius-xl);
-    width: min(420px, 92vw);
-    max-height: 85vh;
+    flex-direction: column;
+    gap: 0;
+    background: #ffffff;
+    border-radius: 20px;
+    padding: 32px 28px 28px;
+    box-shadow:
+        0 8px 32px rgba(0, 0, 0, 0.12),
+        0 2px 8px rgba(0, 0, 0, 0.06);
     overflow: hidden;
-    box-shadow: var(--shadow-xl);
+}
+
+.lead-form-fields {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.lead-form-field {
     display: flex;
     flex-direction: column;
-    position: relative;
-    border: 1px solid var(--border);
+    gap: 6px;
+    text-align: left;
+    min-width: 0;
 }
 
-.aw-header {
-    background: var(--primary);
-    color: white;
-    padding: 16px 20px;
-    display: flex;
-    gap: 12px;
-    align-items: center;
+.lead-form-field label {
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #374151;
 }
 
-.aw-avatar {
-    background: rgba(255, 255, 255, 0.2);
-    width: 44px;
-    height: 44px;
-    border-radius: 50%;
-    display: flex;
+/* Asterisco obrigatório */
+.lead-form-field label::after {
+    content: " *";
+    color: #ef4444;
+    font-weight: 800;
+}
+
+.lead-form-field input {
+    padding: 15px 16px;
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    background: #f9fafb;
+    color: #111827;
+    font-family: var(--font, 'Inter', sans-serif);
+    font-size: 1rem;
+    transition: all 0.25s ease;
+    outline: none;
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+}
+
+.lead-form-field input::placeholder {
+    color: #9ca3af;
+}
+
+.lead-form-field input:focus {
+    border-color: #25d366;
+    background: #ffffff;
+    box-shadow: 0 0 0 3px rgba(37, 211, 102, 0.18);
+}
+
+/* Botão: APAGADO por padrão (form inválido = campos vazios) */
+.btn-whatsapp {
+    display: inline-flex;
     align-items: center;
     justify-content: center;
+    gap: 10px;
+    padding: 16px 32px;
+    background: #d1d5db;
+    color: #9ca3af;
+    font-size: 1.05rem;
+    font-weight: 700;
+    border-radius: 14px;
+    border: none;
+    cursor: not-allowed;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: none;
+    width: 100%;
+    margin: 0 auto;
 }
 
-.aw-avatar i { font-size: 1.4rem; }
-.aw-title { font-weight: 600; font-size: 1rem; }
-.aw-status { font-size: 0.75rem; opacity: 0.85; }
-
-.aw-close {
-    position: absolute;
-    top: 12px;
-    right: 16px;
-    background: none;
-    border: none;
-    color: white;
-    font-size: 1.5rem;
+/* Botão: ATIVO quando form está válido (campos preenchidos) */
+.lead-form:valid .btn-whatsapp {
+    background: linear-gradient(135deg, #25d366, #128c7e);
+    color: #ffffff;
     cursor: pointer;
-    line-height: 1;
-    opacity: 0.8;
+    box-shadow: 0 4px 16px rgba(37, 211, 102, 0.35);
 }
 
-.aw-close:hover { opacity: 1; }
-
-.aw-messages {
-    flex: 1;
-    overflow-y: auto;
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
+.lead-form:valid .btn-whatsapp:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 8px 30px rgba(37, 211, 102, 0.45);
 }
 
-.aw-bubble {
-    background: var(--bg-elevated);
-    border-radius: var(--radius);
-    padding: 12px 16px;
-    font-size: 0.9rem;
-    line-height: 1.5;
-    max-width: 85%;
-    border: 1px solid var(--border);
+.btn-whatsapp:active {
+    transform: scale(0.97);
 }
 
-.aw-input-area {
-    padding: 16px 20px;
-    border-top: 1px solid var(--border);
-    display: flex;
-    gap: 8px;
+.btn-whatsapp:disabled {
+    opacity: 0.7;
+    cursor: wait;
 }
 
-.aw-input {
-    flex: 1;
-    padding: 10px 14px;
-    border: 1.5px solid var(--border);
-    border-radius: var(--radius);
-    font-family: var(--font);
-    font-size: 0.9rem;
-    outline: none;
-    background: var(--bg);
-    color: var(--text);
+.btn-whatsapp i {
+    font-size: 1.2em;
 }
 
-.aw-input:focus { border-color: var(--primary); }
+.lead-form-hint {
+    font-size: 0.75rem;
+    color: #9ca3af;
+    text-align: center;
+    margin: 12px 0 0;
+}
 
-.aw-send {
-    background: var(--primary);
-    color: white;
-    border: none;
-    border-radius: var(--radius);
-    padding: 10px 18px;
+/* Dark theme overrides */
+[data-theme="dark"] .lead-form {
+    background: #1e293b;
+    box-shadow:
+        0 8px 32px rgba(0, 0, 0, 0.3),
+        0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+[data-theme="dark"] .lead-form-field label {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+[data-theme="dark"] .lead-form-field input {
+    border-color: rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.06);
+    color: #f1f5f9;
+}
+
+[data-theme="dark"] .lead-form-field input::placeholder {
+    color: rgba(255, 255, 255, 0.3);
+}
+
+[data-theme="dark"] .lead-form-field input:focus {
+    border-color: #25d366;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .lead-form-hint {
+    color: rgba(255, 255, 255, 0.4);
+}
+
+[data-theme="dark"] .btn-whatsapp {
+    background: #334155;
+    color: #64748b;
+}
+
+[data-theme="dark"] .lead-form:valid .btn-whatsapp {
+    background: linear-gradient(135deg, #25d366, #128c7e);
+    color: #ffffff;
+}
+
+/* Mobile: stack form fields */
+@media (max-width: 768px) {
+    .lead-form {
+        padding: 24px 20px 22px;
+    }
+    .lead-form-fields {
+        grid-template-columns: 1fr;
+    }
+}
+/* ==========================================================================
+   VALIDATION: Error States for Lead Form
+   ========================================================================== */
+.lead-form-error {
+    font-size: 0.82rem;
+    color: #dc2626;
     font-weight: 600;
-    cursor: pointer;
-    font-size: 0.85rem;
-    white-space: nowrap;
-    transition: var(--transition);
+    text-align: center;
+    margin: 0 0 12px;
+    padding: 8px 16px;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 8px;
+    animation: shake 0.4s ease;
 }
 
-.aw-send:hover { opacity: 0.9; }
-.aw-send:disabled { opacity: 0.5; cursor: not-allowed; }
+.lead-form-field input.input-error {
+    border-color: #ef4444 !important;
+    background: #fef2f2 !important;
+    animation: shake 0.4s ease;
+}
+
+[data-theme="dark"] .lead-form-error {
+    background: rgba(220, 38, 38, 0.12);
+    border-color: rgba(220, 38, 38, 0.3);
+    color: #fca5a5;
+}
+
+[data-theme="dark"] .lead-form-field input.input-error {
+    border-color: #ef4444 !important;
+    background: rgba(220, 38, 38, 0.1) !important;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-6px); }
+    40% { transform: translateX(6px); }
+    60% { transform: translateX(-4px); }
+    80% { transform: translateX(4px); }
+}
 
 /* ==========================================================================
    WHATSAPP FLOAT — Pulsating CTA

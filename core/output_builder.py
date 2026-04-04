@@ -24,8 +24,8 @@ def setup_output_dir(output_dir: str, config: dict):
     for subdir in ['css', 'js', 'images']:
         src = TEMPLATES_DIR / subdir
         dst = output_path / subdir
-        if src.exists() and not dst.exists():
-            shutil.copytree(str(src), str(dst))
+        if src.exists():
+            shutil.copytree(str(src), str(dst), dirs_exist_ok=True)
 
     # Processar variáveis no CSS copiado
     css_path = output_path / "css" / "style.css"

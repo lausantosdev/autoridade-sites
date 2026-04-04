@@ -1,247 +1,190 @@
+/**
+ * Autoridade Sites — Lead Capture Form Handler
+ * 
+ * Fluxo: Form submit → POST Worker (se configurado) → WhatsApp redirect
+ * 
+ * Configuração esperada em window.AUTORIDADE_WIDGET:
+ *   workerUrl, clientToken, dominio, empresaNome, whatsappNumero, keyword, local
+ */
 (function() {
-  'use strict';
+    'use strict';
 
-  // Verifica se o widget está configurado
-  if (!window.AUTORIDADE_WIDGET || !window.AUTORIDADE_WIDGET.workerUrl) {
-    return;
-  }
+    var form = document.getElementById('lead-form');
+    if (!form) return;
 
-  const config = window.AUTORIDADE_WIDGET;
+    var config = window.AUTORIDADE_WIDGET || {};
 
-  // Estado do widget
-  let currentStep = 1;
-  let userName = '';
-  let userWhatsApp = '';
-  let targetWhatsAppUrl = '';
+    // ===== 0. Mensagem de erro reutilizável =====
+    var errorMsg = document.createElement('p');
+    errorMsg.className = 'lead-form-error';
+    errorMsg.textContent = '';
+    errorMsg.style.display = 'none';
 
-  // Elementos do DOM
-  let overlay;
-  let modal;
-  let messagesContainer;
-  let inputField;
-  let sendButton;
-
-  // Inicializa o widget
-  function initWidget() {
-    createModal();
-    setupEventListeners();
-    interceptWhatsAppLinks();
-  }
-
-  // Cria o modal
-  function createModal() {
-    overlay = document.createElement('div');
-    overlay.id = 'aw-overlay';
-    overlay.className = 'aw-overlay';
-    overlay.style.display = 'none';
-
-    modal = document.createElement('div');
-    modal.id = 'aw-modal';
-    modal.className = 'aw-modal';
-
-    const closeButton = document.createElement('button');
-    closeButton.id = 'aw-close';
-    closeButton.className = 'aw-close';
-    closeButton.innerHTML = '×';
-    closeButton.setAttribute('aria-label', 'Fechar');
-
-    const header = document.createElement('div');
-    header.className = 'aw-header';
-
-    const avatar = document.createElement('div');
-    avatar.className = 'aw-avatar';
-    avatar.innerHTML = '<i class="fab fa-whatsapp"></i>';
-
-    const headerInfo = document.createElement('div');
-
-    const title = document.createElement('div');
-    title.className = 'aw-title';
-    title.textContent = config.empresaNome || 'Atendimento';
-
-    const status = document.createElement('div');
-    status.className = 'aw-status';
-    status.textContent = '● Online agora';
-
-    headerInfo.appendChild(title);
-    headerInfo.appendChild(status);
-
-    header.appendChild(avatar);
-    header.appendChild(headerInfo);
-
-    messagesContainer = document.createElement('div');
-    messagesContainer.id = 'aw-messages';
-    messagesContainer.className = 'aw-messages';
-
-    const inputArea = document.createElement('div');
-    inputArea.id = 'aw-input-area';
-    inputArea.className = 'aw-input-area';
-
-    inputField = document.createElement('input');
-    inputField.id = 'aw-input';
-    inputField.className = 'aw-input';
-    inputField.type = 'text';
-    inputField.placeholder = 'Seu nome completo';
-
-    sendButton = document.createElement('button');
-    sendButton.id = 'aw-send';
-    sendButton.className = 'aw-send';
-    sendButton.textContent = 'Continuar →';
-
-    inputArea.appendChild(inputField);
-    inputArea.appendChild(sendButton);
-
-    modal.appendChild(closeButton);
-    modal.appendChild(header);
-    modal.appendChild(messagesContainer);
-    modal.appendChild(inputArea);
-
-    overlay.appendChild(modal);
-    document.body.appendChild(overlay);
-
-    // Adiciona mensagem inicial
-    addBotMessage('Olá! 👋 Para te atender melhor no WhatsApp, pode me dizer seu nome?');
-  }
-
-  // Adiciona mensagem do bot
-  function addBotMessage(text) {
-    const message = document.createElement('div');
-    message.className = 'aw-bubble';
-    message.textContent = text;
-    messagesContainer.appendChild(message);
-    messagesContainer.scrollTop = messagesContainer.scrollHeight;
-  }
-
-  // Configura event listeners
-  function setupEventListeners() {
-    // Botão de fechar
-    document.getElementById('aw-close').addEventListener('click', closeModal);
-
-    // Clique no overlay
-    overlay.addEventListener('click', function(e) {
-      if (e.target === overlay) {
-        closeModal();
-      }
-    });
-
-    // Botão de enviar
-    sendButton.addEventListener('click', handleSend);
-
-    // Tecla Enter
-    inputField.addEventListener('keypress', function(e) {
-      if (e.key === 'Enter') {
-        handleSend();
-      }
-    });
-  }
-
-  // Intercepta links do WhatsApp
-  // DOM já está pronto (script carrega no final do </body>)
-  function interceptWhatsAppLinks() {
-    const whatsappLinks = document.querySelectorAll('a[href*="wa.me"]');
-    whatsappLinks.forEach(link => {
-      link.addEventListener('click', function(e) {
-        e.preventDefault();
-        targetWhatsAppUrl = link.href;
-        openModal();
-      });
-    });
-  }
-
-  // Abre o modal
-  function openModal() {
-    overlay.style.display = 'flex';
-    inputField.focus();
-  }
-
-  // Fecha o modal
-  function closeModal() {
-    overlay.style.display = 'none';
-    currentStep = 1;
-    userName = '';
-    userWhatsApp = '';
-    messagesContainer.innerHTML = '';
-    inputField.value = '';
-    inputField.placeholder = 'Seu nome completo';
-    sendButton.textContent = 'Continuar →';
-    addBotMessage('Olá! 👋 Para te atender melhor no WhatsApp, pode me dizer seu nome?');
-  }
-
-  // Lida com o envio
-  function handleSend() {
-    if (currentStep === 1) {
-      userName = inputField.value.trim();
-      if (!userName) {
-        alert('Por favor, informe seu nome.');
-        return;
-      }
-
-      // Adiciona mensagem do usuário
-      const userMessage = document.createElement('div');
-      userMessage.className = 'aw-bubble';
-      userMessage.style.alignSelf = 'flex-end';
-      userMessage.style.backgroundColor = 'var(--primary)';
-      userMessage.style.color = 'white';
-      userMessage.textContent = userName;
-      messagesContainer.appendChild(userMessage);
-
-      // Adiciona mensagem do bot para etapa 2
-      addBotMessage(`Perfeito, ${userName}! Qual é o seu WhatsApp para retorno?`);
-
-      // Atualiza placeholder e botão
-      inputField.value = '';
-      inputField.placeholder = 'Ex: (11) 99999-8888';
-      sendButton.textContent = 'Ir para WhatsApp →';
-      currentStep = 2;
-      inputField.focus();
-    } else if (currentStep === 2) {
-      userWhatsApp = inputField.value.trim();
-      if (!userWhatsApp) {
-        alert('Por favor, informe seu WhatsApp.');
-        return;
-      }
-
-      // Valida WhatsApp (mínimo 8 dígitos)
-      const digitsOnly = userWhatsApp.replace(/\D/g, '');
-      if (digitsOnly.length < 8) {
-        alert('Por favor, informe um número de WhatsApp válido.');
-        return;
-      }
-
-      // Adiciona mensagem do usuário
-      const userMessage = document.createElement('div');
-      userMessage.className = 'aw-bubble';
-      userMessage.style.alignSelf = 'flex-end';
-      userMessage.style.backgroundColor = 'var(--primary)';
-      userMessage.style.color = 'white';
-      userMessage.textContent = userWhatsApp;
-      messagesContainer.appendChild(userMessage);
-
-      // Envia dados para o worker
-      sendToWorker(userName, userWhatsApp);
-
-      // Fecha o modal e abre o WhatsApp
-      closeModal();
-      window.open(targetWhatsAppUrl, '_blank');
+    // Inserir após os campos, antes do botão
+    var btnEl = form.querySelector('.btn-whatsapp');
+    if (btnEl) {
+        form.insertBefore(errorMsg, btnEl);
+    } else {
+        form.appendChild(errorMsg);
     }
-  }
 
-  // Envia dados para o worker
-  function sendToWorker(name, whatsapp) {
-    fetch(config.workerUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        nome: name,
-        whatsapp: whatsapp,
-        dominio: config.dominio,
-        pagina: window.location.href,
-        keyword: config.keyword,
-        local: config.local,
-        client_token: config.clientToken
-      })
-    }).catch(() => {});
-  }
+    function showError(msg) {
+        errorMsg.textContent = msg;
+        errorMsg.style.display = 'block';
+        // Auto-esconder após 4s
+        clearTimeout(errorMsg._timer);
+        errorMsg._timer = setTimeout(function() {
+            errorMsg.style.display = 'none';
+        }, 4000);
+    }
 
-  // Inicializa o widget
-  initWidget();
+    function hideError() {
+        errorMsg.style.display = 'none';
+        clearTimeout(errorMsg._timer);
+    }
+
+    // Limpar erro ao digitar
+    var nomeInput = form.querySelector('[name="nome"]');
+    var whatsappInput = form.querySelector('[name="whatsapp"]');
+
+    function onInputChange() {
+        // Limpar estado de erro dos campos
+        if (nomeInput) nomeInput.classList.remove('input-error');
+        if (whatsappInput) whatsappInput.classList.remove('input-error');
+        hideError();
+    }
+
+    if (nomeInput) nomeInput.addEventListener('input', onInputChange);
+    if (whatsappInput) whatsappInput.addEventListener('input', onInputChange);
+
+    // ===== 1. Form submit handler =====
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        var nome = nomeInput ? nomeInput.value.trim() : '';
+        var whatsapp = whatsappInput ? whatsappInput.value.trim() : '';
+
+        // Validar campos vazios — mostrar erro visual
+        if (!nome && !whatsapp) {
+            if (nomeInput) nomeInput.classList.add('input-error');
+            if (whatsappInput) whatsappInput.classList.add('input-error');
+            showError('Preencha seu nome e WhatsApp para continuar.');
+            if (nomeInput) nomeInput.focus();
+            return;
+        }
+        if (!nome) {
+            if (nomeInput) nomeInput.classList.add('input-error');
+            showError('Preencha seu nome para continuar.');
+            nomeInput.focus();
+            return;
+        }
+        if (!whatsapp) {
+            if (whatsappInput) whatsappInput.classList.add('input-error');
+            showError('Preencha seu WhatsApp para continuar.');
+            whatsappInput.focus();
+            return;
+        }
+
+        // Validar WhatsApp (mínimo 8 dígitos)
+        var digits = whatsapp.replace(/\D/g, '');
+        if (digits.length < 8) {
+            if (whatsappInput) whatsappInput.classList.add('input-error');
+            showError('Informe um número de WhatsApp válido.');
+            whatsappInput.focus();
+            return;
+        }
+
+        hideError();
+
+        // Feedback visual
+        var btn = form.querySelector('button[type="submit"]');
+        var originalHTML = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fab fa-whatsapp"></i> Abrindo WhatsApp...';
+
+        // POST para Worker (se configurado — fire-and-forget)
+        if (config.workerUrl) {
+            var keywordField = form.querySelector('[name="keyword"]');
+            var localField = form.querySelector('[name="local"]');
+
+            fetch(config.workerUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    nome: nome,
+                    whatsapp: whatsapp,
+                    dominio: config.dominio || window.location.hostname,
+                    pagina: window.location.pathname,
+                    keyword: keywordField ? keywordField.value : (config.keyword || ''),
+                    local: localField ? localField.value : (config.local || ''),
+                    client_token: config.clientToken || ''
+                })
+            }).catch(function() { /* silencioso */ });
+        }
+
+        // Montar mensagem pré-preenchida para WhatsApp
+        var keyword = config.keyword || '';
+        var local = config.local || '';
+        var contexto = '';
+        if (keyword && local) {
+            contexto = ' Vi o site sobre ' + keyword + ' em ' + local + ' e';
+        }
+        var msg = 'Olá, sou ' + nome + '.' + contexto +
+                  ' gostaria de saber mais sobre os serviços.';
+
+        var waUrl = 'https://wa.me/' + (config.whatsappNumero || '') +
+                    '?text=' + encodeURIComponent(msg);
+
+        // Abrir WhatsApp
+        window.open(waUrl, '_blank');
+
+        // Reset após 2s
+        setTimeout(function() {
+            btn.disabled = false;
+            btn.innerHTML = originalHTML;
+            form.reset();
+        }, 2000);
+    });
+
+    // ===== 2. Smooth scroll para âncoras #contato =====
+    function setupSmoothScroll(link) {
+        if (link.dataset.awScroll) return;
+        link.dataset.awScroll = '1';
+        link.addEventListener('click', function(e) {
+            var target = document.getElementById('contato');
+            if (target) {
+                e.preventDefault();
+                target.scrollIntoView({ behavior: 'smooth' });
+            }
+        });
+    }
+
+    // Links estáticos #contato
+    document.querySelectorAll('a[href="#contato"]').forEach(setupSmoothScroll);
+
+    // ===== 3. Observer para React: redireciona links wa.me dinâmicos =====
+    function redirectDynamicWaLinks() {
+        document.querySelectorAll('a[href*="wa.me"]:not([data-aw-redirect])').forEach(function(link) {
+            link.dataset.awRedirect = '1';
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                var target = document.getElementById('contato');
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth' });
+                }
+            });
+        });
+    }
+
+    redirectDynamicWaLinks();
+
+    // MutationObserver para capturar links criados pelo React
+    if (typeof MutationObserver !== 'undefined') {
+        var observer = new MutationObserver(redirectDynamicWaLinks);
+        observer.observe(document.body, { childList: true, subtree: true });
+    }
+
+    // Safety net
+    setTimeout(redirectDynamicWaLinks, 500);
+    setTimeout(redirectDynamicWaLinks, 1500);
 })();

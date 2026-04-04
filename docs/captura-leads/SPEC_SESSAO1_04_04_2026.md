@@ -9,11 +9,11 @@
 
 ## Sumário de Fases
 
-- [ ] Fase 1: CSS do formulário de leads
-- [ ] Fase 2: Templates (page.html + index.html) — CTA → form + links → #contato
-- [ ] Fase 3: Reescrita do widget.js  
-- [ ] Fase 4: Injeção na Home Premium (template_injector.py)
-- [ ] Fase 5: Validação visual e E2E
+- [x] Fase 1: CSS do formulário de leads
+- [x] Fase 2: Templates (page.html + index.html) — CTA → form + links → #contato
+- [x] Fase 3: Reescrita do widget.js  
+- [x] Fase 4: Injeção na Home Premium (template_injector.py)
+- [x] Fase 5: Validação visual e E2E
 
 ---
 

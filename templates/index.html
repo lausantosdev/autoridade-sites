@@ -40,6 +40,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="stylesheet" href="css/reset.css">
     <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/widget.css?v=2">
 </head>
 <body>
 
@@ -79,7 +80,7 @@
                     e resultados comprovados. Fale com um especialista sem compromisso.
                 </p>
                 <div class="hero-buttons">
-                    <a href="{{whatsapp_link}}" data-dinamico-href="whatsapp_link" class="btn btn-primary" target="_blank" rel="noopener">
+                    <a href="#contato" data-dinamico-href="whatsapp_link" class="btn btn-primary">
                         <i class="fab fa-whatsapp"></i> Fale Conosco
                     </a>
                 </div>
@@ -120,7 +121,7 @@
             </div>
             
             <div class="text-center" style="margin-top: 40px;">
-                <a href="{{whatsapp_link}}" data-dinamico-href="whatsapp_link" class="btn btn-outline" style="color: var(--text-white); border-color: rgba(255,255,255,0.2);" target="_blank" rel="noopener">
+                <a href="#contato" data-dinamico-href="whatsapp_link" class="btn btn-outline" style="color: var(--text-white); border-color: rgba(255,255,255,0.2);">
                     <i class="fab fa-whatsapp"></i> Falar com Especialista
                 </a>
             </div>
@@ -181,13 +182,26 @@
     <!-- CTA -->
     <section id="contato" class="cta-section">
         <div class="container">
-            <h2 class="cta-title">Pronto para começar?</h2>
-            <p class="cta-subtitle">Entre em contato agora e fale com nossa equipe sem compromisso.</p>
-            <div class="cta-buttons">
-                <a href="{{whatsapp_link}}" data-dinamico-href="whatsapp_link" class="btn btn-white" target="_blank" rel="noopener">
-                    <i class="fab fa-whatsapp"></i> WhatsApp
-                </a>
-            </div>
+            <h2 class="cta-title">Fale Conosco</h2>
+            <p class="cta-subtitle">Tire suas dúvidas ou solicite mais informações conversando com nossa equipe pelo WhatsApp.</p>
+            <form id="lead-form" class="lead-form" autocomplete="on">
+                <input type="hidden" name="keyword" value="">
+                <input type="hidden" name="local" value="">
+                <div class="lead-form-fields">
+                    <div class="lead-form-field">
+                        <label for="lead-nome">Seu nome</label>
+                        <input type="text" id="lead-nome" name="nome" placeholder="Como podemos te chamar?" required autocomplete="name">
+                    </div>
+                    <div class="lead-form-field">
+                        <label for="lead-whatsapp">Seu WhatsApp</label>
+                        <input type="tel" id="lead-whatsapp" name="whatsapp" placeholder="(11) 99999-9999" required autocomplete="tel">
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-whatsapp">
+                    <i class="fab fa-whatsapp"></i> Iniciar Conversa pelo WhatsApp
+                </button>
+                <p class="lead-form-hint">Ao enviar, você será direcionado para o WhatsApp do especialista.</p>
+            </form>
         </div>
     </section>
 
@@ -227,7 +241,7 @@
     </footer>
 
     <!-- WhatsApp Float -->
-    <a href="{{whatsapp_link}}" data-dinamico-href="whatsapp_link" class="whatsapp-float" target="_blank" rel="noopener" aria-label="WhatsApp">
+    <a href="#contato" data-dinamico-href="whatsapp_link" class="whatsapp-float" aria-label="WhatsApp">
         <i class="fab fa-whatsapp"></i>
     </a>
 
@@ -246,6 +260,6 @@
       local: ""
     };
     </script>
-    <script src="js/widget.js"></script>
+    <script src="js/widget.js?v=2"></script>
 </body>
 </html>

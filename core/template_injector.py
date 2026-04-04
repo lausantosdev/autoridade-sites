@@ -66,6 +66,9 @@ def inject_template(
     # 4.1 Injetar script de footer links SEO
     html = _inject_footer_links_script(html)
     
+    # 4.2 Injetar formulário de captura de leads
+    html = _inject_leads_form(html, site_data)
+    
     # 5. Copiar assets (JS/CSS bundles)
     _copy_assets(dist_dir, output_dir)
     
@@ -216,6 +219,80 @@ def _inject_footer_links_script(html: str) -> str:
 })();
 </script>"""
     return html.replace('</body>', script + '\n</body>')
+
+
+def _inject_leads_form(html: str, site_data: dict) -> str:
+    """Injeta o formulário de Captura de Leads na Home Premium."""
+    # 1. CSS — link externo (widget.css é copiado pelo output_builder junto com /css)
+    html = html.replace('</head>', '<link rel="stylesheet" href="css/widget.css?v=2">\n</head>', 1)
+        
+    # 2. Dados
+    mega_cta = site_data.get('megaCtaSection', {})
+    cta_titulo = mega_cta.get('title', 'Pronto para começar?')
+    cta_subtitulo = mega_cta.get('subtitle', 'Entre em contato agora e fale com nossa equipe sem compromisso.')
+    
+    leads = site_data.get('leads', {})
+    worker_url = leads.get('workerUrl', '')
+    client_token = leads.get('clientToken', '')
+    
+    empresa = site_data.get('empresa', {})
+    dominio = empresa.get('dominio', '')
+    empresa_nome = empresa.get('nome', '')
+    whatsapp_num = empresa.get('telefoneWhatsapp', '')
+    
+    seo = site_data.get('seo', {})
+    keyword = seo.get('keyword', '')
+    local = seo.get('local', '')
+    
+    # 3. HTML Form
+    form_html = f"""
+    <section id="contato" class="cta-section">
+        <div class="container">
+            <h2 class="cta-title">{_escape_html_attr(cta_titulo)}</h2>
+            <p class="cta-subtitle">{_escape_html_attr(cta_subtitulo)}</p>
+            <form id="lead-form" class="lead-form" autocomplete="on">
+                <input type="hidden" name="keyword" value="{_escape_html_attr(keyword)}">
+                <input type="hidden" name="local" value="{_escape_html_attr(local)}">
+                <div class="lead-form-fields">
+                    <div class="lead-form-field">
+                        <label for="lead-nome">Seu nome</label>
+                        <input type="text" id="lead-nome" name="nome" placeholder="Como podemos te chamar?" required autocomplete="name">
+                    </div>
+                    <div class="lead-form-field">
+                        <label for="lead-whatsapp">Seu WhatsApp</label>
+                        <input type="tel" id="lead-whatsapp" name="whatsapp" placeholder="(11) 99999-9999" required autocomplete="tel">
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-whatsapp">
+                    <i class="fab fa-whatsapp"></i> Iniciar Conversa pelo WhatsApp
+                </button>
+                <p class="lead-form-hint">Ao enviar, você será direcionado para o WhatsApp do especialista.</p>
+            </form>
+        </div>
+    </section>
+    """
+    
+    # 4. Configuração e script JS
+    widget_script = f"""
+    <!-- Widget de Captura de Leads -->
+    <script>
+    window.AUTORIDADE_WIDGET = {{
+      workerUrl: "{_escape_html_attr(worker_url)}",
+      clientToken: "{_escape_html_attr(client_token)}",
+      dominio: "{_escape_html_attr(dominio)}",
+      empresaNome: "{_escape_html_attr(empresa_nome)}",
+      whatsappNumero: "{_escape_html_attr(whatsapp_num)}",
+      keyword: "{_escape_html_attr(keyword)}",
+      local: "{_escape_html_attr(local)}"
+    }};
+    </script>
+    <script src="js/widget.js?v=2"></script>
+    """
+    
+    injection = f"{form_html}\n{widget_script}"
+    html = html.replace('</body>', f'{injection}\n</body>', 1)
+    
+    return html
 
 
 def _copy_assets(dist_dir: str, output_dir: str):
