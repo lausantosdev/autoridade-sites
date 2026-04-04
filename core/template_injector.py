@@ -244,8 +244,37 @@ def _inject_leads_form(html: str, site_data: dict) -> str:
     keyword = seo.get('keyword', '')
     local = seo.get('local', '')
     
-    # 3. HTML Form
+    # 3. HTML Form e CSS Inline para o container (seção oculta inicialmente)
     form_html = f"""
+    <style>
+    /* Container styles for injected contact section */
+    #contato {{
+      display: none; /* Oculto até o integrador posicionar */
+    }}
+    #contato .container {{
+      max-width: 640px;
+      margin: 0 auto;
+      padding: 0 24px;
+      text-align: center;
+    }}
+    #contato .cta-title {{
+      font-size: 1.75rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: var(--foreground, #0f172a);
+    }}
+    #contato .cta-subtitle {{
+      font-size: 0.95rem;
+      color: var(--muted-foreground, #64748b);
+      margin-bottom: 32px;
+      line-height: 1.6;
+    }}
+    /* Dark theme */
+    html[data-theme="dark"] #contato .cta-title,
+    [data-theme="dark"] #contato .cta-title {{
+      color: var(--foreground, #e2e8f0);
+    }}
+    </style>
     <section id="contato" class="cta-section">
         <div class="container">
             <h2 class="cta-title">{_escape_html_attr(cta_titulo)}</h2>
@@ -287,6 +316,56 @@ def _inject_leads_form(html: str, site_data: dict) -> str:
     }};
     </script>
     <script src="js/widget.js?v=2"></script>
+    
+    <!-- Integrador do Formulário de Leads na Home Premium -->
+    <script>
+    (function() {{
+      function integrateForm() {{
+        var form = document.getElementById('contato');
+        if (!form) return false;
+        
+        var sections = document.querySelectorAll('#root section');
+        var megaCta = null;
+        
+        sections.forEach(function(sec) {{
+          var h2 = sec.querySelector('h2');
+          if (h2 && sec.querySelector('a[href*="wa.me"]')) {{
+            megaCta = sec;
+          }}
+        }});
+        
+        if (!megaCta) return false;
+        
+        var innerContainer = megaCta.querySelector(':scope > div');
+        if (innerContainer) {{
+          innerContainer.innerHTML = '';
+          innerContainer.appendChild(form.querySelector('.container') || form);
+        }}
+        
+        form.style.display = '';
+        
+        if (form.parentNode && form.parentNode !== innerContainer) {{
+          form.parentNode.removeChild(form);
+        }}
+        
+        return true;
+      }}
+      
+      function tryIntegrate() {{
+        if (!integrateForm()) {{
+          setTimeout(tryIntegrate, 200);
+        }}
+      }}
+      
+      if (document.readyState === 'complete') {{
+        setTimeout(tryIntegrate, 300);
+      }} else {{
+        window.addEventListener('load', function() {{
+          setTimeout(tryIntegrate, 300);
+        }});
+      }}
+    }})();
+    </script>
     """
     
     injection = f"{form_html}\n{widget_script}"

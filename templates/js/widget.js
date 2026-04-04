@@ -166,6 +166,11 @@
     function redirectDynamicWaLinks() {
         document.querySelectorAll('a[href*="wa.me"]:not([data-aw-redirect])').forEach(function(link) {
             link.dataset.awRedirect = '1';
+            
+            // Força o comportamento de ancora na mesma página
+            link.removeAttribute('target');
+            link.href = '#contato';
+            
             link.addEventListener('click', function(e) {
                 e.preventDefault();
                 var target = document.getElementById('contato');

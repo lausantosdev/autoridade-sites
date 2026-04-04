@@ -172,8 +172,8 @@ def build_site_data(config: dict, client: OpenRouterClient) -> dict:
         },
         
         "megaCtaSection": {
-            "title": ai_content.get('mega_cta_title', f"Pronto para começar?"),
-            "subtitle": ai_content.get('mega_cta_subtitle', "Fale com nossa equipe pelo WhatsApp sem compromisso."),
+            "title": "Fale Conosco",
+            "subtitle": "Tire suas dúvidas ou solicite mais informações conversando com nossa equipe pelo WhatsApp.",
         },
         
         "faqSection": {
