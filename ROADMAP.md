@@ -40,7 +40,7 @@
 ### Sprint: Finalização de Produto (Foco em Leads e Dashboard)
 > Foco: Concluir a captura de leads e otimização do dashboard do empresário.
 
-- [🔄] **Captura de leads** — Planejamento estratégico aprovado e especificação técnica pronta (`SPEC_SESSAO1_04_04_2026.md`). Início da execução (Fase 1: Formulários embutidos).
+- [🔄] **Captura de leads** — Formulários embutidos e fluxos concluídos nas Subpáginas. Na Home React, a arquitetura de injeção e posicionamento está funcional, mas **a Home ainda carece de ajustes visuais finais e não está 100% finalizada**.
 - [ ] **Dashboard do empresário** — revisar, otimizar e validar com dados reais
 
 ---
