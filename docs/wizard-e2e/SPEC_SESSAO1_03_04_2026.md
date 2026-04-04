@@ -507,20 +507,20 @@ Preencher com (ou dados similares reais):
 
 ### 5.3 — Checklist de verificação
 
-- [ ] Step 0: Todos os campos preenchidos, avançou sem erro
-- [ ] Step 1: Keywords aparecem como tags no preview
-- [ ] Step 2: Estimativa mostra "3 keywords × 2 locais = 6 páginas"
-- [ ] Step 3: Cor muda no picker, campos de leads visíveis
-- [ ] Step 4 (Review): Dados corretos, custo estimado aparece
-- [ ] Progresso: 9 steps aparecem na lista
-- [ ] Progresso: Barra circular avança conforme steps
-- [ ] Progresso: Contagem x/6 páginas atualiza em tempo real
-- [ ] Completo: Estatísticas aparecem (páginas, palavras, custo, tempo)
-- [ ] Download: ZIP baixa corretamente
-- [ ] ZIP: `index.html` abre no browser com design premium
-- [ ] ZIP: Subpáginas existem (6 arquivos .html)
-- [ ] ZIP: `sitemap.xml` existe
-- [ ] ZIP: `robots.txt` existe
+- [x] Step 0: Todos os campos preenchidos, avançou sem erro
+- [x] Step 1: Keywords aparecem como tags no preview
+- [x] Step 2: Estimativa mostra "3 keywords × 2 locais = 6 páginas"
+- [x] Step 3: Cor muda no picker, campos de leads visíveis
+- [x] Step 4 (Review): Dados corretos, custo estimado aparece
+- [x] Progresso: 9 steps aparecem na lista
+- [x] Progresso: Barra circular avança conforme steps
+- [x] Progresso: Contagem x/6 páginas atualiza em tempo real
+- [x] Completo: Estatísticas aparecem (páginas, palavras, custo, tempo)
+- [x] Download: ZIP baixa corretamente
+- [x] ZIP: `index.html` abre no browser com design premium
+- [x] ZIP: Subpáginas existem (6 arquivos .html)
+- [x] ZIP: `sitemap.xml` existe
+- [x] ZIP: `robots.txt` existe
 
 ---
 

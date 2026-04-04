@@ -60,4 +60,4 @@ pytest tests/ --cov=core --cov-fail-under=75
 - [x] Fase 2: Validações
 - [x] Fase 3: Campos de Leads
 - [x] Fase 4: Testes Automatizados
-- [ ] Fase 5: Teste E2E Manual
+- [x] Fase 5: Teste E2E Manual

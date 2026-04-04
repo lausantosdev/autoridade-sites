@@ -20,7 +20,7 @@
 - [x] Footer com links SEO geo-localizados (silo de links internos)
 - [~] Captura de leads via formulário WhatsApp + Cloudflare Worker + Supabase *(backend ok — falta frontend integrado e configs manuais do Cloudflare/Supabase)*
 - [~] Dashboard do empresário (visualização de leads em tempo real) *(existente — falta otimização e revisão)*
-- [~] Wizard Web (FastAPI + WebSocket) com progresso em tempo real *(funcional — falta otimização, revisão e teste de geração E2E real)*
+- [x] Wizard Web (FastAPI + WebSocket) com progresso em tempo real
 
 ### Engenharia / Qualidade (PLAN_10_10 — Concluído em 03/04/2026)
 - [x] Logging estruturado em todo o `core/` (`core/logger.py`)
@@ -37,10 +37,9 @@
 
 ## 🚧 Em Progresso
 
-### Sprint: Finalização de Produto (Sessão 1 — 03/04/2026)
-> Foco: Tornar a captura de leads, dashboard e a interface do Wizard 100% funcionais.
+### Sprint: Finalização de Produto (Foco em Leads e Dashboard)
+> Foco: Concluir a captura de leads e otimização do dashboard do empresário.
 
-- [x] **Wizard Web** — teste de geração E2E real (gerar site completo via UI e validar o ZIP)
 - [ ] **Captura de leads** — integrar frontend com Cloudflare Worker + documentar setup manual do Supabase
 - [ ] **Dashboard do empresário** — revisar, otimizar e validar com dados reais
 
