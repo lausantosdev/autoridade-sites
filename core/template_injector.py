@@ -250,6 +250,8 @@ def _inject_leads_form(html: str, site_data: dict) -> str:
     /* Container styles for injected contact section */
     #contato {{
       display: none; /* Oculto até o integrador posicionar */
+      padding: 80px 0;
+      width: 100%;
     }}
     #contato .container {{
       max-width: 640px;
@@ -258,10 +260,11 @@ def _inject_leads_form(html: str, site_data: dict) -> str:
       text-align: center;
     }}
     #contato .cta-title {{
-      font-size: 1.75rem;
-      font-weight: 700;
-      margin-bottom: 8px;
+      font-size: 2.25rem;
+      font-weight: 800;
+      margin-bottom: 16px;
       color: var(--foreground, #0f172a);
+      letter-spacing: -0.025em;
     }}
     #contato .cta-subtitle {{
       font-size: 0.95rem;
@@ -321,47 +324,51 @@ def _inject_leads_form(html: str, site_data: dict) -> str:
     <script>
     (function() {{
       function integrateForm() {{
-        var form = document.getElementById('contato');
-        if (!form) return false;
+        var contato = document.getElementById('contato');
+        if (!contato) return false;
         
-        var sections = document.querySelectorAll('#root section');
+        var root = document.getElementById('root');
+        if (!root) return false;
+        
+        // Encontrar a MegaCTA do React: h2 "Fale Conosco" + link wa.me
+        // Se não encontrar ainda (React não terminou de renderizar), retorna false e tenta de novo
         var megaCta = null;
-        
-        sections.forEach(function(sec) {{
+        root.querySelectorAll('section').forEach(function(sec) {{
           var h2 = sec.querySelector('h2');
-          if (h2 && sec.querySelector('a[href*="wa.me"]')) {{
-            megaCta = sec;
-          }}
+          var hasTitle = h2 && h2.textContent.trim() === 'Fale Conosco';
+          var hasWa = !!sec.querySelector('a[href*="wa.me"]');
+          if (hasTitle && hasWa) {{ megaCta = sec; }}
         }});
+        if (!megaCta) return false; // Retry — React ainda não renderizou
         
-        if (!megaCta) return false;
+        // Esconder a MegaCTA nativa do React
+        megaCta.style.display = 'none';
         
-        var innerContainer = megaCta.querySelector(':scope > div');
-        if (innerContainer) {{
-          innerContainer.innerHTML = '';
-          innerContainer.appendChild(form.querySelector('.container') || form);
+        // Mover #contato para a posição exata da MegaCTA no layout
+        // Isso mantem o fluxo de renderização perfeito: logo após a seção natural de leitura
+        if (contato.parentNode !== megaCta.parentNode) {{
+          megaCta.parentNode.insertBefore(contato, megaCta);
         }}
         
-        form.style.display = '';
-        
-        if (form.parentNode && form.parentNode !== innerContainer) {{
-          form.parentNode.removeChild(form);
-        }}
+        // Tornar o form visível usando block para sobrescrever o CSS inicial
+        contato.style.display = 'block';
         
         return true;
       }}
       
+      var _attempts = 0;
       function tryIntegrate() {{
-        if (!integrateForm()) {{
-          setTimeout(tryIntegrate, 200);
+        _attempts++;
+        if (!integrateForm() && _attempts < 15) {{
+          setTimeout(tryIntegrate, 300); // até 15 tentativas (~4.5s)
         }}
       }}
       
       if (document.readyState === 'complete') {{
-        setTimeout(tryIntegrate, 300);
+        setTimeout(tryIntegrate, 200);
       }} else {{
         window.addEventListener('load', function() {{
-          setTimeout(tryIntegrate, 300);
+          setTimeout(tryIntegrate, 200);
         }});
       }}
     }})();
