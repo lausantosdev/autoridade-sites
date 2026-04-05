@@ -247,11 +247,24 @@ def _inject_leads_form(html: str, site_data: dict) -> str:
     # 3. HTML Form e CSS Inline para o container (seção oculta inicialmente)
     form_html = f"""
     <style>
-    /* Container styles for injected contact section */
+    /* Ocultar botões CTA wa.me do React instantaneamente (evita flash) */
+    #root section a[href*="wa.me"] {{
+      display: none !important;
+    }}
+    /* ═══ Seção Fale Conosco — Premium Injected ═══ */
     #contato {{
       display: none; /* Oculto até o integrador posicionar */
-      padding: 80px 0;
+      padding: 96px 0 80px;
       width: 100%;
+      scroll-margin-top: 100px;
+      background: linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--theme-color, #6366f1) 8%, transparent) 0%,
+        color-mix(in srgb, var(--theme-color, #6366f1) 14%, transparent) 50%,
+        color-mix(in srgb, var(--theme-color, #6366f1) 8%, transparent) 100%
+      );
+      border-top: 1px solid color-mix(in srgb, var(--theme-color, #6366f1) 15%, transparent);
+      border-bottom: 1px solid color-mix(in srgb, var(--theme-color, #6366f1) 15%, transparent);
     }}
     #contato .container {{
       max-width: 640px;
@@ -259,27 +272,136 @@ def _inject_leads_form(html: str, site_data: dict) -> str:
       padding: 0 24px;
       text-align: center;
     }}
+    /* Eyebrow badge */
+    #contato .cta-eyebrow {{
+      display: inline-block;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--muted-foreground, #64748b);
+      margin-bottom: 16px;
+    }}
     #contato .cta-title {{
       font-size: 2.25rem;
       font-weight: 800;
       margin-bottom: 16px;
       color: var(--foreground, #0f172a);
       letter-spacing: -0.025em;
+      line-height: 1.2;
     }}
     #contato .cta-subtitle {{
       font-size: 0.95rem;
       color: var(--muted-foreground, #64748b);
-      margin-bottom: 32px;
-      line-height: 1.6;
+      margin-bottom: 36px;
+      line-height: 1.7;
+      max-width: 480px;
+      margin-left: auto;
+      margin-right: auto;
     }}
-    /* Dark theme */
+
+    /* ═══ Dark theme ═══ */
+    html[data-theme="dark"] #contato,
+    [data-theme="dark"] #contato {{
+      background: linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--theme-color, #6366f1) 6%, transparent) 0%,
+        color-mix(in srgb, var(--theme-color, #6366f1) 10%, transparent) 50%,
+        color-mix(in srgb, var(--theme-color, #6366f1) 6%, transparent) 100%
+      );
+      border-top-color: color-mix(in srgb, var(--theme-color, #6366f1) 12%, transparent);
+      border-bottom-color: color-mix(in srgb, var(--theme-color, #6366f1) 12%, transparent);
+    }}
+    html[data-theme="dark"] #contato .cta-eyebrow,
+    [data-theme="dark"] #contato .cta-eyebrow {{
+      color: rgba(255, 255, 255, 0.45);
+    }}
     html[data-theme="dark"] #contato .cta-title,
     [data-theme="dark"] #contato .cta-title {{
       color: var(--foreground, #e2e8f0);
     }}
+    html[data-theme="dark"] #contato .cta-subtitle,
+    [data-theme="dark"] #contato .cta-subtitle {{
+      color: rgba(255, 255, 255, 0.55);
+    }}
+
+    /* ═══ Mobile ═══ */
+    @media (max-width: 768px) {{
+      #contato {{
+        padding: 64px 0 56px;
+      }}
+      #contato .cta-title {{
+        font-size: 1.75rem;
+      }}
+    }}
+
+    /* ═══ Bottom CTA (reforço pré-footer) ═══ */
+    #bottom-cta {{
+      display: none;
+      padding: 64px 0;
+      width: 100%;
+      text-align: center;
+    }}
+    #bottom-cta .bottom-cta-card {{
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 40px 32px;
+      border-radius: 20px;
+      background: linear-gradient(135deg, #f0f0ff 0%, #e8e6ff 100%);
+      border: 1px solid rgba(99, 102, 241, 0.12);
+    }}
+    #bottom-cta .bottom-cta-text {{
+      font-size: 1rem;
+      font-weight: 500;
+      color: #1e293b;
+      line-height: 1.7;
+      margin-bottom: 24px;
+    }}
+    #bottom-cta .bottom-cta-text strong {{
+      font-weight: 700;
+    }}
+    #bottom-cta .bottom-cta-btn {{
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 36px;
+      background: var(--theme-color, #6366f1);
+      color: #ffffff;
+      font-size: 1rem;
+      font-weight: 700;
+      border-radius: 50px;
+      border: none;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 4px 16px rgba(99, 102, 241, 0.3);
+    }}
+    #bottom-cta .bottom-cta-btn:hover {{
+      transform: translateY(-2px) scale(1.03);
+      box-shadow: 0 8px 28px rgba(99, 102, 241, 0.4);
+    }}
+    /* Dark theme */
+    html[data-theme="dark"] #bottom-cta .bottom-cta-card,
+    [data-theme="dark"] #bottom-cta .bottom-cta-card {{
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(99, 102, 241, 0.15) 100%);
+      border-color: rgba(99, 102, 241, 0.2);
+    }}
+    html[data-theme="dark"] #bottom-cta .bottom-cta-text,
+    [data-theme="dark"] #bottom-cta .bottom-cta-text {{
+      color: #e2e8f0;
+    }}
+    @media (max-width: 768px) {{
+      #bottom-cta {{
+        padding: 48px 24px;
+      }}
+      #bottom-cta .bottom-cta-card {{
+        padding: 32px 24px;
+      }}
+    }}
     </style>
     <section id="contato" class="cta-section">
         <div class="container">
+            <span class="cta-eyebrow">Contato</span>
             <h2 class="cta-title">{_escape_html_attr(cta_titulo)}</h2>
             <p class="cta-subtitle">{_escape_html_attr(cta_subtitulo)}</p>
             <form id="lead-form" class="lead-form" autocomplete="on">
@@ -300,6 +422,17 @@ def _inject_leads_form(html: str, site_data: dict) -> str:
                 </button>
                 <p class="lead-form-hint">Ao enviar, você será direcionado para o WhatsApp do especialista.</p>
             </form>
+        </div>
+    </section>
+    <section id="bottom-cta">
+        <div class="bottom-cta-card">
+            <p class="bottom-cta-text">
+                <strong>{_escape_html_attr(empresa_nome)}</strong> atende em {_escape_html_attr(local)} e região.<br>
+                Fale agora com um especialista pelo WhatsApp sem compromisso.
+            </p>
+            <a href="#contato" class="bottom-cta-btn" onclick="event.preventDefault();document.getElementById('contato').scrollIntoView({{behavior:'smooth',block:'center'}})">
+                <i class="fab fa-whatsapp"></i> Falar Agora
+            </a>
         </div>
     </section>
     """
@@ -330,28 +463,66 @@ def _inject_leads_form(html: str, site_data: dict) -> str:
         var root = document.getElementById('root');
         if (!root) return false;
         
-        // Encontrar a MegaCTA do React: h2 "Fale Conosco" + link wa.me
-        // Se não encontrar ainda (React não terminou de renderizar), retorna false e tenta de novo
+        var sections = root.querySelectorAll('section');
+        if (sections.length === 0) return false; // React ainda não renderizou
+
+        // 1. Encontrar e ocultar a MegaCTA nativa do React (tem h2 + link wa.me)
         var megaCta = null;
-        root.querySelectorAll('section').forEach(function(sec) {{
+        sections.forEach(function(sec) {{
           var h2 = sec.querySelector('h2');
-          var hasTitle = h2 && h2.textContent.trim() === 'Fale Conosco';
           var hasWa = !!sec.querySelector('a[href*="wa.me"]');
-          if (hasTitle && hasWa) {{ megaCta = sec; }}
+          if (h2 && hasWa) {{ megaCta = sec; }}
         }});
-        if (!megaCta) return false; // Retry — React ainda não renderizou
-        
-        // Esconder a MegaCTA nativa do React
-        megaCta.style.display = 'none';
-        
-        // Mover #contato para a posição exata da MegaCTA no layout
-        // Isso mantem o fluxo de renderização perfeito: logo após a seção natural de leitura
-        if (contato.parentNode !== megaCta.parentNode) {{
-          megaCta.parentNode.insertBefore(contato, megaCta);
+        if (megaCta) {{ megaCta.style.display = 'none'; }}
+
+        // 1b. Ocultar botões CTA "Fale Conosco" dentro de seções do React
+        //     (ex: botão dentro da seção Sobre Nós que aponta para wa.me)
+        //     Preserva o link do header/navbar
+        sections.forEach(function(sec) {{
+          sec.querySelectorAll('a[href*="wa.me"]').forEach(function(btn) {{
+            btn.style.display = 'none';
+          }});
+        }});
+
+        // 2. Encontrar a seção de Autoridade/Sobre Nós
+        //    Identificada pelo eyebrow "SOBRE NÓS" (span/p com esse texto)
+        //    ou como fallback pela 3ª section do #root
+        var authoritySection = null;
+        sections.forEach(function(sec) {{
+          var texts = sec.querySelectorAll('span, p, div');
+          texts.forEach(function(el) {{
+            if (el.children.length === 0 && el.textContent.trim().toUpperCase() === 'SOBRE NÓS') {{
+              authoritySection = sec;
+            }}
+          }});
+        }});
+        // Fallback: 3ª seção do root (Hero=0, Serviços=1, Sobre=2)
+        if (!authoritySection && sections.length >= 3) {{
+          authoritySection = sections[2];
         }}
-        
-        // Tornar o form visível usando block para sobrescrever o CSS inicial
+        if (!authoritySection) return false;
+
+        // 3. Inserir #contato imediatamente APÓS a seção de Autoridade
+        var parent = authoritySection.parentNode;
+        var nextSibling = authoritySection.nextSibling;
+        if (nextSibling) {{
+          parent.insertBefore(contato, nextSibling);
+        }} else {{
+          parent.appendChild(contato);
+        }}
+
+        // 4. Tornar o form visível
         contato.style.display = 'block';
+
+        // 5. Posicionar bottom-cta antes do footer
+        var bottomCta = document.getElementById('bottom-cta');
+        if (bottomCta) {{
+          var footer = root.querySelector('footer');
+          if (footer) {{
+            footer.parentNode.insertBefore(bottomCta, footer);
+          }}
+          bottomCta.style.display = 'block';
+        }}
         
         return true;
       }}

@@ -154,7 +154,7 @@
             var target = document.getElementById('contato');
             if (target) {
                 e.preventDefault();
-                target.scrollIntoView({ behavior: 'smooth' });
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }
         });
     }
@@ -170,7 +170,7 @@
                 e.preventDefault();
                 var target = document.getElementById('contato');
                 if (target) {
-                    target.scrollIntoView({ behavior: 'smooth' });
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 }
             });
         });
