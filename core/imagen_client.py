@@ -110,7 +110,7 @@ class GeminiImageClient:
             f"Business niche: {categoria}. "
             f"Scene: {scene}. "
             f"STRICT RULES — VIOLATION IS NOT ACCEPTABLE: "
-            f"(1) ZERO TEXT anywhere in the image. No words, no letters, no captions, no watermarks. "
+            f"(1) ABSOLUTELY ZERO TEXT anywhere in the image. No words, no letters, no captions, no watermarks, no signs, no logos, no brand names, no store names, no writing of any kind. The image must be 100% text-free. "
             f"(2) ABSOLUTELY NO PEOPLE, NO HUMANS, NO FACES in the picture. Focus on the WELCOMING ATMOSPHERE and ASPIRATIONAL RESULT — NOT on tools, sharp instruments, or clinical equipment. "
             f"Lighting: Cinematic, warm, inviting. Strong bokeh on background. "
             f"Composition: Main subject in the center 50% of the frame. Outer 25% on each side must be heavily blurred (safe crop zone). "

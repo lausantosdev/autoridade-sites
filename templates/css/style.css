@@ -89,9 +89,9 @@
 [data-theme="light"] .hero-overlay {
     background: linear-gradient(
         to bottom,
-        rgba(255, 255, 255, 0.88) 0%,
-        rgba(255, 255, 255, 0.75) 30%,
-        rgba(255, 255, 255, 0.92) 60%,
+        rgba(255, 255, 255, 0.95) 0%,
+        rgba(255, 255, 255, 0.93) 35%,
+        rgba(255, 255, 255, 0.97) 65%,
         var(--bg) 100%
     ) !important;
 }
@@ -286,9 +286,15 @@ a {
     inset: 0;
     background-size: cover;
     background-position: center;
-    object-fit: cover;
-    object-position: center;
+    filter: blur(2px);
+    transform: scale(1.05);
     will-change: transform;
+}
+
+/* Light theme: stronger blur to make image truly a subtle texture */
+[data-theme="light"] .hero-bg-image {
+    filter: blur(6px);
+    transform: scale(1.1);
 }
 
 .hero-overlay {
