@@ -21,6 +21,7 @@
 - [x] Captura de leads via formulário WhatsApp + Cloudflare Worker + Supabase *(frontend integrado)*
 - [~] Dashboard do empresário (visualização de leads em tempo real) *(existente — falta otimização e revisão)*
 - [x] Wizard Web (FastAPI + WebSocket) com progresso em tempo real
+- [x] Hero Image v2 — Atmosfera Aspiracional (16:9 com overlay refinado)
 
 ### Engenharia / Qualidade (PLAN_10_10 — Concluído em 03/04/2026)
 - [x] Logging estruturado em todo o `core/` (`core/logger.py`)

@@ -14,15 +14,15 @@ logger = get_logger(__name__)
 
 load_dotenv()
 
-_SCENE_FEW_SHOT_EXAMPLES = """- Pet Shop / Banho e Tosa: "a happy, fluffy golden retriever dog sitting on a clean grooming table in a bright salon, soft warm lighting"
-- Advocacia / Escritório de Advocacia: "open law book with an elegant wooden gavel on a polished dark desk, warm bokeh background in a prestigious office"
-- Odontologia / Clínica Odontológica: "pristine white premium dental chair in a modern, bright, high-tech clinic, welcoming atmosphere"
-- Restaurante / Gastronomia: "a beautifully plated gourmet dish on a rustic wooden table with elegant restaurant ambiance in the background"
-- Academia / Personal Trainer: "shiny premium dumbbells and kettlebells lined up perfectly in a modern, high-end gym, strong dramatic lighting"
+_SCENE_FEW_SHOT_EXAMPLES = """- Pet Shop / Banho e Tosa: "clean, serene, pet-friendly boutique reception area with warm lighting and plush seating"
+- Advocacia / Escritório de Advocacia: "prestigious warm library with leather armchairs and golden ambient lighting"
+- Odontologia / Clínica Odontológica: "spa-like waiting room, plush chairs, indoor plants, warm lighting — NO dental tools"
+- Restaurante / Gastronomia: "a beautifully set table in a warm, elegant restaurant with subtle ambient lighting"
+- Academia / Personal Trainer: "high-end premium wellness studio with soft indirect lighting and a welcoming atmosphere"
 - Limpeza / Serviços de Limpeza: "a spotlessly clean, gleaming modern living room with a fresh, airy atmosphere and soft sunlight"
 - Imobiliária / Corretora de Imóveis: "a beautiful luxury modern home exterior with a perfectly manicured green lawn, sunny day"
-- Elétrica / Eletricista: "modern smart home electrical panel with glowing blue circuits in a pristine tech environment"
-- Mecânica / Auto Center: "a gleaming luxury sports car freshly detailed in a modern, professional, high-end garage, cinematic lighting"
+- Elétrica / Eletricista: "modern smart home interior with subtle LED accent lighting"
+- Mecânica / Auto Center: "gleaming luxury car in a pristine showroom with polished floors"
 - Jardinagem / Paisagismo: "a beautifully landscaped lush green garden with vibrant flowers and a perfectly cut lawn, morning sunlight\""""
 
 
@@ -36,7 +36,9 @@ def _generate_scene_description(categoria: str, llm_client) -> str:
     system_prompt = (
         "You are a professional photography art director specializing in premium cinematic hero images for local service business websites. "
         "Your task is to write a single, precise English sentence describing the ideal photographic scene for a given business niche. "
-        "CRITICAL RULE 1: The scene MUST strongly feature the primary NON-HUMAN subject of the niche to be instantly recognizable (e.g., a cute dog and cat for a petshop, a gleaming car for a mechanic, delicious food for a restaurant). DO NOT describe an empty room unless absolutely necessary. "
+        "CRITICAL RULE 1: Focus on the ASPIRATIONAL OUTCOME or the WELCOMING ENVIRONMENT of the business. "
+        "Show the RESULT the customer desires or the atmosphere they will experience — NOT the tools, equipment, or process. "
+        "For health/medical niches: show serene, spa-like reception areas — NEVER clinical tools, needles, or surgical equipment. "
         "CRITICAL RULE 2: ABSOLUTELY NO PEOPLE, NO HUMANS, NO FACES anywhere in the scene. Do not mention humans at all. "
         "Output ONLY the scene description sentence. No explanations, no quotes, no extra text."
     )
@@ -109,12 +111,11 @@ class GeminiImageClient:
             f"Scene: {scene}. "
             f"STRICT RULES — VIOLATION IS NOT ACCEPTABLE: "
             f"(1) ZERO TEXT anywhere in the image. No words, no letters, no captions, no watermarks. "
-            f"(2) ABSOLUTELY NO PEOPLE, NO HUMANS, NO FACES in the picture. Show ONLY the environment, objects, tools, or animals. "
-            f"Lighting: Cinematic, dramatic, moody. Strong bokeh on background. "
-            f"Composition: ALL main subjects MUST be perfectly centered in the absolute MIDDLE of the frame. "
-            f"Outer 20% left and right must be blurred background only. "
+            f"(2) ABSOLUTELY NO PEOPLE, NO HUMANS, NO FACES in the picture. Focus on the WELCOMING ATMOSPHERE and ASPIRATIONAL RESULT — NOT on tools, sharp instruments, or clinical equipment. "
+            f"Lighting: Cinematic, warm, inviting. Strong bokeh on background. "
+            f"Composition: Main subject in the center 50% of the frame. Outer 25% on each side must be heavily blurred (safe crop zone). "
             f"{palette} "
-            f"Style: High-end premium corporate photography, photo-realistic, elegant."
+            f"Style: High-end premium lifestyle photography, warm, photo-realistic, elegant."
         )
 
         try:
@@ -126,7 +127,7 @@ class GeminiImageClient:
                 config=types.GenerateImagesConfig(
                     number_of_images=1,
                     output_mime_type="image/jpeg",
-                    aspect_ratio="1:1"
+                    aspect_ratio="16:9"
                 )
             )
 

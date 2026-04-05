@@ -5,6 +5,23 @@
 
 ---
 
+## 05/04/2026 — Sessão 13: Hero Image v2 - Atmosfera Aspiracional (Sessão 5 do dia)
+
+**Status:** ✅ Concluída
+
+### ✅ Feito
+- **Prompt Engineering Atualizado:** Modificado o `core/imagen_client.py` para reforçar a proibição de rostos e substituir o foco em ferramentas intimidantes por "Atmosfera Aspiracional" e "Ambiente Acolhedor".
+- **Hero Image Ratio Corrigido:** Alterada a solicitação da Imagem Hero do padrão `1:1` para `16:9`, aprimorando muito o visual em desktop (Landscape) sem os cortes extremos do `background-size: cover`.
+- **Overlay Dinâmico (CSS) Reforçado:** Aumentadas as opacidades nos sobretons (`style.css`), do dark (25%->55%) e do light, assegurando ótima legibilidade dos subtítulos ao fundo perante o contrast checking, sem ofuscar a experiência do site.
+- **Fallback Premium:** Aplicado um `radial-gradient` sutil na classe base `.hero` como fallback nativo (antes da imagem estourar na tela), entregando um design mais preenchido em redes lentas ou falhas.
+- **Testes Validados:** Teste regressivo `pytest` com sucesso + Regeneração End-to-End da feature image confirmando adequação completa do Output.
+
+### 🔜 Próxima Sessão
+- Otimização de Velocidade — Paralelização (Cache Topics, Gathers no Server) e Split de Prompts.
+- Dashboard do empresário.
+
+---
+
 ## 05/04/2026 — Sessão 12: E2E Captura de Leads e Ajustes de Âncora (Sessão 4 do dia)
 
 **Status:** ✅ Concluída
