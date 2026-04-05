@@ -363,6 +363,9 @@ def _build_config(data: dict) -> dict:
             'palavras_chave': keywords,
             'locais': locations,
         },
+        'theme': {
+            'mode': data.get('theme_mode', 'auto')
+        },
         'api': {
             'provider': 'openrouter',
             'model': data.get('model', 'deepseek/deepseek-v3.2'),

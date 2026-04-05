@@ -5,6 +5,21 @@
 
 ---
 
+## 05/04/2026 — Sessão 14: Seletor Manual de Temas E2E (Sessão 6 do dia)
+
+**Status:** ✅ Concluída
+
+### ✅ Feito
+- **Select de Tema no Wizard:** Campo `<select id="theme_mode">` adicionado ao `frontend/index.html` permitindo a seleção manual entre Dark Mode, Light Mode ou Automático (IA).
+- **Backend Integrado:** Ajuste do config fallback em `server.py` e `core/site_data_builder.py` para processar a preferência vinda via WebSocket.
+- **Fallback Ajustado:** Alterado o fallback padrão global no caso de falhas da IA de `dark` para `light` a fim de amenizar visuais agressivos.
+- **Cleanup:** Exclusão do rascunho de dev `_test_colors.py`. Testes executados passando com Coverage.
+
+### 🔜 Próxima Sessão
+- Otimização de Velocidade — Paralelização (Cache Topics, Gathers no Server) e Split de Prompts.
+
+---
+
 ## 05/04/2026 — Sessão 13: Hero Image v2 - Atmosfera Aspiracional (Sessão 5 do dia)
 
 **Status:** ✅ Concluída

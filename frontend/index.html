@@ -748,6 +748,16 @@
                 <p class="field-hint">Google Maps → Compartilhar → Incorporar mapa → Copie o URL do src</p>
             </div>
 
+            <div class="field" style="margin-top:20px;">
+                <label>Tema Visual</label>
+                <select id="theme_mode">
+                    <option value="auto">🪄 Automático (IA Decide pelo nicho)</option>
+                    <option value="dark">🌙 Dark Mode</option>
+                    <option value="light">☀️ Light Mode</option>
+                </select>
+                <p class="field-hint">Defina a base visual do site gerado. Automático escolhe predefinindo dark/light baseado na categoria.</p>
+            </div>
+
             <div style="margin-top:32px; padding-top:24px; border-top:1px solid #1e293b;">
                 <h3 style="font-size:1.1rem; font-weight:600; margin-bottom:6px;">Captura de Leads</h3>
                 <p style="font-size:0.85rem; color:#64748b; margin-bottom:20px;">Opcional — conecte ao Cloudflare Worker para rastrear leads do WhatsApp.</p>
@@ -1059,6 +1069,7 @@
                 servicos: document.getElementById('servicos').value.trim(),
                 cor_marca: document.getElementById('cor_marca').value,
                 google_maps: document.getElementById('google_maps').value.trim(),
+                theme_mode: document.getElementById('theme_mode').value,
                 keywords_csv_path: csvFilePath,
                 keywords_manual: document.getElementById('keywords_manual').value,
                 locations: document.getElementById('locais').value,

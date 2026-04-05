@@ -41,7 +41,7 @@ def resolve_theme_mode(config: dict, client: OpenRouterClient) -> str:
     Propaga o resultado para config['theme']['mode'].
     """
     # 1. Config manual tem prioridade absoluta
-    config_theme = config.get('theme', {}).get('mode', '')
+    config_theme = config.get('theme', {}).get('mode', 'auto')
     if config_theme in ('light', 'dark'):
         logger.info("Tema definido: %s (via config.yaml)", config_theme)
         return config_theme
@@ -57,11 +57,11 @@ def resolve_theme_mode(config: dict, client: OpenRouterClient) -> str:
             "Tecnologia/automotivo/barbearia/mecânica/segurança/noturno/luxo masculino → dark. "
             "Na dúvida: público feminino/família = light, masculino/industrial = dark."
         )
-        theme_mode = result.get('theme_mode', 'dark') if result else 'dark'
+        theme_mode = result.get('theme_mode', 'light') if result else 'light'
         if theme_mode not in ('light', 'dark'):
-            theme_mode = 'dark'
+            theme_mode = 'light'
     except Exception:
-        theme_mode = 'dark'
+        theme_mode = 'light'
     
     # 3. Propagar para config (para template_renderer usar nas subpáginas)
     if 'theme' not in config:
@@ -122,7 +122,7 @@ def build_site_data(config: dict, client: OpenRouterClient) -> dict:
         },
         
         "theme": {
-            "mode": "dark",  # será sobrescrito pela lógica config > IA > fallback
+            "mode": theme_mode if 'theme_mode' in locals() else "light",  # será sobrescrito pela lógica config > IA > fallback
             "color": cor,
             "colorRgb": f"{r}, {g}, {b}",
             "colorText": cor,  # será sobrescrito após resolver o tema
@@ -234,14 +234,14 @@ def build_site_data(config: dict, client: OpenRouterClient) -> dict:
         },
     }
     
-    # Resolver tema: config.yaml > IA > fallback dark
-    config_theme = config.get('theme', {}).get('mode', '')
+    # Resolver tema: config.yaml > IA > fallback light
+    config_theme = config.get('theme', {}).get('mode', 'auto')
     if config_theme in ('light', 'dark'):
         theme_mode = config_theme
     else:
-        theme_mode = ai_content.get('theme_mode', 'dark')
+        theme_mode = ai_content.get('theme_mode', 'light')
         if theme_mode not in ('light', 'dark'):
-            theme_mode = 'dark'
+            theme_mode = 'light'
     
     site_data["theme"]["mode"] = theme_mode
 
