@@ -587,7 +587,7 @@ section {
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.15em;
-    color: var(--primary-text);
+    color: var(--primary);
     margin-bottom: 14px;
 }
 
@@ -602,7 +602,7 @@ section {
 }
 
 .section-title .accent {
-    color: var(--primary-text);
+    color: var(--primary);
 }
 
 .section-title-sm {
