@@ -5,14 +5,30 @@
 
 ---
 
-## 04/04/2026 — Sessão 9: UX Formulário de Leads — Home React (Sessão 6 do dia)
+## 05/04/2026 — Sessão 10: Estabilidade da API e Fix de Timeout (Sessão 2 do dia)
 
-**Status:** 🔜 A iniciar (Próxima Sessão)
+**Status:** ✅ Concluída
 
-### 📋 Planejamento
-- A Sessão 8 concluiu com sucesso toda a lógica HTML/CSS pura no `widget.css`, `widget.js` e em subpáginas.
-- Esta sessão focará exclusivamente em alinhar a Home gerada pelo React (`frontend/src/components/ContactForm.jsx`) ao nosso novo padrão visual e de fluxo de UX (Fale Conosco genérico).
-- **Spec Guia:** `docs/captura-leads/SPEC_SESSAO2_04_04_2026.md`
+### ✅ Feito
+- **Fix de Hang Silencioso:** Diagnosticada cadeia de vulnerabilidades no Client da API durante a geração de SEO.
+- **Camada 1 (HTTP):** Adicionado `HTTP_TIMEOUT = httpx.Timeout(connect=10.0, read=90.0...)` no `OpenRouterClient` para prevenir travamentos de I/O em chunks lentos.
+- **Camada 2 (Executors):** Adicionado `as_completed(timeout=MAX)` e timeouts individuais por proxy na geração de páginas para não travar a pool.
+- **Camada 3 (Server):** Adicionado daemon threads e loop de deadline no WebSocket. Agora o frontend expira limpo se a API escalar os tempos e a geração ficar inviável, no lugar de bloquear eternamente.
+
+### 🔜 Próxima Sessão
+- Exigir e colher o feedback do Usuário sobre a página Home (React) que foi mockada no `.zip` gerado com a Injeção de Captura de Leads.
+- Repassar fluxos vitais do Workflow.
+
+---
+
+## 05/04/2026 — Sessão 9: UX Formulário de Leads — Home React (Sessão 1 do dia)
+
+**Status:** ✅ Concluída
+
+### ✅ Feito
+- Pipeline testado injetando perfeitamente a captura de leads na Home React.
+- Esvaziada a Section original da MegaCTA e movida a Section #contato (CSS puro injetado na Fase 4) para a sua localização sem gerar grids vazias ou conflitos com o React.
+- Validação pelo HTML de compilação da pipeline: injetou o `leads-home-integrator.js` corretamente.
 
 ---
 

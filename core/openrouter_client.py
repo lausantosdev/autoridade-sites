@@ -5,12 +5,19 @@ import os
 import json
 import time
 import threading
+import httpx
 from openai import OpenAI, RateLimitError
 from dotenv import load_dotenv
 from json_repair import repair_json
 from core.logger import get_logger
 from core.exceptions import ConfigError
 logger = get_logger(__name__)
+
+# Timeout explícito por fase:
+#   connect=10s  — falha rápida se o servidor não responder à conexão
+#   read=90s     — conteúdo SEO longo (900+ palavras) pode demorar; 90s evita hang silencioso
+#   pool=5s      — aquisição de conexão do pool HTTP
+HTTP_TIMEOUT = httpx.Timeout(connect=10.0, read=90.0, write=30.0, pool=5.0)
 
 # Cascata de modelos usada quando o modelo primário gera JSON malformado.
 # Ordem: barato/rápido → mais confiável para JSON com pt-BR utf-8
@@ -36,8 +43,9 @@ class OpenRouterClient:
         self.client = OpenAI(
             base_url="https://openrouter.ai/api/v1",
             api_key=api_key,
-            timeout=40.0,
+            timeout=HTTP_TIMEOUT,  # httpx.Timeout com connect/read distintos
             max_retries=0,  # Desativa retry interno do SDK (usamos o nosso customizado)
+            http_client=httpx.Client(timeout=HTTP_TIMEOUT),
         )
         self.model = model
         self.fallback_models = _FALLBACK_MODELS
@@ -108,6 +116,15 @@ class OpenRouterClient:
                     )
                     if attempt < max_tries - 1:
                         time.sleep(wait)
+
+                except (httpx.ReadTimeout, httpx.ConnectTimeout, httpx.PoolTimeout) as e:
+                    # Timeout explícito: loga com contexto claro e faz retry rápido
+                    logger.warning(
+                        "⏱ Timeout HTTP [%s] attempt %d/%d: %s — retrying...",
+                        current_model, attempt + 1, max_tries, type(e).__name__
+                    )
+                    if attempt < max_tries - 1:
+                        time.sleep(3)  # Backoff fixo curto para timeouts
 
                 except Exception as e:
                     logger.warning(

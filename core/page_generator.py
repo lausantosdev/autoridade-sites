@@ -18,6 +18,11 @@ from core.logger import get_logger
 from core.exceptions import APIError
 logger = get_logger(__name__)
 
+# Tempo máximo (segundos) para gerar UMA página completa.
+# Inclui: até 3 tentativas × 90s de read_timeout + sleeps de retry.
+# Qualquer thread que ultrapasse este limite é abandonada e a página é marcada como erro.
+_PAGE_DEADLINE_SECONDS = 360  # 6 minutos por página
+
 
 # --- Retry tracking (thread-safe) ---
 _retry_log = []
@@ -117,12 +122,28 @@ def generate_all_pages(
     max_workers = min(config['api']['max_workers'], len(pending))
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
-        futures = [executor.submit(process_page, p) for p in pending]
+        futures = {executor.submit(process_page, p): p for p in pending}
 
         # Progress bar para CLI
         with tqdm(total=len(pending), desc="Gerando páginas", unit="pág") as pbar:
-            for future in concurrent.futures.as_completed(futures):
-                pbar.update(1)
+            for future in concurrent.futures.as_completed(
+                futures, timeout=_PAGE_DEADLINE_SECONDS * len(pending)
+            ):
+                try:
+                    future.result(timeout=_PAGE_DEADLINE_SECONDS)
+                except concurrent.futures.TimeoutError:
+                    page = futures[future]
+                    logger.error(
+                        "⏱ Página travou por >%ds: %s — pulando",
+                        _PAGE_DEADLINE_SECONDS, page['title']
+                    )
+                    _log_error(page['title'], f"Timeout: página não concluiu em {_PAGE_DEADLINE_SECONDS}s", output_dir)
+                    with _counter_lock:
+                        errors[0] += 1
+                except Exception:
+                    pass  # Já registrado em process_page
+                finally:
+                    pbar.update(1)
 
     logger.info("Páginas geradas: %d, erros: %d", completed[0], errors[0])
 

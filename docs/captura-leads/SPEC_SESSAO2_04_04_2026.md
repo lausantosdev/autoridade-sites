@@ -47,9 +47,9 @@ Em vez de ter 2 CTAs, vamos:
 
 ## Sumário de Fases
 
-- [ ] Fase 1: Corrigir título megaCTA no `site_data_builder.py`
-- [ ] Fase 2: Reescrever `_inject_leads_form()` no `template_injector.py`
-- [ ] Fase 3: Regenerar site PetVida e validar visualmente
+- [x] Fase 1: Corrigir título megaCTA no `site_data_builder.py`
+- [x] Fase 2: Reescrever `_inject_leads_form()` no `template_injector.py`
+- [x] Fase 3: Regenerar site PetVida e validar visualmente
 - [ ] Fase 4: Teste E2E (desktop + mobile)
 
 ---

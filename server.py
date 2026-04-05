@@ -220,11 +220,26 @@ async def websocket_generate(websocket: WebSocket):
                     progress_callback=progress_cb
                 )
 
-            thread = threading.Thread(target=run_generation)
+            # Limite de tempo global para TODA a etapa de geração de páginas.
+            # Cada página tem até 6min (page_generator). Com buffer de 10min extra para o ZIP.
+            MAX_GENERATION_SECONDS = len(pages) * 360 + 600
+
+            thread = threading.Thread(target=run_generation, daemon=True)
             thread.start()
 
             # Monitorar progresso via queue (disparo imediato por página concluída)
+            deadline = time.time() + MAX_GENERATION_SECONDS
             while thread.is_alive():
+                if time.time() > deadline:
+                    logger.error(
+                        "Geração ultrapassou o deadline de %ds — abortando WebSocket",
+                        MAX_GENERATION_SECONDS
+                    )
+                    await websocket.send_json({
+                        "type": "error",
+                        "message": "Timeout: a geração demorou mais que o esperado. Tente com menos páginas ou tente novamente."
+                    })
+                    return  # Fecha o WebSocket, a thread continua em daemon e morre
                 try:
                     msg = await asyncio.wait_for(progress_queue.get(), timeout=1.0)
                     await websocket.send_json(msg)
@@ -237,7 +252,7 @@ async def websocket_generate(websocket: WebSocket):
                         "percentage": round((completed[0] / max(total, 1)) * 100)
                     })
 
-            thread.join()
+            thread.join(timeout=10)  # Espera no máximo 10s extras para flush final
 
             # Drena mensagens restantes antes de seguir
             while not progress_queue.empty():
