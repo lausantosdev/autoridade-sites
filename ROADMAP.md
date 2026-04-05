@@ -23,6 +23,7 @@
 - [x] Wizard Web (FastAPI + WebSocket) com progresso em tempo real
 - [x] Hero Image v2 — Atmosfera Aspiracional (16:9 com overlay refinado)
 - [x] **Auditoria e correção de SEO nos footers** — link do logo em subpáginas corrigido (`#hero` → `index.html`), brand do footer vira link de retorno à home, CSS `.footer-logo` adicionado; links `servicos_footer` e `locais_footer` validados como 100% consistentes com os slugs dos arquivos gerados
+- [x] **Otimização de Velocidade (Fase 1)** — Cache de Topics com TTL 7 dias + Paralelização de Hero/Home/Topics via `asyncio.gather` (server) e `ThreadPoolExecutor` (CLI). Ganho estimado: ~220s por geração. Frontend atualizado de 9→8 steps. *(Pendente: validação visual E2E)*
 
 ### Engenharia / Qualidade (PLAN_10_10 — Concluído em 03/04/2026)
 - [x] Logging estruturado em todo o `core/` (`core/logger.py`)
@@ -39,11 +40,11 @@
 
 ## 🚧 Em Progresso
 
-### Sprint: Finalização de Produto (Foco em Leads, Otimização e Dashboard)
-> Foco: Otimizar a velocidade de geração e finalizar o dashboard do empresário.
+### Sprint: Finalização de Produto (Foco em Dashboard e Otimização Avançada)
+> Foco: Finalizar dashboard do empresário e avaliar Otimização 3 (Dual Client).
 
-- [ ] **Otimização de Velocidade** — Paralelização (Cache Topics, Gathers no Server) e Split de Prompts (Dual Client) para redução de dezenas de minutos para segundos por geração.
 - [ ] **Dashboard do empresário** — revisar, otimizar e validar com dados reais
+- [ ] **Otimização de Velocidade (Fase 2)** — Dual Client / Split de Prompt (risco médio, requer avaliação de Qwen 3.6 Free)
 
 ---
 
@@ -56,6 +57,7 @@
 - [ ] Error handling granular no WebSocket (CONFIG_ERROR, API_ERROR, TEMPLATE_ERROR)
 - [ ] Expansão de Coverage — `test_template_injector.py` + `test_server.py`
 - [ ] Clean up — `ruff check --fix`
+- [ ] **⏳ Validação visual E2E da paralelização** — regenerar site completo via Wizard e confirmar: (1) barra de progresso avança corretamente nos 8 steps, (2) imagem hero gerada, (3) home page premium renderizada, (4) tópicos aplicados nas subpáginas
 - [ ] **⏳ Teste visual dos footers** — regenerar `darkbarbertwo.com.br` e verificar no browser: (1) links de serviços/cidades funcionam sem 404, (2) logo da subpágina leva para `index.html`, (3) brand do footer da subpágina leva para `index.html`, (4) `rel="nofollow"` no link da agência quando URL real for configurada
 
 - [ ] **Monitoramento em produção** (Sentry ou similar) — rastrear erros reais em deploy
@@ -81,7 +83,7 @@
 | Indicador | Status | Meta |
 |---|---|---|
 | Custo por site | ~R$0,03 | < R$0,10 |
-| Testes passando | 136 ✅ | > 0 falhas |
+| Testes passando | 170 ✅ | > 0 falhas |
 | Cobertura de testes | 79% | ≥ 75% |
 | Rating de engenharia | 10/10 | 10/10 |
 | CI (GitHub Actions) | ✅ verde | sempre verde |

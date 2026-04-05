@@ -1,8 +1,8 @@
 # Brainstorm: Otimização de Velocidade do Pipeline SiteGen
 
 > **Data:** 05/04/2026
-> **Status:** 📋 Planejado — aguardando slot de implementação
-> **Sessão:** Sessão 10
+> **Status:** ✅ Otimizações 1 e 2 implementadas — Otimização 3 aguardando slot
+> **Sessão:** Sessão 10 (brainstorm) → Sessão 15 (implementação opt. 1+2)
 
 ---
 
@@ -23,14 +23,14 @@ O gargalo principal está na geração de tokens pelo modelo (DeepSeek V3.2 = 11
 
 ## Otimizações Planejadas
 
-### Otimização 1 — Cache de Topics (risco zero)
+### Otimização 1 — Cache de Topics (risco zero) ✅ IMPLEMENTADO
 - `generate_topics()` gera vocabulário temático por nicho (~90s de IA)
 - Salvar em `cache/topics_{categoria}.json` com TTL de 7 dias
 - Nas próximas gerações do mesmo nicho, lê do disco (~0s)
 - **Ganho: ~90s por geração**
 - **Arquivo:** `core/topic_generator.py`
 
-### Otimização 2 — Paralelizar Hero + Home Data + Topics (risco zero)
+### Otimização 2 — Paralelizar Hero + Home Data + Topics (risco zero) ✅ IMPLEMENTADO
 - Hoje: 3 chamadas à IA sequenciais antes de qualquer subpágina (~175s)
 - Proposta: `asyncio.gather(hero_image(), build_site_data(), generate_topics())`
 - As 3 são completamente independentes entre si

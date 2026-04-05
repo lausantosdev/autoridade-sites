@@ -138,35 +138,56 @@ async def websocket_generate(websocket: WebSocket):
                 max_retries=config['api']['max_retries']
             )
 
-            # Gerar imagem hero com Gemini
-            await websocket.send_json({"type": "step", "step": 4, "message": "Gerando imagem hero com IA..."})
+            # ── Fase paralela: Hero + Home Data + Topics ──────────────
+            # As 3 chamadas são independentes entre si e podem rodar em paralelo.
+            # Ganho estimado: ~130s por geração (brainstorm opt. 2).
+            await websocket.send_json({
+                "type": "step", "step": 4,
+                "message": "Gerando imagem, home page e inteligência de negócio em paralelo..."
+            })
             hero_img_path = Path(output_dir) / "hero-image.jpg"
-            try:
-                img_client = GeminiImageClient()
-                keywords = config.get('seo', {}).get('palavras_chave', [])
-                
-                await asyncio.to_thread(
-                    img_client.generate_hero,
-                    config['empresa']['categoria'],
-                    config['empresa']['nome'],
-                    str(hero_img_path),
-                    keywords,
-                    config.get('theme', {}).get('mode', 'dark'),
-                    client,  # llm_client para few-shot de cena
-                )
-                # Copiar para caminho legado (subpáginas HTML puras)
-                legacy_path = Path(output_dir) / "images" / "hero.jpg"
-                legacy_path.parent.mkdir(parents=True, exist_ok=True)
-                if hero_img_path.exists():
-                    shutil.copy2(str(hero_img_path), str(legacy_path))
-            except Exception as e:
-                logger.error("Erro ao gerar imagem AI: %s", e)
-            
 
-            # Gerar Home Page Premium (SiteGen Template)
-            await websocket.send_json({"type": "step", "step": 5, "message": "Gerando home page premium..."})
+            async def _task_hero():
+                """Gera imagem hero com Gemini Imagen."""
+                try:
+                    img_client = GeminiImageClient()
+                    keywords = config.get('seo', {}).get('palavras_chave', [])
+                    await asyncio.to_thread(
+                        img_client.generate_hero,
+                        config['empresa']['categoria'],
+                        config['empresa']['nome'],
+                        str(hero_img_path),
+                        keywords,
+                        config.get('theme', {}).get('mode', 'dark'),
+                        client,
+                    )
+                    legacy_path = Path(output_dir) / "images" / "hero.jpg"
+                    legacy_path.parent.mkdir(parents=True, exist_ok=True)
+                    if hero_img_path.exists():
+                        shutil.copy2(str(hero_img_path), str(legacy_path))
+                except Exception as e:
+                    logger.error("Erro ao gerar imagem AI: %s", e)
+
+            async def _task_home_data():
+                """Gera conteúdo da home page via IA."""
+                return await asyncio.to_thread(build_site_data, config, client)
+
+            async def _task_topics_and_services():
+                """Gera tópicos do nicho e dados de serviços."""
+                t = await asyncio.to_thread(generate_topics, config, client)
+                s = await asyncio.to_thread(generate_services_data, config, client)
+                return t, s
+
+            # Dispara tudo em paralelo
+            _hero_result, site_data, (topics, servicos_data) = await asyncio.gather(
+                _task_hero(),
+                _task_home_data(),
+                _task_topics_and_services(),
+            )
+
+            # Injetar home page (precisa de site_data + hero_img_path prontos)
+            await websocket.send_json({"type": "step", "step": 5, "message": "Montando home page premium..."})
             try:
-                site_data = await asyncio.to_thread(build_site_data, config, client)
                 await asyncio.to_thread(
                     inject_template,
                     site_data=site_data,
@@ -176,20 +197,15 @@ async def websocket_generate(websocket: WebSocket):
             except Exception as e:
                 logger.error("Erro na home SiteGen: %s. Usando template fallback.", e)
                 generate_fallback_index(config, output_dir)
-            
-            # Topics & Services
-            await websocket.send_json({"type": "step", "step": 6, "message": "Gerando inteligência de negócio..."})
-            await asyncio.sleep(0.05)
-            topics = await asyncio.to_thread(generate_topics, config, client)
-            
-            servicos_data = await asyncio.to_thread(generate_services_data, config, client)
+
+            # Salvar dados de serviços (se houver)
             if servicos_data:
                 dados_js_path = Path(output_dir) / "js" / "dados.js"
                 with open(dados_js_path, "a", encoding="utf-8") as f:
                     f.write(f"\nconst _DADOS_SERVICOS = {json.dumps(servicos_data, ensure_ascii=False)};\n")
             
             # Subpáginas SEO
-            await websocket.send_json({"type": "step", "step": 7, "message": "Gerando páginas SEO..."})
+            await websocket.send_json({"type": "step", "step": 6, "message": "Gerando páginas SEO..."})
             
             total = len(pages)
             completed = [0]
@@ -259,13 +275,13 @@ async def websocket_generate(websocket: WebSocket):
                 await websocket.send_json(progress_queue.get_nowait())
             
             # Validate
-            await websocket.send_json({"type": "step", "step": 8, "message": "Validando qualidade..."})
+            await websocket.send_json({"type": "step", "step": 7, "message": "Validando qualidade..."})
             results = validate_site(output_dir, config)
             api_stats = client.get_stats()
             generate_report(results, config, api_stats, output_dir)
             
             # ZIP
-            await websocket.send_json({"type": "step", "step": 9, "message": "Empacotando site..."})
+            await websocket.send_json({"type": "step", "step": 8, "message": "Empacotando site..."})
             zip_path = shutil.make_archive(
                 str(Path("output") / f"{dominio}_site"),
                 'zip',

@@ -5,6 +5,28 @@
 
 ---
 
+## 05/04/2026 — Sessão 15: Otimização de Velocidade — Cache + Paralelização (Sessão 7 do dia)
+
+**Status:** ✅ Concluída
+
+### ✅ Feito
+- **Cache de Topics com TTL 7 dias:** `core/topic_generator.py` agora verifica `os.path.getmtime()` e regenera automaticamente quando o cache expira. Ganho: ~90s por geração repetida do mesmo nicho.
+- **Paralelização no Server (WebSocket):** Hero image + build_site_data + topics agora rodam em paralelo via `asyncio.gather()`. Ganho estimado: ~130s por geração.
+- **Paralelização no CLI:** Mesma otimização aplicada em `generate.py` via `ThreadPoolExecutor(max_workers=2)` para hero + home data. Modo `--step` individual mantém sequencial para debug.
+- **Frontend atualizado:** Steps reduzidos de 9→8. Step 4 agora mostra "Geração paralela (imagem + home + tópicos)". Porcentagens recalculadas (páginas SEO: 35%→87%).
+- **Testes:** 3 novos testes de TTL (fresh cache, expired cache, force bypass). Suite completa: **170/170 passando**.
+- **Brainstorm doc atualizado:** Otimizações 1 e 2 marcadas como ✅ IMPLEMENTADO.
+
+### ⚠️ Pendente
+- **Validação visual E2E** — Regenerar site completo via Wizard e confirmar que a barra de progresso avança corretamente nos 8 steps.
+
+### 🔜 Próxima Sessão
+- Validação visual E2E da paralelização.
+- Dashboard do empresário.
+- Avaliar viabilidade da Otimização 3 (Dual Client / Qwen 3.6 Free).
+
+---
+
 ## 05/04/2026 — Sessão 14: Seletor Manual de Temas E2E (Sessão 6 do dia)
 
 **Status:** ✅ Concluída

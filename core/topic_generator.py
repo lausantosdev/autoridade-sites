@@ -4,6 +4,7 @@ Topic Generator - Gera tópicos/frases específicos do nicho via IA
 import os
 import json
 import random
+import time
 from core.openrouter_client import OpenRouterClient
 import re
 import unicodedata
@@ -12,6 +13,7 @@ logger = get_logger(__name__)
 
 
 CACHE_DIR = "cache"
+CACHE_TTL_SECONDS = 7 * 24 * 60 * 60  # 7 dias
 
 
 def generate_topics(config: dict, client: OpenRouterClient, force: bool = False) -> dict:
@@ -25,12 +27,17 @@ def generate_topics(config: dict, client: OpenRouterClient, force: bool = False)
     categoria = config['empresa']['categoria']
     cache_path = os.path.join(CACHE_DIR, f"topicos_{_safe_filename(categoria)}.json")
 
-    # Retorna cache se existir (e não forçar regeneração)
+    # Retorna cache se existir, não expirado, e não forçar regeneração
     if not force and os.path.exists(cache_path):
-        with open(cache_path, 'r', encoding='utf-8') as f:
-            cached = json.load(f)
-        logger.info("Tópicos carregados do cache: %d palavras, %d frases", len(cached['palavras']), len(cached['frases']))
-        return cached
+        file_age = time.time() - os.path.getmtime(cache_path)
+        if file_age < CACHE_TTL_SECONDS:
+            with open(cache_path, 'r', encoding='utf-8') as f:
+                cached = json.load(f)
+            logger.info("Tópicos carregados do cache: %d palavras, %d frases (idade: %.0fh)",
+                        len(cached['palavras']), len(cached['frases']), file_age / 3600)
+            return cached
+        else:
+            logger.info("Cache expirado (%.0f dias). Regenerando tópicos.", file_age / 86400)
 
     logger.info("Gerando tópicos para o nicho: %s", categoria)
 

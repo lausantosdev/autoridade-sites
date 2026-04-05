@@ -121,51 +121,118 @@ def main():
         resolve_theme_mode(config, client)
         print()
 
-    # 6.6 Gerar Imagem Hero (Imagen 3) — usa theme_mode já resolvido
     theme_mode = config.get('theme', {}).get('mode', 'dark')
     hero_img_path = Path(output_dir) / "hero-image.jpg"
-    if args.step in ('all', 'home', 'image'):
-        # Também gerar em images/hero.jpg para subpáginas HTML puras
+
+    # ── Fase paralela (--step all): Hero + Home Data ──────────────
+    # Topics já foi executado acima (pode usar cache).
+    # Hero e Home Data são independentes e podem rodar em paralelo.
+    if args.step == 'all':
+        from concurrent.futures import ThreadPoolExecutor, as_completed
+
         hero_img_legacy = Path(output_dir) / "images" / "hero.jpg"
-        if not hero_img_path.exists() and not hero_img_legacy.exists():
-            print("🎨 Gerando Imagem Hero com Google Gemini...")
+        need_hero = not hero_img_path.exists() and not hero_img_legacy.exists()
+
+        def _run_hero():
+            if not need_hero:
+                return
+            img_client = GeminiImageClient()
+            img_client.generate_hero(
+                categoria=config['empresa']['categoria'],
+                nome=config['empresa']['nome'],
+                output_path=str(hero_img_path),
+                keywords=config.get('seo', {}).get('palavras_chave', []),
+                theme_mode=theme_mode,
+                llm_client=client,
+            )
+            hero_img_legacy.parent.mkdir(parents=True, exist_ok=True)
+            if hero_img_path.exists():
+                shutil.copy2(str(hero_img_path), str(hero_img_legacy))
+
+        def _run_home_data():
+            return build_site_data(config, client)
+
+        print("⚡ Gerando imagem hero + home page em paralelo...")
+        site_data = None
+        with ThreadPoolExecutor(max_workers=2) as executor:
+            future_hero = executor.submit(_run_hero)
+            future_home = executor.submit(_run_home_data)
+
             try:
-                img_client = GeminiImageClient()
-                img_client.generate_hero(
-                    categoria=config['empresa']['categoria'],
-                    nome=config['empresa']['nome'],
-                    output_path=str(hero_img_path),
-                    keywords=config.get('seo', {}).get('palavras_chave', []),
-                    theme_mode=theme_mode,
-                    llm_client=client,  # few-shot de cena
-                )
-                # Copiar para caminho legado (subpáginas HTML puras)
-                hero_img_legacy.parent.mkdir(parents=True, exist_ok=True)
-                if hero_img_path.exists():
-                    shutil.copy2(str(hero_img_path), str(hero_img_legacy))
+                site_data = future_home.result()
+            except Exception as e:
+                print(f"  ⚠ Erro na home SiteGen: {e}")
+
+            try:
+                future_hero.result()
+                if need_hero:
+                    print("  ✓ Imagem hero gerada")
+                else:
+                    print("  ✓ Imagem hero já existia")
             except Exception as e:
                 print(f"  ⚠ Aviso: Não foi possível gerar imagem hero: {e}")
-        else:
-            print("🎨 Imagem Hero já existe. Pulando geração.")
-        print()
 
-    # 6.7 Gerar Home Page (SiteGen Template)
-    if args.step in ('all', 'home'):
-        print("🏠 Gerando conteúdo da home page via IA...")
-        try:
-            site_data = build_site_data(config, client)
-            print()
+        # Injetar home page (precisa de site_data + hero_img_path prontos)
+        if site_data:
             print("🏠 Injetando home page premium (SiteGen)...")
-            inject_template(
-                site_data=site_data,
-                output_dir=output_dir,
-                hero_image_path=str(hero_img_path) if hero_img_path.exists() else None,
-            )
-        except Exception as e:
-            print(f"  ⚠ Erro na home SiteGen: {e}")
+            try:
+                inject_template(
+                    site_data=site_data,
+                    output_dir=output_dir,
+                    hero_image_path=str(hero_img_path) if hero_img_path.exists() else None,
+                )
+            except Exception as e:
+                print(f"  ⚠ Erro ao injetar home: {e}")
+                print("  ↳ Gerando home com template HTML fallback...")
+                generate_fallback_index(config, output_dir)
+        else:
             print("  ↳ Gerando home com template HTML fallback...")
             generate_fallback_index(config, output_dir)
         print()
+
+    else:
+        # Modo individual: manter sequencial para debug
+        # 6.6 Gerar Imagem Hero (Imagen 3)
+        if args.step in ('home', 'image'):
+            hero_img_legacy = Path(output_dir) / "images" / "hero.jpg"
+            if not hero_img_path.exists() and not hero_img_legacy.exists():
+                print("🎨 Gerando Imagem Hero com Google Gemini...")
+                try:
+                    img_client = GeminiImageClient()
+                    img_client.generate_hero(
+                        categoria=config['empresa']['categoria'],
+                        nome=config['empresa']['nome'],
+                        output_path=str(hero_img_path),
+                        keywords=config.get('seo', {}).get('palavras_chave', []),
+                        theme_mode=theme_mode,
+                        llm_client=client,
+                    )
+                    hero_img_legacy.parent.mkdir(parents=True, exist_ok=True)
+                    if hero_img_path.exists():
+                        shutil.copy2(str(hero_img_path), str(hero_img_legacy))
+                except Exception as e:
+                    print(f"  ⚠ Aviso: Não foi possível gerar imagem hero: {e}")
+            else:
+                print("🎨 Imagem Hero já existe. Pulando geração.")
+            print()
+
+        # 6.7 Gerar Home Page (SiteGen Template)
+        if args.step == 'home':
+            print("🏠 Gerando conteúdo da home page via IA...")
+            try:
+                site_data = build_site_data(config, client)
+                print()
+                print("🏠 Injetando home page premium (SiteGen)...")
+                inject_template(
+                    site_data=site_data,
+                    output_dir=output_dir,
+                    hero_image_path=str(hero_img_path) if hero_img_path.exists() else None,
+                )
+            except Exception as e:
+                print(f"  ⚠ Erro na home SiteGen: {e}")
+                print("  ↳ Gerando home com template HTML fallback...")
+                generate_fallback_index(config, output_dir)
+            print()
 
     if args.step == 'home':
         _print_done(start_time)

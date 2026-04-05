@@ -837,12 +837,11 @@
                     <div class="p-step" data-pstep="1"><i class="fas fa-circle-dot"></i> Validar configuração</div>
                     <div class="p-step" data-pstep="2"><i class="fas fa-circle-dot"></i> Gerar combinações</div>
                     <div class="p-step" data-pstep="3"><i class="fas fa-circle-dot"></i> Criar sitemap</div>
-                    <div class="p-step" data-pstep="4"><i class="fas fa-circle-dot"></i> Gerar imagem hero</div>
-                    <div class="p-step" data-pstep="5"><i class="fas fa-circle-dot"></i> Criar home page premium</div>
-                    <div class="p-step" data-pstep="6"><i class="fas fa-circle-dot"></i> Gerar inteligência de negócio</div>
-                    <div class="p-step" data-pstep="7"><i class="fas fa-circle-dot"></i> Gerar páginas SEO</div>
-                    <div class="p-step" data-pstep="8"><i class="fas fa-circle-dot"></i> Validar qualidade</div>
-                    <div class="p-step" data-pstep="9"><i class="fas fa-circle-dot"></i> Empacotar site</div>
+                    <div class="p-step" data-pstep="4"><i class="fas fa-circle-dot"></i> Geração paralela (imagem + home + tópicos)</div>
+                    <div class="p-step" data-pstep="5"><i class="fas fa-circle-dot"></i> Montar home page premium</div>
+                    <div class="p-step" data-pstep="6"><i class="fas fa-circle-dot"></i> Gerar páginas SEO</div>
+                    <div class="p-step" data-pstep="7"><i class="fas fa-circle-dot"></i> Validar qualidade</div>
+                    <div class="p-step" data-pstep="8"><i class="fas fa-circle-dot"></i> Empacotar site</div>
                 </div>
             </div>
         </div>
@@ -1122,17 +1121,16 @@
 
         function handleWSMessage(msg) {
             // Mapeamento de progresso inicial para cada passo (0 a 100%)
-            // O passo 7 (gerar páginas) vai de 40% a 85%.
+            // O passo 6 (gerar páginas) vai de 35% a 87% (via case 'progress').
             const stepPercentages = {
                 1: 5,
                 2: 8,
                 3: 12,
-                4: 20,   // Gerar imagem hero
-                5: 28,   // Home page premium
-                6: 35,   // Inteligência de negócio
-                7: 40,   // Páginas SEO (começa em 40%)
-                8: 90,   // Validar qualidade
-                9: 95    // Empacotar site
+                4: 18,   // Geração paralela (imagem + home + tópicos)
+                5: 30,   // Montar home page premium
+                6: 35,   // Páginas SEO (começa em 35%)
+                7: 90,   // Validar qualidade
+                8: 95    // Empacotar site
             };
 
             switch (msg.type) {
@@ -1161,9 +1159,9 @@
 
                 case 'progress':
                     // O progresso de páginas varia de 0 a 100%. 
-                    // Vamos mapear isso para encher a fatia global de 40% até 85%.
+                    // Vamos mapear isso para encher a fatia global de 35% até 87%.
                     const pagesProg = msg.percentage;
-                    const globalPct = 40 + (pagesProg * 0.45);
+                    const globalPct = 35 + (pagesProg * 0.52);
 
                     updateProgressCircle(globalPct, `${msg.current}/${msg.total} páginas`);
                     break;
