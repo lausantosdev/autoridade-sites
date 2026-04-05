@@ -22,6 +22,7 @@
 - [~] Dashboard do empresário (visualização de leads em tempo real) *(existente — falta otimização e revisão)*
 - [x] Wizard Web (FastAPI + WebSocket) com progresso em tempo real
 - [x] Hero Image v2 — Atmosfera Aspiracional (16:9 com overlay refinado)
+- [x] **Auditoria e correção de SEO nos footers** — link do logo em subpáginas corrigido (`#hero` → `index.html`), brand do footer vira link de retorno à home, CSS `.footer-logo` adicionado; links `servicos_footer` e `locais_footer` validados como 100% consistentes com os slugs dos arquivos gerados
 
 ### Engenharia / Qualidade (PLAN_10_10 — Concluído em 03/04/2026)
 - [x] Logging estruturado em todo o `core/` (`core/logger.py`)
@@ -55,6 +56,7 @@
 - [ ] Error handling granular no WebSocket (CONFIG_ERROR, API_ERROR, TEMPLATE_ERROR)
 - [ ] Expansão de Coverage — `test_template_injector.py` + `test_server.py`
 - [ ] Clean up — `ruff check --fix`
+- [ ] **⏳ Teste visual dos footers** — regenerar `darkbarbertwo.com.br` e verificar no browser: (1) links de serviços/cidades funcionam sem 404, (2) logo da subpágina leva para `index.html`, (3) brand do footer da subpágina leva para `index.html`, (4) `rel="nofollow"` no link da agência quando URL real for configurada
 
 - [ ] **Monitoramento em produção** (Sentry ou similar) — rastrear erros reais em deploy
 - [ ] **Script de deploy automático** — rsync / FTP / Cloudflare Pages com um comando

@@ -1163,12 +1163,20 @@ section {
     margin-bottom: 48px;
 }
 
-.footer-brand h3 {
+.footer-brand h3,
+.footer-brand .footer-logo {
     font-size: 1.15rem;
     font-weight: 800;
     color: var(--text-white);
     margin-bottom: 14px;
     letter-spacing: -0.02em;
+    text-decoration: none;
+    display: inline-block;
+    transition: var(--transition);
+}
+
+.footer-brand .footer-logo:hover {
+    color: var(--primary);
 }
 
 .footer-brand h3 span {
