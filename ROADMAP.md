@@ -18,7 +18,7 @@
 - [x] Sitemap XML + mapa-do-site.html gerados automaticamente
 - [x] `robots.txt` gerado automaticamente no pipeline
 - [x] Footer com links SEO geo-localizados (silo de links internos)
-- [~] Captura de leads via formulário WhatsApp + Cloudflare Worker + Supabase *(backend ok — falta frontend integrado e configs manuais do Cloudflare/Supabase)*
+- [x] Captura de leads via formulário WhatsApp + Cloudflare Worker + Supabase *(frontend integrado)*
 - [~] Dashboard do empresário (visualização de leads em tempo real) *(existente — falta otimização e revisão)*
 - [x] Wizard Web (FastAPI + WebSocket) com progresso em tempo real
 
@@ -37,10 +37,11 @@
 
 ## 🚧 Em Progresso
 
-### Sprint: Finalização de Produto (Foco em Leads e Dashboard)
-> Foco: Concluir a captura de leads e otimização do dashboard do empresário.
+### Sprint: Finalização de Produto (Foco em Leads, Otimização e Dashboard)
+> Foco: Concluir a captura de leads, otimizar a velocidade de geração e finalizar o dashboard do empresário.
 
-- [🔄] **Captura de leads** — Formulários embutidos e fluxos concluídos nas Subpáginas. Na Home React, a arquitetura de injeção e posicionamento está funcional, mas **a Home ainda carece de ajustes visuais finais e não está 100% finalizada**.
+- [x] **Captura de leads** — Formulários embutidos implantados em todas as subpáginas e injetados de forma premium na Home React com sucesso absoluto.
+- [ ] **Otimização de Velocidade** — Paralelização (Cache Topics, Gathers no Server) e Split de Prompts (Dual Client) para redução de dezenas de minutos para segundos por geração.
 - [ ] **Dashboard do empresário** — revisar, otimizar e validar com dados reais
 
 ---
