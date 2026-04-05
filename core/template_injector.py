@@ -247,8 +247,9 @@ def _inject_leads_form(html: str, site_data: dict) -> str:
     # 3. HTML Form e CSS Inline para o container (seção oculta inicialmente)
     form_html = f"""
     <style>
-    /* Ocultar botões CTA wa.me do React instantaneamente (evita flash) */
-    #root section a[href*="wa.me"] {{
+    /* Oculta botões wa.me em todas as seções EXCETO a Hero (primeira) */
+    /* O botão do Hero é redirecionado para #contato via JS */
+    #root section:not(:first-of-type) a[href*="wa.me"] {{
       display: none !important;
     }}
     /* ═══ Seção Fale Conosco — Premium Injected ═══ */
@@ -475,14 +476,17 @@ def _inject_leads_form(html: str, site_data: dict) -> str:
         }});
         if (megaCta) {{ megaCta.style.display = 'none'; }}
 
-        // 1b. Ocultar botões CTA "Fale Conosco" dentro de seções do React
-        //     (ex: botão dentro da seção Sobre Nós que aponta para wa.me)
-        //     Preserva o link do header/navbar
-        sections.forEach(function(sec) {{
-          sec.querySelectorAll('a[href*="wa.me"]').forEach(function(btn) {{
-            btn.style.display = 'none';
-          }});
-        }});
+        // 1b. Redirecionar o botão do Hero (1ª seção) para #contato via seletor semântico.
+        //     O CSS já cuida de ocultar os wa.me das demais seções — sem magia de índice.
+        var heroWaBtn = root.querySelector('section:first-of-type a[href*="wa.me"]');
+        if (heroWaBtn) {{
+          heroWaBtn.href = '#contato';
+          heroWaBtn.onclick = function(e) {{
+            e.preventDefault();
+            var c = document.getElementById('contato');
+            if (c) c.scrollIntoView({{behavior: 'smooth', block: 'start'}});
+          }};
+        }}
 
         // 2. Encontrar a seção de Autoridade/Sobre Nós
         //    Identificada pelo eyebrow "SOBRE NÓS" (span/p com esse texto)
