@@ -7,6 +7,8 @@
 :root {
     --primary: #D97706;
     --primary-rgb: 217, 119, 6;
+    --primary-text: var(--primary);  /* WCAG-adjusted: overridden per site via inline <style> */
+    --primary-text-rgb: var(--primary-rgb);
     --primary-light: color-mix(in srgb, var(--primary) 75%, white);
     --primary-dark: color-mix(in srgb, var(--primary) 70%, black);
     --primary-glow: rgba(var(--primary-rgb), 0.12);
@@ -105,7 +107,7 @@
 }
 
 [data-theme="light"] .hero .hero-badge {
-    color: var(--primary) !important;
+    color: var(--primary-text) !important;
     background: rgba(var(--primary-rgb), 0.1) !important;
     border-color: transparent !important;
 }
@@ -383,7 +385,7 @@ a {
 }
 
 .hero-title .accent {
-    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+    background: linear-gradient(135deg, var(--primary-text) 0%, var(--primary-light) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -585,7 +587,7 @@ section {
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.15em;
-    color: var(--primary);
+    color: var(--primary-text);
     margin-bottom: 14px;
 }
 
@@ -600,7 +602,7 @@ section {
 }
 
 .section-title .accent {
-    color: var(--primary);
+    color: var(--primary-text);
 }
 
 .section-title-sm {

@@ -7,6 +7,7 @@ Utilizado pelo page_generator, generate e server para processar qualquer templat
 from datetime import datetime
 from core.config_loader import get_whatsapp_link, get_phone_display
 from core.utils import hex_to_rgb, slugify
+from core.color_utils import ensure_text_contrast
 
 
 def replace_config_vars(template: str, config: dict) -> str:
@@ -30,6 +31,9 @@ def replace_config_vars(template: str, config: dict) -> str:
     """
     empresa = config['empresa']
     r, g, b = hex_to_rgb(empresa['cor_marca'])
+    theme_mode = config.get('theme', {}).get('mode', 'dark')
+    color_text = ensure_text_contrast(empresa['cor_marca'], theme_mode)
+    rt, gt, bt = hex_to_rgb(color_text)
 
     locais = config.get('seo', {}).get('locais', [])
     palavras = config.get('seo', {}).get('palavras_chave', [])
@@ -66,6 +70,8 @@ def replace_config_vars(template: str, config: dict) -> str:
         '{{whatsapp_link}}':    get_whatsapp_link(config),
         '{{cor_marca}}':        empresa['cor_marca'],
         '{{cor_marca_rgb}}':    f"{r}, {g}, {b}",
+        '{{cor_marca_text}}':   color_text,
+        '{{cor_marca_text_rgb}}': f"{rt}, {gt}, {bt}",
         '{{google_maps_url}}':  empresa.get('google_maps_embed', ''),
         '{{dominio}}':          empresa['dominio'],
         '{{horario}}':          empresa.get('horario', ''),
