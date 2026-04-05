@@ -38,9 +38,8 @@
 ## 🚧 Em Progresso
 
 ### Sprint: Finalização de Produto (Foco em Leads, Otimização e Dashboard)
-> Foco: Concluir a captura de leads, otimizar a velocidade de geração e finalizar o dashboard do empresário.
+> Foco: Otimizar a velocidade de geração e finalizar o dashboard do empresário.
 
-- [x] **Captura de leads** — Formulários embutidos implantados em todas as subpáginas e injetados de forma premium na Home React com sucesso absoluto.
 - [ ] **Otimização de Velocidade** — Paralelização (Cache Topics, Gathers no Server) e Split de Prompts (Dual Client) para redução de dezenas de minutos para segundos por geração.
 - [ ] **Dashboard do empresário** — revisar, otimizar e validar com dados reais
 

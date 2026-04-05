@@ -5,6 +5,32 @@
 
 ---
 
+## 05/04/2026 — Sessão 12: E2E Captura de Leads e Ajustes de Âncora (Sessão 4 do dia)
+
+**Status:** ✅ Concluída
+
+### ✅ Feito
+- **E2E Captura de Leads Concluído:** Finalização e validação manual completa do Form injection na Home e layout na subpágina. Produto Core Entregue.
+- **Scroll Margin Global:** Corrigido bug visual do Header Fixo nativo bloqueando os subtítulos onde quer que uma hashtag âncora fosse engatilhada (seja em links `.wa.me`, `#sobre`, ou menu Hambúrguer), fixado universalmente via `scroll-margin-top`.
+
+### 🔜 Próxima Sessão
+- Partir para a execução **Plano de Otimização de Velocidade (Paralelização)** que arquivamos como `Implementation Plan`.
+- Validar se a instabilidade do Qwen Free suportará o fluxo ou se os Fallbacks rápidos no Gemini Action funcionarão liso.
+
+---
+
+## 05/04/2026 — Sessão 11: Refinamento UX Home e Optimizations Speed (Sessão 3 do dia)
+
+**Status:** ✅ Concluída — `5be6a1b`
+
+### ✅ Feito
+- **Design Premium Home:** Implementadas linhas separadoras e fundo sutil na Home igualando a subpágina, adaptando a cor ao `var(--theme-color)`.
+- **Mini-CTA Bottom:** Fomos além das subpáginas. Inseriu `bottom-cta` idêntica às subpáginas antes do footer da Home (React).
+- **Smooth Scroll FOUC & Margin:** Botões dinâmicos de wa.me e header navegando limpos para `#contato` via Scroll-margin e sem glitch visual pré-JS (display none CSS injetado).
+- **Speed Optimization Brainstorm:** Documentada (`docs/SPEED_OPTIMIZATION_BRAINSTORM.md`) a rota para paralelização com Cache de Topics, Async Gather de Hero e Call Duplo com Qwen 3.6 Plus (Free) de fallback no Qwen para abater custos logísticos e derrubar de minutos para segundos o processo.
+
+---
+
 ## 05/04/2026 — Sessão 10: Estabilidade da API e Fix de Timeout (Sessão 2 do dia)
 
 **Status:** ✅ Concluída

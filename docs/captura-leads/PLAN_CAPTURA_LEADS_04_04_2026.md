@@ -270,7 +270,7 @@ O formulário na Home Premium usa dados do `site_data.megaCtaSection` para títu
 - [ ] Form funciona normalmente (abre WhatsApp)
 - [ ] Nenhum erro no console (fetch não é chamado)
 
-**Status:** [ ]
+**Status:** [x]
 
 ---
 
@@ -301,4 +301,4 @@ O formulário na Home Premium usa dados do `site_data.megaCtaSection` para títu
 - [x] Fase 2: Templates (page.html + index.html)
 - [x] Fase 3: Reescrita widget.js
 - [x] Fase 4: Injeção na Home Premium (template_injector.py)
-- [ ] Fase 5: Validação visual e E2E
+- [x] Fase 5: Validação visual e E2E

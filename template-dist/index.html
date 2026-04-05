@@ -28,6 +28,11 @@
 
     <!-- Layout fixes for React App -->
     <style>
+      /* Fix para navegação âncora (menu superior fixo cobrindo o topo das seções) */
+      #root section {
+        scroll-margin-top: 84px;
+      }
+
       /* Group nav links + CTA together on the right (Apple-style) */
       @media (min-width: 768px) {
         header.fixed nav > div {
