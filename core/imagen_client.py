@@ -59,7 +59,7 @@ def _generate_scene_description(categoria: str, llm_client) -> str:
         logger.warning("Falha ao gerar cena via LLM: %s — usando fallback genérico", e)
 
     # Fallback genérico seguro
-    return f"clean, elegant, professional environment and tools related to {categoria}"
+    return f"clean, welcoming, professional environment for {categoria}"
 
 
 class GeminiImageClient:
@@ -103,7 +103,7 @@ class GeminiImageClient:
         if llm_client is not None:
             scene = _generate_scene_description(categoria, llm_client)
         else:
-            scene = f"clean, elegant environment and tools for {categoria}"
+            scene = f"clean, welcoming environment for {categoria}"
 
         prompt = (
             f"Premium cinematic photography for a local business website hero image. "
