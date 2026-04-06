@@ -14,6 +14,7 @@ from core.utils import hex_to_rgb
 from core.color_utils import ensure_text_contrast
 from datetime import datetime
 from core.utils import slugify
+from core.page_generator import _flatten_json
 from core.logger import get_logger
 logger = get_logger(__name__)
 
@@ -167,8 +168,17 @@ def build_site_data(config: dict, client: OpenRouterClient) -> dict:
         
         "authoritySection": {
             "eyebrow": "SOBRE NÓS",
-            "title": ai_content.get('authority_title', f"Especialistas em {empresa['categoria']}"),
-            "manifestoText": ai_content.get('authority_manifesto', ''),
+            "title": (
+                ai_content.get('authority_title')
+                or ai_content.get('autoridade_titulo')
+                or f"Especialistas em {empresa['categoria']}"
+            ),
+            "manifestoText": (
+                ai_content.get('authority_manifesto')
+                or ai_content.get('autoridade_manifesto')
+                or ai_content.get('manifesto')
+                or ''
+            ),
         },
         
         "megaCtaSection": {
@@ -331,7 +341,8 @@ REGRAS ABSOLUTAS:
 - NÃO invente capacidades específicas (certificações, atendimento 24h, etc.)
 - Cidade principal '{cidade_principal}' DEVE aparecer em seo_title, seo_meta_description e hero_subtitle"""
 
-    return client.generate_json(SYSTEM_PROMPT, user_prompt) or {}
+    raw = client.generate_json(SYSTEM_PROMPT, user_prompt) or {}
+    return _flatten_json(raw)
 
 
 def _build_services(palavras: list, ai_content: dict) -> list:
@@ -361,11 +372,20 @@ def _build_services(palavras: list, ai_content: dict) -> list:
 
 
 def _build_faqs(ai_content: dict) -> list:
-    """Monta a lista de FAQs a partir do conteúdo IA."""
+    """Monta a lista de FAQs a partir do conteúdo IA.
+    
+    Suporta aliases inglês/português para tolerar variações de resposta da IA.
+    """
     faqs = []
     for i in range(1, 4):
-        q = ai_content.get(f'faq_{i}_question', '')
-        a = ai_content.get(f'faq_{i}_answer', '')
+        q = (
+            ai_content.get(f'faq_{i}_question')
+            or ai_content.get(f'faq_{i}_pergunta')
+        )
+        a = (
+            ai_content.get(f'faq_{i}_answer')
+            or ai_content.get(f'faq_{i}_resposta')
+        )
         if q and a:
             faqs.append({"question": q, "answer": a})
     return faqs
@@ -398,11 +418,20 @@ def _build_local_business_schema(empresa: dict, phone_display: str, locais: list
 
 
 def _build_faq_schema(ai_content: dict) -> str:
-    """Gera JSON-LD para FAQPage."""
+    """Gera JSON-LD para FAQPage.
+    
+    Suporta aliases inglês/português — alinhado com _build_faqs().
+    """
     entities = []
     for i in range(1, 4):
-        q = ai_content.get(f'faq_{i}_question', '')
-        a = ai_content.get(f'faq_{i}_answer', '')
+        q = (
+            ai_content.get(f'faq_{i}_question')
+            or ai_content.get(f'faq_{i}_pergunta', '')
+        )
+        a = (
+            ai_content.get(f'faq_{i}_answer')
+            or ai_content.get(f'faq_{i}_resposta', '')
+        )
         if q and a:
             entities.append({
                 "@type": "Question",
@@ -423,6 +452,7 @@ def _build_faq_schema(ai_content: dict) -> str:
 
 def _fallback_content(empresa: dict, palavras: list) -> dict:
     """Conteúdo genérico caso a IA falhe."""
+    categoria = empresa['categoria']
     fallback = {
         'hero_badge_text': f"{empresa['categoria'].split()[0]} em {palavras[0] if palavras else empresa['categoria']}",
         'hero_title_line_1': f"Procurando {empresa['categoria'].split()[0]}",
@@ -441,4 +471,30 @@ def _fallback_content(empresa: dict, palavras: list) -> dict:
     for i, kw in enumerate(palavras[:6], 1):
         fallback[f'service_{i}_description'] = f'Serviço profissional de {kw.lower()}.'
         fallback[f'service_{i}_icon'] = 'Zap'
+
+    # NOVO: FAQs genéricos para garantir que a seção nunca fique vazia
+    faq_fallbacks = [
+        (
+            f"Como funciona o serviço de {categoria}?",
+            f"Nosso processo de {categoria} é realizado por profissionais "
+            f"qualificados com foco em qualidade e agilidade. "
+            f"Entre em contato pelo WhatsApp para mais detalhes sobre o seu caso específico."
+        ),
+        (
+            "Como solicito um orçamento?",
+            f"O orçamento é gratuito e sem compromisso. "
+            f"Basta entrar em contato pelo WhatsApp informando sua necessidade. "
+            f"Nossa equipe retornará rapidamente com as opções disponíveis."
+        ),
+        (
+            "Qual o prazo para realização do serviço?",
+            f"O prazo varia conforme o tipo e a complexidade do serviço de {categoria}. "
+            f"Após a avaliação inicial, informamos o tempo estimado com clareza e transparência. "
+            f"Trabalhamos para atender com agilidade sem comprometer a qualidade."
+        ),
+    ]
+    for i, (q, a) in enumerate(faq_fallbacks, 1):
+        fallback[f'faq_{i}_question'] = q
+        fallback[f'faq_{i}_answer']   = a
+
     return fallback
