@@ -21,9 +21,10 @@ from fastapi.staticfiles import StaticFiles
 from core.config_loader import load_config
 from core.mixer import mix_keywords_locations, get_summary
 from core.sitemap_generator import generate_sitemap
-from core.openrouter_client import OpenRouterClient
 from core.gemini_client import GeminiClient
 from core.topic_generator import generate_topics
+from core.openai_client import OpenAIClient
+from core.stats_accumulator import StatsAccumulator
 from core.page_generator import generate_all_pages, _replace_config_vars
 from core.validator import validate_site, generate_report
 from core.site_data_builder import build_site_data
@@ -134,10 +135,12 @@ async def websocket_generate(websocket: WebSocket):
             generate_sitemap(pages, config, output_dir)
             
             # API Clients
-            client = OpenRouterClient(
-                model=config['api']['model'],
-                max_retries=config['api']['max_retries']
-            )
+            client = None
+            try:
+                client = OpenAIClient(model='gpt-4o-mini')
+                logger.info("OpenAIClient ativo — fallback real pronto")
+            except Exception as e:
+                logger.warning("OpenAIClient indisponível (%s) — Gemini sem fallback", e)
 
             # GeminiClient como primário (structured output, mais rápido)
             gemini = None
@@ -145,7 +148,14 @@ async def websocket_generate(websocket: WebSocket):
                 gemini = GeminiClient(model='gemini-2.5-flash')
                 logger.info("GeminiClient ativo — usando como primário")
             except Exception as e:
-                logger.warning("GeminiClient indisponível (%s) — usando apenas OpenRouter", e)
+                logger.warning("GeminiClient indisponível (%s)", e)
+
+            # Acumulador de stats por sessão
+            accumulator = StatsAccumulator()
+
+            # Projeção pré-geração (enviada para o frontend antes de começar)
+            projection = accumulator.get_projection(len(pages), config['api']['max_workers'])
+            await websocket.send_json({"type": "projection", **projection})
 
             # ── Fase paralela: Hero + Home Data + Topics ──────────────
             # As 3 chamadas são independentes entre si e podem rodar em paralelo.
@@ -155,6 +165,9 @@ async def websocket_generate(websocket: WebSocket):
                 "message": "Gerando imagem, home page e inteligência de negócio em paralelo..."
             })
             hero_img_path = Path(output_dir) / "hero-image.jpg"
+
+            # Phase 1 usa Gemini (primário) ou OpenAI (fallback) — nunca None
+            phase1_client = gemini or client
 
             async def _task_hero():
                 """Gera imagem hero com Gemini Imagen."""
@@ -168,7 +181,7 @@ async def websocket_generate(websocket: WebSocket):
                         str(hero_img_path),
                         keywords,
                         config.get('theme', {}).get('mode', 'dark'),
-                        client,
+                        phase1_client,
                     )
                     legacy_path = Path(output_dir) / "images" / "hero.jpg"
                     legacy_path.parent.mkdir(parents=True, exist_ok=True)
@@ -179,12 +192,12 @@ async def websocket_generate(websocket: WebSocket):
 
             async def _task_home_data():
                 """Gera conteúdo da home page via IA."""
-                return await asyncio.to_thread(build_site_data, config, client)
+                return await asyncio.to_thread(build_site_data, config, phase1_client)
 
             async def _task_topics_and_services():
                 """Gera tópicos do nicho e dados de serviços."""
-                t = await asyncio.to_thread(generate_topics, config, client)
-                s = await asyncio.to_thread(generate_services_data, config, client)
+                t = await asyncio.to_thread(generate_topics, config, phase1_client)
+                s = await asyncio.to_thread(generate_services_data, config, phase1_client)
                 return t, s
 
             # Dispara tudo em paralelo
@@ -229,7 +242,8 @@ async def websocket_generate(websocket: WebSocket):
                         "type": "progress",
                         "current": current,
                         "total": total_pages,
-                        "percentage": round((current / max(total_pages, 1)) * 100)
+                        "percentage": round((current / max(total_pages, 1)) * 100),
+                        "cost_brl": accumulator.get_live_cost()
                     }
                 )
 
@@ -243,7 +257,8 @@ async def websocket_generate(websocket: WebSocket):
                     template_path="templates/page.html",
                     output_dir=output_dir,
                     progress_callback=progress_cb,
-                    gemini_client=gemini
+                    gemini_client=gemini,
+                    stats_accumulator=accumulator
                 )
 
             # Limite de tempo global para TODA a etapa de geração de páginas.
@@ -287,7 +302,7 @@ async def websocket_generate(websocket: WebSocket):
             # Validate
             await websocket.send_json({"type": "step", "step": 7, "message": "Validando qualidade..."})
             results = validate_site(output_dir, config)
-            api_stats = client.get_stats()
+            api_stats = accumulator.get_summary()
             generate_report(results, config, api_stats, output_dir)
             
             # ZIP
@@ -305,6 +320,7 @@ async def websocket_generate(websocket: WebSocket):
             duration_str = f"{mins}m {secs}s" if mins > 0 else f"{secs}s"
             
             # Resultado final
+            summary = accumulator.get_summary()
             await websocket.send_json({
                 "type": "complete",
                 "message": "Site gerado com sucesso!",
@@ -314,10 +330,14 @@ async def websocket_generate(websocket: WebSocket):
                     "errors": len(results['errors']),
                     "warnings": len(results['warnings']),
                     "words": results['stats'].get('total_words', 0),
-                    "cost_usd": api_stats['cost_usd'],
-                    "cost_brl": api_stats['cost_brl'],
-                    "tokens": api_stats['total_tokens'],
+                    "cost_usd": summary['total']['cost_usd'],
+                    "cost_brl": summary['total']['cost_brl'],
+                    "tokens": sum(
+                        summary[p].get('input_tokens', 0) + summary[p].get('output_tokens', 0)
+                        for p in ('gemini', 'openai')
+                    ),
                     "duration": duration_str,
+                    "providers": summary
                 },
                 "download": f"/api/download/{dominio}"
             })

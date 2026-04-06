@@ -805,6 +805,25 @@
                 <div class="review-cost" id="r_cost">Custo estimado: ~$0.00</div>
             </div>
 
+            <!-- Card de projeção de geração (preenchido via WebSocket 'projection') -->
+            <div id="gen-projection" style="
+                display: none;
+                background: rgba(99,102,241,0.1);
+                border: 1px solid rgba(99,102,241,0.3);
+                border-radius: 12px;
+                padding: 16px 20px;
+                margin-top: 16px;
+                margin-bottom: 24px;
+                font-size: 0.88rem;
+            ">
+                <div style="font-weight:600; margin-bottom:8px; color:#a5b4fc;">📊 Estimativa de Geração (Cloud)</div>
+                <div style="display:flex; gap:24px; flex-wrap:wrap;">
+                    <span>⏱ <strong id="proj-time">--</strong></span>
+                    <span>💰 <strong id="proj-cost">--</strong></span>
+                    <span style="opacity:0.6;">~3.550 tokens/pág · Gemini 2.5 Flash</span>
+                </div>
+            </div>
+
             <button class="btn btn-generate" onclick="startGeneration()" id="btnGenerate">
                 <i class="fas fa-rocket"></i> Gerar Site Agora
             </button>
@@ -827,7 +846,10 @@
                     </svg>
                     <div class="progress-text">
                         <div class="progress-percent" id="progressPercent">0%</div>
-                        <div class="progress-label" id="progressPages">Preparando...</div>
+                        <div class="progress-label">
+                            <span id="progressPages">Preparando...</span>
+                            <span id="live-cost-display" style="font-size: 0.8em; opacity: 0.55; margin-left: 8px;"></span>
+                        </div>
                     </div>
                 </div>
 
@@ -854,6 +876,17 @@
                 <p class="complete-desc">Seu site SEO está pronto para deploy.</p>
 
                 <div class="stats-grid" id="finalStats"></div>
+
+                <!-- Breakdown por provider -->
+                <div id="provider-breakdown" style="display:none; text-align:left; margin-bottom:24px; padding-top:16px; border-top:1px solid rgba(255,255,255,0.1);">
+                    <div style="font-size:0.85rem; opacity:0.6; margin-bottom:8px; text-transform:uppercase; letter-spacing:0.05em;">Distribuição de Consumo</div>
+                    <div id="pb-gemini" style="font-size:0.95rem; margin-bottom:6px;">
+                        🤖 Gemini: <strong id="pb-g-pages">--</strong> pgs · <span style="color:#4ade80;">R$ <span id="pb-g-cost">--</span></span>
+                    </div>
+                    <div id="pb-openai" style="display:none; font-size:0.95rem;">
+                        🔵 OpenAI: <strong id="pb-o-pages">--</strong> pgs · <span style="color:#4ade80;">R$ <span id="pb-o-cost">--</span></span>
+                    </div>
+                </div>
 
                 <a href="#" class="btn-download" id="downloadBtn">
                     <i class="fas fa-download"></i> Baixar Site (.zip)
@@ -1157,6 +1190,12 @@
                     }
                     break;
 
+                case 'projection':
+                    document.getElementById('proj-time').textContent = msg.estimated_time_str;
+                    document.getElementById('proj-cost').textContent = `R$ ${msg.estimated_cost_brl.toFixed(2)}`;
+                    document.getElementById('gen-projection').style.display = 'block';
+                    break;
+
                 case 'progress':
                     // O progresso de páginas varia de 0 a 100%. 
                     // Vamos mapear isso para encher a fatia global de 35% até 87%.
@@ -1164,6 +1203,10 @@
                     const globalPct = 35 + (pagesProg * 0.52);
 
                     updateProgressCircle(globalPct, `${msg.current}/${msg.total} páginas`);
+                    
+                    if (msg.cost_brl !== undefined && msg.cost_brl > 0) {
+                        document.getElementById('live-cost-display').textContent = `· R$ ${msg.cost_brl.toFixed(3)}`;
+                    }
                     break;
 
                 case 'info':
@@ -1181,6 +1224,21 @@
                         <div class="stat-box"><div class="val">R$${s.cost_brl.toFixed(2)}</div><div class="lbl">Custo BRL</div></div>
                         <div class="stat-box"><div class="val">${s.duration}</div><div class="lbl">Tempo Gasto</div></div>
                     `;
+                    
+                    if (msg.stats && msg.stats.providers) {
+                        const p = msg.stats.providers;
+                        if (p.gemini) {
+                            document.getElementById('pb-g-pages').textContent = p.gemini.pages;
+                            document.getElementById('pb-g-cost').textContent  = p.gemini.cost_brl.toFixed(3);
+                        }
+                        if (p.openai && p.openai.pages > 0) {
+                            document.getElementById('pb-o-pages').textContent = p.openai.pages;
+                            document.getElementById('pb-o-cost').textContent  = p.openai.cost_brl.toFixed(3);
+                            document.getElementById('pb-openai').style.display = 'block';
+                        }
+                        document.getElementById('provider-breakdown').style.display = 'block';
+                    }
+                    
                     document.getElementById('downloadBtn').href = msg.download;
                     break;
 

@@ -1,7 +1,7 @@
 """
 GeminiClient — Client direto para Google AI Studio (Gemini API).
 Usa Structured Output (Pydantic) para garantir JSON válido por contrato.
-Fallback gracioso para OpenRouterClient se Google falhar.
+Fallback gracioso para OpenAIClient se Google falhar.
 """
 import os
 import time
@@ -34,6 +34,8 @@ class GeminiClient:
         self._call_count = 0
         self._total_input_tokens = 0
         self._total_output_tokens = 0
+        self._last_input_tokens = 0
+        self._last_output_tokens = 0
         logger.info("GeminiClient inicializado: model=%s", model)
 
     def generate_page_content(
@@ -64,13 +66,26 @@ class GeminiClient:
                 # Atualizar contadores (thread-safe)
                 with self._lock:
                     self._call_count += 1
-                    if response.usage_metadata:
-                        self._total_input_tokens += (
-                            response.usage_metadata.prompt_token_count or 0
-                        )
-                        self._total_output_tokens += (
-                            response.usage_metadata.candidates_token_count or 0
-                        )
+                    
+                    # Capturar tokens reais (às vezes ausentes em geração paralela pesada)
+                    if response.usage_metadata and response.usage_metadata.prompt_token_count:
+                        input_tok  = response.usage_metadata.prompt_token_count or 0
+                        output_tok = response.usage_metadata.candidates_token_count or 0
+                    else:
+                        import json
+                        result_text = response.text if hasattr(response, 'text') and response.text else ""
+                        if response.parsed:
+                            result_text = json.dumps(response.parsed.model_dump())
+                            
+                        # Fallback: estimar por contagem de palavras × fator 1.33
+                        input_tok  = int(len(user_prompt.split()) * 1.33)
+                        output_tok = int(len(result_text.split()) * 1.33) if result_text else 0
+                        logger.debug("usage_metadata ausente — estimativa: in=%d out=%d", input_tok, output_tok)
+                
+                    self._total_input_tokens += input_tok
+                    self._total_output_tokens += output_tok
+                    self._last_input_tokens = input_tok
+                    self._last_output_tokens = output_tok
 
                 # Structured Output: response.parsed é um PageContent validado
                 if response.parsed:
@@ -99,12 +114,18 @@ class GeminiClient:
             except Exception as e:
                 error_str = str(e)
                 if '429' in error_str or 'RESOURCE_EXHAUSTED' in error_str:
-                    wait = 10 + (attempt * 10)
-                    logger.warning(
-                        "Gemini rate limit (429) [%s] — aguardando %ds (attempt %d/3)",
-                        self.model, wait, attempt + 1
-                    )
-                    time.sleep(wait)
+                    if attempt == 0:
+                        logger.warning(
+                            "Gemini 429 [%s] — aguardando 5s antes do retry final",
+                            self.model
+                        )
+                        time.sleep(5)
+                    else:
+                        logger.error(
+                            "Gemini 429 persistente [%s] — retornando None para acionar OpenAI fallback",
+                            self.model
+                        )
+                        return None
                 else:
                     logger.warning(
                         "Gemini erro [%s] attempt %d/3: %s",
@@ -151,9 +172,12 @@ class GeminiClient:
 
             except Exception as e:
                 if '429' in str(e) or 'RESOURCE_EXHAUSTED' in str(e):
-                    wait = 10 + (attempt * 10)
-                    logger.warning("Rate limit texto — aguardando %ds", wait)
-                    time.sleep(wait)
+                    if attempt == 0:
+                        logger.warning("Gemini 429 (text) — aguardando 5s antes do retry final")
+                        time.sleep(5)
+                    else:
+                        logger.error("Gemini 429 persistente (text) — retornando None")
+                        return None
                 else:
                     logger.warning("Erro texto attempt %d: %s", attempt + 1, e)
                     if attempt < 2:

@@ -216,6 +216,27 @@ def generate_report(results: dict, config: dict, api_stats: dict, output_dir: st
     empresa = config['empresa']['nome']
     now = datetime.now().strftime('%d/%m/%Y %H:%M')
 
+    # Suporte ao novo formato do StatsAccumulator (get_summary())
+    # e retrocompatibilidade com o formato antigo (flat dict do OpenRouterClient)
+    if 'total' in api_stats:
+        # Novo formato: accumulator.get_summary()
+        total = api_stats['total']
+        gemini = api_stats.get('gemini', {})
+        openai = api_stats.get('openai', {})
+        _calls = gemini.get('pages', 0) + openai.get('pages', 0)
+        _input  = gemini.get('input_tokens', 0) + openai.get('input_tokens', 0)
+        _output = gemini.get('output_tokens', 0) + openai.get('output_tokens', 0)
+        _cost_usd = total.get('cost_usd', 0.0)
+        _cost_brl = total.get('cost_brl', 0.0)
+    else:
+        # Formato antigo (flat dict)
+        _calls    = api_stats.get('calls', 0)
+        _input    = api_stats.get('input_tokens', 0)
+        _output   = api_stats.get('output_tokens', 0)
+        _cost_usd = api_stats.get('cost_usd', 0.0)
+        _cost_brl = api_stats.get('cost_brl', 0.0)
+        gemini = openai = {}
+
     report = f"""# 📊 Relatório de Geração - {empresa}
 **Data:** {now}
 
@@ -233,11 +254,11 @@ def generate_report(results: dict, config: dict, api_stats: dict, output_dir: st
 ## Custos da API
 | Métrica | Valor |
 |---|---|
-| Chamadas à API | {api_stats['calls']} |
-| Tokens de entrada | {api_stats['input_tokens']:,} |
-| Tokens de saída | {api_stats['output_tokens']:,} |
-| Custo total (USD) | ${api_stats['cost_usd']:.4f} |
-| Custo total (BRL) | R${api_stats['cost_brl']:.2f} |
+| Páginas geradas | {_calls} |
+| Tokens de entrada | {_input:,} |
+| Tokens de saída | {_output:,} |
+| Custo total (USD) | ${_cost_usd:.4f} |
+| Custo total (BRL) | R${_cost_brl:.2f} |
 """
 
     if results['errors']:

@@ -44,7 +44,7 @@
 > Foco: Finalizar dashboard do empresário e avaliar Otimização 3 (Dual Client).
 
 - [ ] **Dashboard do empresário** — revisar, otimizar e validar com dados reais
-- [x] **Otimização de Velocidade (Fase 2)** — Arquitetura de fallback Dual Client (Gemini Primário via Google API + Pydantic Structured Output, com fallback zero-downtime para OpenRouter).
+- [x] **Otimização de Velocidade (Fase 2)** — Fallback enterprise real: `OpenAIClient` (GPT-4o Mini) com JSON Schema nativo substitui OpenRouter. `StatsAccumulator` thread-safe centraliza custo/velocidade por provider. Wizard exibe projeção pré-geração, custo live e breakdown final. *(Pendente: validação manual E2E)*
 - [ ] **Validação do Rate Limit Tier 1 (Google)** — confirmar a propagação da conta de faturamento (Billing Tier 1) testando a geração em lote via Wizard.
 
 ---
@@ -64,6 +64,7 @@
 - [ ] **Monitoramento em produção** (Sentry ou similar) — rastrear erros reais em deploy
 - [ ] **Script de deploy automático** — rsync / FTP / Cloudflare Pages com um comando
 - [ ] **Testes E2E do pipeline** — fixtures com config real, sem chamar APIs externas
+- [ ] ⏳ **Validação manual E2E — OpenAI Fallback + Métricas** — Executar geração completa via Wizard (6 páginas) e validar: (1) card de projeção aparece antes da geração, (2) custo real-time atualiza durante progress, (3) breakdown Gemini/OpenAI na tela final, (4) `output/reports/` contém custo correto, (5) ZIP válido para download. Ver checklist completo em `docs/openai-fallback-metricas/PLAN_OPENAI_FALLBACK_06_04_2026.md`.
 
 ### Média Prioridade
 - [ ] **Multi-cliente / modo batch** — gerar N sites de uma vez com configs diferentes
@@ -84,7 +85,7 @@
 | Indicador | Status | Meta |
 |---|---|---|
 | Custo por site | ~R$0,03 | < R$0,10 |
-| Testes passando | 170 ✅ | > 0 falhas |
-| Cobertura de testes | 79% | ≥ 75% |
+| Testes passando | 180 ✅ | > 0 falhas |
+| Cobertura de testes | 76% | ≥ 75% |
 | Rating de engenharia | 10/10 | 10/10 |
 | CI (GitHub Actions) | ✅ verde | sempre verde |

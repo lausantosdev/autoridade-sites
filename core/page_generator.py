@@ -57,7 +57,8 @@ def generate_all_pages(
     template_path: str,
     output_dir: str,
     progress_callback=None,
-    gemini_client=None
+    gemini_client=None,
+    stats_accumulator=None
 ):
     """
     Gera todas as páginas SEO em paralelo.
@@ -71,6 +72,7 @@ def generate_all_pages(
         output_dir: Diretório de saída
         progress_callback: Função callback(current, total, page_title) para progresso
         gemini_client: GeminiClient (primário, opcional)
+        stats_accumulator: StatsAccumulator para registrar custo e tokens
     """
     os.makedirs(output_dir, exist_ok=True)
 
@@ -108,7 +110,7 @@ def generate_all_pages(
     errors = [0]
 
     if gemini_client:
-        logger.info("Usando GeminiClient como primário (OpenRouter como fallback)")
+        logger.info("Usando GeminiClient como primário (OpenAI como fallback)")
     else:
         logger.info("Usando OpenRouterClient (sem Gemini)")
 
@@ -116,7 +118,7 @@ def generate_all_pages(
         try:
             _generate_single_page(
                 page, pages, config, topics, client, template, output_dir,
-                gemini_client=gemini_client
+                gemini_client=gemini_client, stats_accumulator=stats_accumulator
             )
             with _counter_lock:
                 completed[0] += 1
@@ -165,7 +167,7 @@ def generate_all_pages(
 def _generate_single_page(
     page: dict, all_pages: list, config: dict, topics: dict,
     client: OpenRouterClient, template: str, output_dir: str,
-    gemini_client=None
+    gemini_client=None, stats_accumulator=None
 ):
     """Gera uma única página SEO com validação e retry automático."""
     empresa = config['empresa']['nome']
@@ -262,25 +264,33 @@ REGRAS ABSOLUTAS:
 
             # Tentar Gemini primeiro (structured output = JSON garantido)
             result = None
-            used_gemini = False
+            used_flat = False
+            
             if gemini_client:
                 result = gemini_client.generate_json(SYSTEM_PROMPT, user_prompt)
                 if result:
-                    used_gemini = True
+                    used_flat = True
                     logger.debug("%s: Gemini OK", page['filename'])
+                    if stats_accumulator:
+                        stats_accumulator.record("gemini", gemini_client._last_input_tokens, gemini_client._last_output_tokens)
                 else:
-                    logger.warning("%s: Gemini falhou, usando OpenRouter fallback", page['filename'])
-
-            # Fallback para OpenRouter
-            if not result:
+                    logger.warning("%s: Gemini falhou — acionando OpenAI fallback", page['filename'])
+            
+            # Fallback: OpenAI GPT-4o Mini
+            if not result and client:
                 result = client.generate_json(SYSTEM_PROMPT, user_prompt)
-
+                if result:
+                    used_flat = True
+                    logger.info("%s: OpenAI fallback OK", page['filename'])
+                    if stats_accumulator:
+                        stats_accumulator.record("openai", client._last_input_tokens, client._last_output_tokens)
+            
+            # Falha total: fail-fast sem mais providers
             if not result:
-                raise APIError("Ambos Gemini e OpenRouter retornaram resposta vazia")
-
-            # Achatar JSON aninhado (necessário apenas para OpenRouter/DeepSeek)
-            # Gemini com Structured Output já retorna flat por contrato
-            flat_result = result if used_gemini else _flatten_json(result)
+                raise APIError("Gemini e OpenAI falharam — serviço temporariamente indisponível. Tente novamente em alguns minutos.")
+            
+            # flat_result: ambos os providers retornam JSON flat
+            flat_result = result if used_flat else _flatten_json(result)
 
             # Substituir placeholders do GPT no template
             html = template
