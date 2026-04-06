@@ -1,5 +1,6 @@
 """
-Page Generator - Gera páginas SEO em massa usando DeepSeek via OpenRouter
+Page Generator - Gera páginas SEO em massa.
+Suporte dual: Google Gemini (primário, structured output) + OpenRouter (fallback).
 """
 import os
 import json
@@ -55,7 +56,8 @@ def generate_all_pages(
     client: OpenRouterClient,
     template_path: str,
     output_dir: str,
-    progress_callback=None
+    progress_callback=None,
+    gemini_client=None
 ):
     """
     Gera todas as páginas SEO em paralelo.
@@ -64,10 +66,11 @@ def generate_all_pages(
         pages: Lista de dicts com 'title', 'keyword', 'location', 'filename'
         config: Configuração do site
         topics: Tópicos do nicho (palavras + frases)
-        client: OpenRouterClient
+        client: OpenRouterClient (fallback)
         template_path: Caminho para o template HTML
         output_dir: Diretório de saída
         progress_callback: Função callback(current, total, page_title) para progresso
+        gemini_client: GeminiClient (primário, opcional)
     """
     os.makedirs(output_dir, exist_ok=True)
 
@@ -104,10 +107,16 @@ def generate_all_pages(
     completed = [0]
     errors = [0]
 
+    if gemini_client:
+        logger.info("Usando GeminiClient como primário (OpenRouter como fallback)")
+    else:
+        logger.info("Usando OpenRouterClient (sem Gemini)")
+
     def process_page(page):
         try:
             _generate_single_page(
-                page, pages, config, topics, client, template, output_dir
+                page, pages, config, topics, client, template, output_dir,
+                gemini_client=gemini_client
             )
             with _counter_lock:
                 completed[0] += 1
@@ -155,7 +164,8 @@ def generate_all_pages(
 
 def _generate_single_page(
     page: dict, all_pages: list, config: dict, topics: dict,
-    client: OpenRouterClient, template: str, output_dir: str
+    client: OpenRouterClient, template: str, output_dir: str,
+    gemini_client=None
 ):
     """Gera uma única página SEO com validação e retry automático."""
     empresa = config['empresa']['nome']
@@ -250,12 +260,27 @@ REGRAS ABSOLUTAS:
 - LINKS: somente em seo_p1 e seo_p5, usando HTML puro <a href="filename.html">âncora relevante</a>
 - GEO: FAQ deve responder perguntas reais que alguém faria a uma IA sobre esse serviço nessa cidade"""
 
-            result = client.generate_json(SYSTEM_PROMPT, user_prompt)
-            if not result:
-                raise APIError("API retornou resposta vazia")
+            # Tentar Gemini primeiro (structured output = JSON garantido)
+            result = None
+            used_gemini = False
+            if gemini_client:
+                result = gemini_client.generate_json(SYSTEM_PROMPT, user_prompt)
+                if result:
+                    used_gemini = True
+                    logger.debug("%s: Gemini OK", page['filename'])
+                else:
+                    logger.warning("%s: Gemini falhou, usando OpenRouter fallback", page['filename'])
 
-            # Achatar JSON aninhado (DeepSeek pode retornar estrutura aninhada)
-            flat_result = _flatten_json(result)
+            # Fallback para OpenRouter
+            if not result:
+                result = client.generate_json(SYSTEM_PROMPT, user_prompt)
+
+            if not result:
+                raise APIError("Ambos Gemini e OpenRouter retornaram resposta vazia")
+
+            # Achatar JSON aninhado (necessário apenas para OpenRouter/DeepSeek)
+            # Gemini com Structured Output já retorna flat por contrato
+            flat_result = result if used_gemini else _flatten_json(result)
 
             # Substituir placeholders do GPT no template
             html = template

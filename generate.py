@@ -23,6 +23,7 @@ from core.config_loader import load_config, get_whatsapp_link, get_phone_display
 from core.mixer import mix_keywords_locations, get_summary
 from core.sitemap_generator import generate_sitemap
 from core.openrouter_client import OpenRouterClient
+from core.gemini_client import GeminiClient
 from core.topic_generator import generate_topics
 from core.page_generator import generate_all_pages, get_retry_log, _replace_config_vars
 from core.validator import validate_site, generate_report
@@ -98,11 +99,19 @@ def main():
         _print_done(start_time)
         return
 
-    # 5. Inicializar client API
+    # 5. Inicializar clients API
     client = OpenRouterClient(
         model=config['api']['model'],
         max_retries=config['api']['max_retries']
     )
+
+    # GeminiClient como primário (structured output, mais rápido)
+    gemini = None
+    try:
+        gemini = GeminiClient(model='gemini-2.5-flash')
+        print("🚀 GeminiClient ativo — usando como primário (OpenRouter = fallback)")
+    except Exception as e:
+        print(f"⚠️ GeminiClient indisponível ({e}) — usando apenas OpenRouter")
 
     # 6. Gerar tópicos do nicho
     if args.step in ('all', 'topics'):
@@ -252,7 +261,8 @@ def main():
             topics=topics,
             client=client,
             template_path=str(template_path),
-            output_dir=output_dir
+            output_dir=output_dir,
+            gemini_client=gemini
         )
         print()
 

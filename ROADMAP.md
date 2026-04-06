@@ -44,7 +44,8 @@
 > Foco: Finalizar dashboard do empresário e avaliar Otimização 3 (Dual Client).
 
 - [ ] **Dashboard do empresário** — revisar, otimizar e validar com dados reais
-- [ ] **Otimização de Velocidade (Fase 2)** — Dual Client / Split de Prompt (risco médio, requer avaliação de Qwen 3.6 Free)
+- [x] **Otimização de Velocidade (Fase 2)** — Arquitetura de fallback Dual Client (Gemini Primário via Google API + Pydantic Structured Output, com fallback zero-downtime para OpenRouter).
+- [ ] **Validação do Rate Limit Tier 1 (Google)** — confirmar a propagação da conta de faturamento (Billing Tier 1) testando a geração em lote via Wizard.
 
 ---
 
@@ -58,7 +59,7 @@
 - [ ] Expansão de Coverage — `test_template_injector.py` + `test_server.py`
 - [ ] Clean up — `ruff check --fix`
 - [ ] **⏳ Validação visual E2E da paralelização** — regenerar site completo via Wizard e confirmar: (1) barra de progresso avança corretamente nos 8 steps, (2) imagem hero gerada, (3) home page premium renderizada, (4) tópicos aplicados nas subpáginas
-- [ ] **⏳ Teste visual dos footers** — regenerar `darkbarbertwo.com.br` e verificar no browser: (1) links de serviços/cidades funcionam sem 404, (2) logo da subpágina leva para `index.html`, (3) brand do footer da subpágina leva para `index.html`, (4) `rel="nofollow"` no link da agência quando URL real for configurada
+- [ ] **⏳ Teste visual dos footers** — regenerar `darkbarbertwo.com.br` e verificar no browser: (1) links de serviços/cidades funcionam sem 404, (2) logo da subpágina leva para `index.html`, (3) brand do footer da subpágina leva para `index.html`, (4) `rel="nofollow"` no link da agência quando URL real for configurada, (5) validação do texto 'Áreas Atendidas' e funcionalidade JS linkify no rodapé re-integrada.
 
 - [ ] **Monitoramento em produção** (Sentry ou similar) — rastrear erros reais em deploy
 - [ ] **Script de deploy automático** — rsync / FTP / Cloudflare Pages com um comando

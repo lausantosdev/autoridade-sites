@@ -22,6 +22,7 @@ from core.config_loader import load_config
 from core.mixer import mix_keywords_locations, get_summary
 from core.sitemap_generator import generate_sitemap
 from core.openrouter_client import OpenRouterClient
+from core.gemini_client import GeminiClient
 from core.topic_generator import generate_topics
 from core.page_generator import generate_all_pages, _replace_config_vars
 from core.validator import validate_site, generate_report
@@ -132,11 +133,19 @@ async def websocket_generate(websocket: WebSocket):
             await asyncio.sleep(0.05)
             generate_sitemap(pages, config, output_dir)
             
-            # API Client (criado cedo — necessário para few-shot da imagem hero)
+            # API Clients
             client = OpenRouterClient(
                 model=config['api']['model'],
                 max_retries=config['api']['max_retries']
             )
+
+            # GeminiClient como primário (structured output, mais rápido)
+            gemini = None
+            try:
+                gemini = GeminiClient(model='gemini-2.5-flash')
+                logger.info("GeminiClient ativo — usando como primário")
+            except Exception as e:
+                logger.warning("GeminiClient indisponível (%s) — usando apenas OpenRouter", e)
 
             # ── Fase paralela: Hero + Home Data + Topics ──────────────
             # As 3 chamadas são independentes entre si e podem rodar em paralelo.
@@ -233,7 +242,8 @@ async def websocket_generate(websocket: WebSocket):
                     client=client,
                     template_path="templates/page.html",
                     output_dir=output_dir,
-                    progress_callback=progress_cb
+                    progress_callback=progress_cb,
+                    gemini_client=gemini
                 )
 
             # Limite de tempo global para TODA a etapa de geração de páginas.

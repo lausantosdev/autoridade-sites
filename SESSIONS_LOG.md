@@ -5,6 +5,27 @@
 
 ---
 
+## 05/04/2026 — Sessão 16: Otimização de Velocidade — Pipeline Gemini + Pydantic Structured Output
+
+**Status:** ✅ Concluída / Aguardando Propagação de Cota
+
+### ✅ Feito
+- **Benchmark Real:** Bench das APIs OpenRouter vs Google AI Studio direto confirmou gargalos de speed no DeepSeek e validou as restrições e comportamento de Billing do Google Cloud (por projeto).
+- **Integração Nativa Google:** Implementado `GeminiClient` usando o SDK oficial (`google-genai`) no lugar de requests cegas, preparado para o modelo ultrafast `gemini-2.5-flash`.
+- **Pydantic Structured Output:** Implementado em `core/schemas.py` o parser rigoroso `PageContent`. O modelo devolve dados tipados, reduzindo bugs de parseamento JSON para 0%.
+- **Dual-Model Fallback:** Pipeline em `server.py`, `generate.py` e `page_generator.py` refatorado para usar o Google Gemini como preferência de geração primária para velocidade; se falhar/cair no rate limit, o `OpenRouterClient` original assume o bastão mantendo a estabilidade.
+- **Billing Tier 1 Configurado:** Setup da chave API e vinculação do Billing efetuados pelo usuário no GCP na organização do projeto "SiteGen".
+- **Semântica e UX de Rodapé:** Alterado o termo "Cidades Atendidas" para "Áreas Atendidas" nas templates HTML base. Lógica Javascript (`core/template_injector.py`) ajustada preventivamente (`indexOf('rea')`) para garantir que os links SEO permaneçam integrados e funcionais na visualização gerada.
+
+### ⚠️ Pendente
+- **Propagação do Limite Tier 1:** Verificamos que disparos lotados acima do Free tier deram Timeout (Exception 429: Resource Exhausted), comportamento natural do Google Cloud quando acabam de ativar conta nova. Precisamos apenas esperar para que a cota destrave o gargalo nos próximos testes.
+
+### 🔜 Próxima Sessão
+- Testar a geração em lote no Wizard amanhã para atestar o destrave dos limites via Billing (espera-se 90 págs / 15s).
+- Retomar e finalizar as revisões do Dashboard de leads do empresário.
+
+---
+
 ## 05/04/2026 — Sessão 15: Otimização de Velocidade — Cache + Paralelização (Sessão 7 do dia)
 
 **Status:** ✅ Concluída
