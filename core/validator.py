@@ -162,19 +162,22 @@ def _validate_page(filename: str, content: str, config: dict = None) -> dict:
     # Verificar meta description
     desc_match = re.search(r'<meta name="description" content="(.*?)"', content)
     if not desc_match or not desc_match.group(1).strip():
-        issues['warnings'].append(f"{filename}: Meta description ausente")
+        if filename not in ('mapa-do-site.html', 'index.html'):
+            issues['warnings'].append(f"{filename}: Meta description ausente")
     elif '@' in desc_match.group(1):
         issues['errors'].append(f"{filename}: Placeholder não substituído na meta description")
 
     # Verificar H1
     h1_match = re.search(r'<h1[^>]*>(.*?)</h1>', content, re.DOTALL)
     if not h1_match:
-        issues['warnings'].append(f"{filename}: H1 ausente")
+        if filename not in ('index.html',):
+            issues['warnings'].append(f"{filename}: H1 ausente")
 
     # Verificar H2s
     h2s = re.findall(r'<h2[^>]*>(.*?)</h2>', content, re.DOTALL)
     if len(h2s) < 6:
-        issues['warnings'].append(f"{filename}: Apenas {len(h2s)} H2s (mínimo recomendado: 6)")
+        if filename not in ('index.html', 'mapa-do-site.html'):
+            issues['warnings'].append(f"{filename}: Apenas {len(h2s)} H2s (mínimo recomendado: 6)")
 
     # Verificar placeholders não substituídos (ignorar blocos <script> para não confundir com JSON-LD)
     content_no_scripts = re.sub(r'<script[^>]*>.*?</script>', '', content, flags=re.DOTALL)
@@ -201,7 +204,8 @@ def _validate_page(filename: str, content: str, config: dict = None) -> dict:
     issues['word_count'] = word_count
 
     if word_count < 900:
-        issues['warnings'].append(f"{filename}: Apenas {word_count} palavras (mínimo: 900)")
+        if filename not in ('index.html', 'mapa-do-site.html'):
+            issues['warnings'].append(f"{filename}: Apenas {word_count} palavras (mínimo: 900)")
 
     # Verificar links internos
     internal_links = re.findall(r'href="([^"]*\.html)"', content)

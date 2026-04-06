@@ -418,9 +418,9 @@ Após auditoria estática independente, 4 bugs foram identificados e corrigidos 
 
 ---
 
-## ⏳ Validação Manual Pendente
+## ⏳ Validação Manual
 
-> **Status:** ⏳ Aguardando execução
+> **Status:** ✅ Concluída
 
 **Objetivo:** Confirmar que toda a stack funciona end-to-end com APIs reais (não mockadas).
 

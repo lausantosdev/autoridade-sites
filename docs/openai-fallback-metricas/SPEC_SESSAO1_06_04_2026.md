@@ -8,13 +8,13 @@
 
 ## Sumário de Fases
 
-- [ ] Fase 1: `core/openai_client.py` [NOVO]
-- [ ] Fase 2: `core/stats_accumulator.py` [NOVO]
-- [ ] Fase 3: Fix `core/gemini_client.py`
-- [ ] Fase 4: `core/page_generator.py`
-- [ ] Fase 5: `server.py`
-- [ ] Fase 6: `frontend/index.html`
-- [ ] Fase 7: Testes automatizados
+- [x] Fase 1: `core/openai_client.py` [NOVO]
+- [x] Fase 2: `core/stats_accumulator.py` [NOVO]
+- [x] Fase 3: Fix `core/gemini_client.py`
+- [x] Fase 4: `core/page_generator.py`
+- [x] Fase 5: `server.py`
+- [x] Fase 6: `frontend/index.html`
+- [x] Fase 7: Testes automatizados
 
 ---
 

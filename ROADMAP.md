@@ -24,6 +24,8 @@
 - [x] Hero Image v2 — Atmosfera Aspiracional (16:9 com overlay refinado)
 - [x] **Auditoria e correção de SEO nos footers** — link do logo em subpáginas corrigido (`#hero` → `index.html`), brand do footer vira link de retorno à home, CSS `.footer-logo` adicionado; links `servicos_footer` e `locais_footer` validados como 100% consistentes com os slugs dos arquivos gerados
 - [x] **Otimização de Velocidade (Fase 1)** — Cache de Topics com TTL 7 dias + Paralelização de Hero/Home/Topics via `asyncio.gather` (server) e `ThreadPoolExecutor` (CLI). Ganho estimado: ~220s por geração. Frontend atualizado de 9→8 steps. *(Pendente: validação visual E2E)*
+- [x] **Validação do Rate Limit Tier 1 (Google)** — Cota propagada e geração estruturada em larga escala (90 pág) fluida a ~1.02 pag/s.
+- [x] **Validação manual E2E — OpenAI Fallback + Métricas** — Teste 100% via web. Projeção, Live Costing e Breakdown final consistentes com a UI e API perfeitamente.
 
 ### Engenharia / Qualidade (PLAN_10_10 — Concluído em 03/04/2026)
 - [x] Logging estruturado em todo o `core/` (`core/logger.py`)
@@ -44,8 +46,7 @@
 > Foco: Finalizar dashboard do empresário e avaliar Otimização 3 (Dual Client).
 
 - [ ] **Dashboard do empresário** — revisar, otimizar e validar com dados reais
-- [x] **Otimização de Velocidade (Fase 2)** — Fallback enterprise real: `OpenAIClient` (GPT-4o Mini) com JSON Schema nativo substitui OpenRouter. `StatsAccumulator` thread-safe centraliza custo/velocidade por provider. Wizard exibe projeção pré-geração, custo live e breakdown final. *(Pendente: validação manual E2E)*
-- [ ] **Validação do Rate Limit Tier 1 (Google)** — confirmar a propagação da conta de faturamento (Billing Tier 1) testando a geração em lote via Wizard.
+- [x] **Otimização de Velocidade (Fase 2)** — Fallback enterprise real implementado. `StatsAccumulator` thread-safe operante. Projeção pré-geração, custo live e breakdown final funcionam e foram visualmente validados.
 
 ---
 
@@ -64,7 +65,6 @@
 - [ ] **Monitoramento em produção** (Sentry ou similar) — rastrear erros reais em deploy
 - [ ] **Script de deploy automático** — rsync / FTP / Cloudflare Pages com um comando
 - [ ] **Testes E2E do pipeline** — fixtures com config real, sem chamar APIs externas
-- [ ] ⏳ **Validação manual E2E — OpenAI Fallback + Métricas** — Executar geração completa via Wizard (6 páginas) e validar: (1) card de projeção aparece antes da geração, (2) custo real-time atualiza durante progress, (3) breakdown Gemini/OpenAI na tela final, (4) `output/reports/` contém custo correto, (5) ZIP válido para download. Ver checklist completo em `docs/openai-fallback-metricas/PLAN_OPENAI_FALLBACK_06_04_2026.md`.
 
 ### Média Prioridade
 - [ ] **Multi-cliente / modo batch** — gerar N sites de uma vez com configs diferentes

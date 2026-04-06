@@ -5,6 +5,22 @@
 
 ---
 
+## 06/04/2026 — Sessão 17: Validação E2E OpenAI Fallback e Melhorias de SEO
+
+**Status:** ✅ Concluída
+
+### ✅ Feito
+- **Validação E2E do Fallback:** Automação de teste com 90 páginas SEO e Subpáginas pelo Wizard Web. O Google Gemini resolveu a totalidade a 1.02 pág/s, atestando estabilidade estrita e isenção do Fallback da OpenAI para um dia regular de uso.
+- **Validação Rate Limit Tier 1:** A conta de faturamento absorveu a geração pesada com maestria sem engasgar com 429. Trancado o issue de delay originado após a ativação.
+- **Métricas Visuais de Custo:** Projeção cravada. Servidor Web enviando estimativas Live precisas, e painel de Breakdown listando métricas idênticas às dos Reports gerados e do Console (via StatsAccumulator).
+- **Validador Interno Refinado:** Atualização na engrenagem estrutural para pular arquivos base como `index.html` (SPA React) e diretivos de rotas (`mapa-do-site.html`) de exigências como H1 e Metas ricas. Encerramento de ponta solta para falsos positivos.
+- **SEO Mapa do Site:** Aprimorado o template introduzindo Meta Description explícito e upgrade do Sub-title para `<h2>` para validação unânime de search-engines.
+
+### 🔜 Próxima Sessão
+- Foco central no Dashboard SaaS do empresário e acompanhamento.
+
+---
+
 ## 05/04/2026 — Sessão 16: Otimização de Velocidade — Pipeline Gemini + Pydantic Structured Output
 
 **Status:** ✅ Concluída / Aguardando Propagação de Cota

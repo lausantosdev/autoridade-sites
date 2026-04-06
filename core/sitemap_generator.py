@@ -70,6 +70,7 @@ def _generate_sitemap_html(pages: list, domain: str, config: dict, output_dir: s
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Mapa do site de {empresa}. Navegue por todos os nossos serviços e localidades de atendimento.">
     <title>Mapa do Site - {empresa}</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -94,7 +95,7 @@ def _generate_sitemap_html(pages: list, domain: str, config: dict, output_dir: s
 <body>
     <div class="container">
         <h1>Mapa do Site — <span>{empresa}</span></h1>
-        <p class="subtitle">Conheça todos os nossos serviços disponíveis por região</p>
+        <h2 class="subtitle" style="font-size: 1.1rem; font-weight: normal;">Conheça todos os nossos serviços disponíveis por região</h2>
         <div class="nav-links">
             <a href="index.html">← Página Inicial</a>
             <a href="sitemap.xml">Sitemap XML</a>
