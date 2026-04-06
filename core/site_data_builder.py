@@ -183,7 +183,7 @@ def build_site_data(config: dict, client: OpenRouterClient) -> dict:
         
         "megaCtaSection": {
             "title": "Fale Conosco",
-            "subtitle": "Tire suas dúvidas ou solicite mais informações conversando com nossa equipe pelo WhatsApp.",
+            "subtitle": "Solicite mais informações pelo WhatsApp.",
         },
         
         "faqSection": {

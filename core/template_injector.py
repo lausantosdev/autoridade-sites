@@ -225,6 +225,27 @@ def _inject_leads_form(html: str, site_data: dict) -> str:
     """Injeta o formulário de Captura de Leads na Home Premium."""
     # 1. CSS — link externo (widget.css é copiado pelo output_builder junto com /css)
     html = html.replace('</head>', '<link rel="stylesheet" href="css/widget.css?v=2">\n</head>', 1)
+
+    # SVG inline do WhatsApp — zero dependência de CDN/FontAwesome
+    _WA_ICON = (
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" '
+        'width="20" height="20" aria-hidden="true" style="vertical-align:middle;flex-shrink:0;">'
+        '<path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15'
+        '-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475'
+        '-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52'
+        '.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207'
+        '-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372'
+        '-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2'
+        ' 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085'
+        ' 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347'
+        'm-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648'
+        '-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0'
+        ' 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884'
+        '-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892'
+        'c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448'
+        'h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/>'
+        '</svg>'
+    )
         
     # 2. Dados
     mega_cta = site_data.get('megaCtaSection', {})
@@ -243,6 +264,7 @@ def _inject_leads_form(html: str, site_data: dict) -> str:
     seo = site_data.get('seo', {})
     keyword = seo.get('keyword', '')
     local = seo.get('local', '')
+    cor_marca = site_data.get('theme', {}).get('color', '#6366f1')
     
     # 3. HTML Form e CSS Inline para o container (seção oculta inicialmente)
     form_html = f"""
@@ -260,12 +282,12 @@ def _inject_leads_form(html: str, site_data: dict) -> str:
       scroll-margin-top: 100px;
       background: linear-gradient(
         180deg,
-        color-mix(in srgb, var(--theme-color, #6366f1) 8%, transparent) 0%,
-        color-mix(in srgb, var(--theme-color, #6366f1) 14%, transparent) 50%,
-        color-mix(in srgb, var(--theme-color, #6366f1) 8%, transparent) 100%
+        color-mix(in srgb, {cor_marca} 8%, transparent) 0%,
+        color-mix(in srgb, {cor_marca} 14%, transparent) 50%,
+        color-mix(in srgb, {cor_marca} 8%, transparent) 100%
       );
-      border-top: 1px solid color-mix(in srgb, var(--theme-color, #6366f1) 15%, transparent);
-      border-bottom: 1px solid color-mix(in srgb, var(--theme-color, #6366f1) 15%, transparent);
+      border-top: 1px solid color-mix(in srgb, {cor_marca} 15%, transparent);
+      border-bottom: 1px solid color-mix(in srgb, {cor_marca} 15%, transparent);
     }}
     #contato .container {{
       max-width: 640px;
@@ -306,12 +328,12 @@ def _inject_leads_form(html: str, site_data: dict) -> str:
     [data-theme="dark"] #contato {{
       background: linear-gradient(
         180deg,
-        color-mix(in srgb, var(--theme-color, #6366f1) 6%, transparent) 0%,
-        color-mix(in srgb, var(--theme-color, #6366f1) 10%, transparent) 50%,
-        color-mix(in srgb, var(--theme-color, #6366f1) 6%, transparent) 100%
+        color-mix(in srgb, {cor_marca} 6%, transparent) 0%,
+        color-mix(in srgb, {cor_marca} 10%, transparent) 50%,
+        color-mix(in srgb, {cor_marca} 6%, transparent) 100%
       );
-      border-top-color: color-mix(in srgb, var(--theme-color, #6366f1) 12%, transparent);
-      border-bottom-color: color-mix(in srgb, var(--theme-color, #6366f1) 12%, transparent);
+      border-top-color: color-mix(in srgb, {cor_marca} 12%, transparent);
+      border-bottom-color: color-mix(in srgb, {cor_marca} 12%, transparent);
     }}
     html[data-theme="dark"] #contato .cta-eyebrow,
     [data-theme="dark"] #contato .cta-eyebrow {{
@@ -339,7 +361,7 @@ def _inject_leads_form(html: str, site_data: dict) -> str:
     /* ═══ Bottom CTA (reforço pré-footer) ═══ */
     #bottom-cta {{
       display: none;
-      padding: 64px 0;
+      padding: 24px 0 80px 0; /* Padding top leve, compensando o bottom da seção anterior */
       width: 100%;
       text-align: center;
     }}
@@ -348,8 +370,8 @@ def _inject_leads_form(html: str, site_data: dict) -> str:
       margin: 0 auto;
       padding: 40px 32px;
       border-radius: 20px;
-      background: linear-gradient(135deg, #f0f0ff 0%, #e8e6ff 100%);
-      border: 1px solid rgba(99, 102, 241, 0.12);
+      background: linear-gradient(135deg, {cor_marca}18 0%, {cor_marca}28 100%);
+      border: 1px solid {cor_marca}22;
     }}
     #bottom-cta .bottom-cta-text {{
       font-size: 1rem;
@@ -366,7 +388,7 @@ def _inject_leads_form(html: str, site_data: dict) -> str:
       align-items: center;
       gap: 8px;
       padding: 14px 36px;
-      background: var(--theme-color, #6366f1);
+      background: {cor_marca};
       color: #ffffff;
       font-size: 1rem;
       font-weight: 700;
@@ -393,7 +415,7 @@ def _inject_leads_form(html: str, site_data: dict) -> str:
     }}
     @media (max-width: 768px) {{
       #bottom-cta {{
-        padding: 48px 24px;
+        padding: 16px 24px 56px 24px;
       }}
       #bottom-cta .bottom-cta-card {{
         padding: 32px 24px;
@@ -419,7 +441,7 @@ def _inject_leads_form(html: str, site_data: dict) -> str:
                     </div>
                 </div>
                 <button type="submit" class="btn btn-whatsapp">
-                    <i class="fab fa-whatsapp"></i> Iniciar Conversa pelo WhatsApp
+                    {_WA_ICON} Iniciar Conversa pelo WhatsApp
                 </button>
                 <p class="lead-form-hint">Ao enviar, você será direcionado para o WhatsApp do especialista.</p>
             </form>
@@ -428,11 +450,10 @@ def _inject_leads_form(html: str, site_data: dict) -> str:
     <section id="bottom-cta">
         <div class="bottom-cta-card">
             <p class="bottom-cta-text">
-                <strong>{_escape_html_attr(empresa_nome)}</strong> atende em {_escape_html_attr(local)} e região.<br>
-                Fale agora com um especialista pelo WhatsApp sem compromisso.
+                <strong>{_escape_html_attr(empresa_nome)}</strong> atende em {_escape_html_attr(local)} e região.
             </p>
             <a href="#contato" class="bottom-cta-btn" onclick="event.preventDefault();document.getElementById('contato').scrollIntoView({{behavior:'smooth',block:'center'}})">
-                <i class="fab fa-whatsapp"></i> Falar Agora
+                {_WA_ICON} Falar Agora
             </a>
         </div>
     </section>

@@ -72,7 +72,7 @@ consistentes com a comunicação aprovada:
 # Forçar comunicação genérica na seção CTA (alinhado com subpáginas)
 site_data['megaCtaSection'] = {
     'title': 'Fale Conosco',
-    'subtitle': 'Tire suas dúvidas ou solicite mais informações conversando com nossa equipe pelo WhatsApp.'
+    'subtitle': 'Solicite mais informações pelo WhatsApp.'
 }
 ```
 
