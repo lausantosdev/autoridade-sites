@@ -42,7 +42,9 @@ File paths, code identifiers, and tags remain in their original form.
 - Se nenhum: "Nenhum"
 
 ### NEXT
-[Próximo passo: acionar fix.md / acionar escalation.md / aprovar commit / aguardar aprovação manual]
+- If AUDIT STATUS is "Aprovado" → trigger commit.md
+- If AUDIT STATUS is "Aprovado com ressalvas" → trigger fix.md for minor corrections only; if corrections are not minor → [ESCALATE]
+- If AUDIT STATUS is "Reprovado" → trigger fix.md
 
 ## RULES
 - git diff is the source of truth — report and plan are verified against it, not the reverse

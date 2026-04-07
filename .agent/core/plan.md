@@ -4,6 +4,12 @@
 Define the execution contract before any code is written.
 A plan is mandatory. No execution without a plan.
 
+## INPUT REQUIRED
+- `spec.md` output (mandatory)
+- `context.md` (mandatory)
+- `ARCHITECTURE.md` (if available)
+- `GUIDELINES.md` (if available)
+
 ## OUTPUT LANGUAGE
 Always generate plan output in Brazilian Portuguese (pt-BR).
 This applies only to the body content under each header.

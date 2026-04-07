@@ -40,6 +40,7 @@
 - If behavior is inconsistent across runs → output `[ESCALATE]` and stop
 - If audit is inconclusive → output `[ESCALATE]` and stop
 - Default: solve at lowest level possible; escalate only when necessary
+- If RISKS in plan.md contains critical items (auth, DB, core logic) → Gemini CLI reviews plan.md before exec.md is triggered
 
 ## ESCALATION TRIGGERS
 
