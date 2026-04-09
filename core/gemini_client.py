@@ -139,10 +139,51 @@ class GeminiClient:
 
     def generate_json(self, system_prompt: str, user_prompt: str) -> dict | None:
         """
-        Interface compatível com OpenRouterClient.generate_json().
-        Permite usar GeminiClient como drop-in replacement.
+        Gera JSON livre (sem response_schema) — compatível com OpenRouterClient.generate_json().
+
+        NÃO usa PageContent schema: esse método é chamado por _generate_home_content
+        que espera campos diferentes dos das subpáginas (hero_badge_text, service_N_*, etc.).
+        O response_schema=PageContent fica exclusivo de generate_page_content (subpáginas).
         """
-        return self.generate_page_content(system_prompt, user_prompt)
+        for attempt in range(3):
+            try:
+                response = self.client.models.generate_content(
+                    model=self.model,
+                    contents=user_prompt,
+                    config=types.GenerateContentConfig(
+                        system_instruction=system_prompt,
+                        response_mime_type='application/json',
+                        temperature=0.8,
+                    ),
+                )
+
+                with self._lock:
+                    self._call_count += 1
+                    if response.usage_metadata and response.usage_metadata.prompt_token_count:
+                        self._total_input_tokens  += response.usage_metadata.prompt_token_count or 0
+                        self._total_output_tokens += response.usage_metadata.candidates_token_count or 0
+
+                if response.text:
+                    import json as _json
+                    try:
+                        return _json.loads(response.text)
+                    except _json.JSONDecodeError:
+                        logger.warning("generate_json: JSON malformado attempt %d — ignorando", attempt + 1)
+
+            except Exception as e:
+                error_str = str(e)
+                if '429' in error_str or 'RESOURCE_EXHAUSTED' in error_str:
+                    if attempt < 2:
+                        logger.warning("Gemini 429 (generate_json) — aguardando 5s")
+                        import time as _time; _time.sleep(5)
+                    else:
+                        return None
+                else:
+                    logger.warning("generate_json erro attempt %d/3: %s", attempt + 1, e)
+                    if attempt < 2:
+                        import time as _time; _time.sleep(2 ** attempt)
+
+        return None
 
     def generate_text(self, system_prompt: str, user_prompt: str) -> str | None:
         """Gera texto puro (sem JSON). Usado para cena da hero image, etc."""
