@@ -33,6 +33,31 @@ AVAILABLE_ICONS = [
 ]
 
 
+def _resolve_display_names(servicos_manuais: list, palavras_chave: list) -> list:
+    """
+    Resolve os rótulos visuais para os cards de Serviços e o Footer.
+
+    Estratégia de prioridade:
+    1. Se servicos_manuais estiver preenchido, usa-os como labels (máximo 6).
+    2. Se servicos_manuais estiver vazio ou tiver menos itens que palavras_chave,
+       completa com as próprias palavras_chave como fallback.
+
+    Isso garante zero breaking change: operadores que não preencheram o campo
+    continuam com o comportamento anterior (keyword como label).
+
+    Returns:
+        list: Lista de strings com os display names, alinhada 1-a-1 com palavras_chave[:6].
+    """
+    result = []
+    total = min(len(palavras_chave), 6)
+    for i in range(total):
+        if i < len(servicos_manuais) and servicos_manuais[i].strip():
+            result.append(servicos_manuais[i].strip())
+        else:
+            result.append(palavras_chave[i])
+    return result
+
+
 def resolve_theme_mode(config: dict, client: OpenRouterClient) -> str:
     """
     Resolve o tema (light/dark) de forma leve.
@@ -90,6 +115,9 @@ def build_site_data(config: dict, client: OpenRouterClient) -> dict:
     
     palavras = config.get('seo', {}).get('palavras_chave', [])
     locais = config.get('seo', {}).get('locais', [])
+    servicos_manuais = config.get('empresa', {}).get('servicos_manuais', [])
+    # display_names: rótulos visuais para cards e footer (desacoplados das keywords)
+    display_names = _resolve_display_names(servicos_manuais, palavras)
     
     phone_raw = empresa['telefone_whatsapp']
     phone_display = get_phone_display(config)
@@ -163,7 +191,7 @@ def build_site_data(config: dict, client: OpenRouterClient) -> dict:
         "featuresSection": {  # ← renderiza como "Serviços" na Home
             "title": ai_content.get('services_title', f"Soluções em {empresa['categoria']}"),
             "subtitle": ai_content.get('services_subtitle', "Conheça nossos serviços especializados."),
-            "items": _build_services(palavras, ai_content),
+            "items": _build_services(palavras, ai_content, display_names),
         },
         
         "authoritySection": {
@@ -203,15 +231,24 @@ def build_site_data(config: dict, client: OpenRouterClient) -> dict:
         
         "footer": {
             "descricao": ai_content.get('footer_descricao', f"{empresa['categoria']} de excelência."),
-            "servicos": palavras[:6],
+            "servicos": display_names,
             "cidades": locais[:8],
             "creditoTexto": "AUTORIDADE DIGITAL",
             "creditoLink": "#",
             "slugMap": {
-                "servicos": {
-                    p: f"{slugify(f'{p} {cidade_principal}')}.html"
-                    for p in palavras[:6]
-                } if cidade_principal else {},
+                "servicos": (
+                    {
+                        # Chave primária: keyword → slug (mantém compatibilidade existente)
+                        **{p: f"{slugify(f'{p} {cidade_principal}')}.html" for p in palavras[:6]},
+                        # Alias: display_name → mesmo slug (para linkifyFooter encontrar pelo texto visível)
+                        # Só inclui quando display_name difere da keyword (evita entradas duplicadas)
+                        **{
+                            display_names[i]: f"{slugify(f'{palavras[i]} {cidade_principal}')}.html"
+                            for i in range(min(len(palavras[:6]), len(display_names)))
+                            if display_names[i] != palavras[i]
+                        }
+                    }
+                ) if cidade_principal else {},
                 "cidades": {
                     loc: f"{slugify(f'{categoria_nome} {loc}')}.html"
                     for loc in locais[:8]
@@ -345,12 +382,17 @@ REGRAS ABSOLUTAS:
     return _flatten_json(raw)
 
 
-def _build_services(palavras: list, ai_content: dict) -> list:
+def _build_services(palavras: list, ai_content: dict, display_names: list = None) -> list:
     """Monta a lista de cards de Serviços a partir das palavras-chave + descrições IA.
     
-    Títulos vêm de config.yaml (palavras_chave), descrições e ícones da IA.
+    Títulos de exibição vêm de display_names (servicos_manuais do Wizard quando
+    fornecidos, ou palavras_chave como fallback). Isso desacopla o label visual
+    da keyword técnica usada para gerar URLs e âncoras SEO.
+    Descrições e ícones vêm da IA (indexados pela posição da keyword).
     Quantidade é dinâmica: 2, 3, 6... depende do que o operador preencheu.
     """
+    if display_names is None:
+        display_names = palavras
     services = []
     for i, keyword in enumerate(palavras[:6], 1):
         desc = ai_content.get(f'service_{i}_description', f'Serviço profissional de {keyword.lower()}.')
@@ -360,8 +402,11 @@ def _build_services(palavras: list, ai_content: dict) -> list:
         if icon not in AVAILABLE_ICONS:
             icon = 'Zap'
         
+        # display_label: nome institucional para exibição; keyword: ancora SEO real
+        display_label = display_names[i - 1] if i - 1 < len(display_names) else keyword
+        
         services.append({
-            "title": keyword,
+            "title": display_label,
             "iconName": icon,
             "description": desc,
         })

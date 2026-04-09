@@ -37,6 +37,14 @@ def replace_config_vars(template: str, config: dict) -> str:
 
     locais = config.get('seo', {}).get('locais', [])
     palavras = config.get('seo', {}).get('palavras_chave', [])
+    servicos_manuais = empresa.get('servicos_manuais', [])
+
+    # Resolver display labels: servicos_manuais com fallback para keyword
+    # href usa sempre a keyword (slug real gerado), label usa o nome institucional
+    def _get_display_label(idx, keyword):
+        if idx < len(servicos_manuais) and servicos_manuais[idx].strip():
+            return servicos_manuais[idx].strip()
+        return keyword
 
     endereco = empresa.get('endereco', '').strip()
     endereco_footer = (
@@ -46,12 +54,13 @@ def replace_config_vars(template: str, config: dict) -> str:
     cidade_principal = locais[0] if locais else ''
     if cidade_principal:
         servicos_footer = '\n'.join(
-            f'<a href="{slugify(f"{p} {cidade_principal}")}.html" title="{p} em {cidade_principal}">{p}</a>'
-            for p in palavras
+            f'<a href="{slugify(f"{p} {cidade_principal}")}.html" title="{_get_display_label(i, p)} em {cidade_principal}">{_get_display_label(i, p)}</a>'
+            for i, p in enumerate(palavras)
         )
     else:
         servicos_footer = '\n'.join(
-            f'<a href="mapa-do-site.html">{p}</a>' for p in palavras
+            f'<a href="mapa-do-site.html">{_get_display_label(i, p)}</a>'
+            for i, p in enumerate(palavras)
         )
 
     categoria = empresa['categoria']
