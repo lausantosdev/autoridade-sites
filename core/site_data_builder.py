@@ -38,24 +38,20 @@ def _resolve_display_names(servicos_manuais: list, palavras_chave: list) -> list
     Resolve os rótulos visuais para os cards de Serviços e o Footer.
 
     Estratégia de prioridade:
-    1. Se servicos_manuais estiver preenchido, usa-os como labels (máximo 6).
-    2. Se servicos_manuais estiver vazio ou tiver menos itens que palavras_chave,
-       completa com as próprias palavras_chave como fallback.
-
-    Isso garante zero breaking change: operadores que não preencheram o campo
-    continuam com o comportamento anterior (keyword como label).
+    1. Se servicos_manuais estiver preenchido, usa SOMENTE eles (sem misturar keywords).
+       Isso evita que cards extras mostrem palavras-chave SEO ao lado de nomes institucionais.
+    2. Se servicos_manuais estiver vazio, usa palavras_chave como fallback (comportamento legado).
 
     Returns:
-        list: Lista de strings com os display names, alinhada 1-a-1 com palavras_chave[:6].
+        list: Lista de strings com os display names (máximo 6).
     """
-    result = []
-    total = min(len(palavras_chave), 6)
-    for i in range(total):
-        if i < len(servicos_manuais) and servicos_manuais[i].strip():
-            result.append(servicos_manuais[i].strip())
-        else:
-            result.append(palavras_chave[i])
-    return result
+    if servicos_manuais:
+        # Usuário preencheu nomes institucionais → usa apenas eles, sem completar com keywords
+        clean = [s.strip() for s in servicos_manuais[:6] if s.strip()]
+        if clean:
+            return clean
+    # Fallback: nenhum serviço manual → usa palavras-chave como labels
+    return [kw for kw in palavras_chave[:6]]
 
 
 def resolve_theme_mode(config: dict, client: OpenRouterClient) -> str:
@@ -383,34 +379,33 @@ REGRAS ABSOLUTAS:
 
 
 def _build_services(palavras: list, ai_content: dict, display_names: list = None) -> list:
-    """Monta a lista de cards de Serviços a partir das palavras-chave + descrições IA.
-    
-    Títulos de exibição vêm de display_names (servicos_manuais do Wizard quando
-    fornecidos, ou palavras_chave como fallback). Isso desacopla o label visual
-    da keyword técnica usada para gerar URLs e âncoras SEO.
-    Descrições e ícones vêm da IA (indexados pela posição da keyword).
-    Quantidade é dinâmica: 2, 3, 6... depende do que o operador preencheu.
+    """Monta a lista de cards de Serviços a partir de display_names + descrições IA.
+
+    Iteração baseada em display_names (não em palavras_chave), eliminando a causa
+    de keywords aparecerem como títulos quando o usuário preencheu serviços manuais.
+    Descrições e ícones vêm da IA, indexados pela posição correspondente na keyword list.
     """
     if display_names is None:
         display_names = palavras
+
     services = []
-    for i, keyword in enumerate(palavras[:6], 1):
+    for i, display_label in enumerate(display_names[:6], 1):
+        # Keyword na mesma posição (para lookup das descrições geradas pela IA)
+        keyword = palavras[i - 1] if i - 1 < len(palavras) else display_label
+
         desc = ai_content.get(f'service_{i}_description', f'Serviço profissional de {keyword.lower()}.')
         icon = ai_content.get(f'service_{i}_icon', 'Zap')
-        
+
         # Validar ícone (Lucide icon names do template React)
         if icon not in AVAILABLE_ICONS:
             icon = 'Zap'
-        
-        # display_label: nome institucional para exibição; keyword: ancora SEO real
-        display_label = display_names[i - 1] if i - 1 < len(display_names) else keyword
-        
+
         services.append({
-            "title": display_label,
+            "title": display_label,   # nome institucional (nunca keyword)
             "iconName": icon,
             "description": desc,
         })
-    
+
     return services if services else [
         {"title": "Serviço Profissional", "iconName": "Shield", "description": "Atendimento de qualidade com profissionais experientes."},
     ]
