@@ -660,9 +660,33 @@
             </div>
 
             <div class="field" style="margin-top: 20px;">
-                <label>Principais Serviços <span style="font-size:0.8rem; font-weight:normal;">(Um por linha — aparece nos cards e no rodapé do site)</span></label>
+                <label>
+                    Principais Serviços
+                    <span style="
+                        display: inline-block;
+                        font-size: 0.7rem;
+                        font-weight: 700;
+                        color: #ef4444;
+                        background: rgba(239,68,68,0.12);
+                        border: 1px solid rgba(239,68,68,0.3);
+                        border-radius: 4px;
+                        padding: 1px 6px;
+                        margin-left: 6px;
+                        text-transform: uppercase;
+                        letter-spacing: 0.04em;
+                        vertical-align: middle;
+                    ">Obrigatório</span>
+                    <span style="font-size:0.8rem; font-weight:normal; display:block; margin-top:2px;">(Um por linha — aparece nos cards e no rodapé do site)</span>
+                </label>
                 <textarea id="servicos"
                     placeholder="Energia Solar Residencial&#10;Energia Solar Comercial&#10;Manutenção de Painéis Solares"></textarea>
+                <p id="servicos-error" style="
+                    display: none;
+                    font-size: 0.82rem;
+                    color: #ef4444;
+                    margin-top: 6px;
+                    font-weight: 500;
+                ">⚠️ Preencha a lista de Principais Serviços (um por linha) antes de continuar.</p>
                 <p class="field-hint">💡 Dica: Use nomes institucionais aqui (ex: "Energia Solar Residencial"). As Palavras-Chave SEO do próximo passo controlam as URLs geradas.</p>
             </div>
 
@@ -907,6 +931,12 @@
         let csvKeywords = [];
         let csvFilePath = '';
 
+        // Reset inline error quando usuário digita em #servicos
+        document.getElementById('servicos').addEventListener('input', function() {
+            const errorEl = document.getElementById('servicos-error');
+            if (errorEl) errorEl.style.display = 'none';
+        });
+
         // ===== NAVIGATION =====
         function showPanel(index) {
             document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
@@ -952,6 +982,21 @@
             if (!dominio) { alert('Preencha o domínio do site'); return false; }
             if (!categoria) { alert('Preencha o nicho/categoria'); return false; }
             if (!telefone) { alert('Preencha o WhatsApp'); return false; }
+
+            // Validação do campo Principais Serviços
+            const servicosRaw = document.getElementById('servicos').value;
+            const servicosValidos = servicosRaw
+                .split('\n')
+                .map(s => s.trim())
+                .filter(s => s.length > 0);
+            const errorEl = document.getElementById('servicos-error');
+            if (servicosValidos.length === 0) {
+                errorEl.style.display = 'block';
+                document.getElementById('servicos').focus();
+                document.getElementById('servicos').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                return false;
+            }
+            errorEl.style.display = 'none';
             return true;
         }
 
