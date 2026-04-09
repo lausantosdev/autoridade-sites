@@ -761,7 +761,7 @@
                 <label>Cor Principal da Marca</label>
                 <div class="color-picker-wrap">
                     <input type="color" id="cor_marca" value="#00b4d8">
-                    <input type="text" class="color-preview" id="cor_marca_hex" value="#00b4d8" readonly>
+                    <input type="text" class="color-preview" id="cor_marca_hex" value="#00b4d8">
                 </div>
             </div>
 
@@ -1095,8 +1095,33 @@
         });
 
         // ===== COLOR PICKER =====
-        document.getElementById('cor_marca').addEventListener('input', (e) => {
-            document.getElementById('cor_marca_hex').value = e.target.value;
+        const colorPicker = document.getElementById('cor_marca');
+        const colorHex = document.getElementById('cor_marca_hex');
+
+        colorPicker.addEventListener('input', (e) => {
+            colorHex.value = e.target.value;
+        });
+
+        colorHex.addEventListener('input', (e) => {
+            let val = e.target.value;
+            if (!val.startsWith('#')) {
+                val = '#' + val;
+            }
+            if (/^#[0-9A-Fa-f]{6}$/i.test(val)) {
+                colorPicker.value = val;
+            }
+        });
+
+        colorHex.addEventListener('blur', (e) => {
+            let val = e.target.value;
+            if (!val.startsWith('#')) {
+                val = '#' + val;
+            }
+            if (!/^#[0-9A-Fa-f]{6}$/i.test(val)) {
+                e.target.value = colorPicker.value;
+            } else {
+                e.target.value = val;
+            }
         });
 
         // ===== REVIEW =====
