@@ -1140,6 +1140,11 @@ section {
     border: none;
     display: block;
     filter: var(--map-filter);
+
+    /* Novas propriedades — alinhamento visual com a Home */
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
 }
 
 .map-section iframe[src=""],
