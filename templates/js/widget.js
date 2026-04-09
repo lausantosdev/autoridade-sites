@@ -140,6 +140,14 @@
             numeroDestino = '55' + numeroDestino;
         }
 
+        // Guarda de segurança: bloqueia redirect se número não estiver configurado
+        if (!numeroDestino) {
+            showError('Número de contato não configurado. Por favor, entre em contato por outro canal.');
+            btn.disabled = false;
+            btn.innerHTML = originalHTML;
+            return;
+        }
+
         var waUrl = 'https://wa.me/' + numeroDestino +
                     '?text=' + encodeURIComponent(msg);
 

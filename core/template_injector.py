@@ -187,10 +187,8 @@ def _inject_footer_links_script(html: str) -> str:
       if (label.indexOf('servi') > -1 && map.servicos) {
         slugObj = map.servicos;
         titlePrefix = '{srv} em ' + (d.seo && d.seo.local ? d.seo.local : '');
-      } else if ((label.indexOf('cidade') > -1 || label.indexOf('rea') > -1) && map.cidades) {
-        slugObj = map.cidades;
-        titlePrefix = (d.empresa && d.empresa.categoria ? d.empresa.categoria : '') + ' em {city}';
       }
+      // Áreas Atendidas: itens exibidos como texto puro, sem links
       if (!slugObj) return;
       var items = col.querySelectorAll('span, p');
       items.forEach(function(el) {
