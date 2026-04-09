@@ -26,10 +26,13 @@ _SCENE_FEW_SHOT_EXAMPLES = """- Pet Shop / Banho e Tosa: "clean, serene, pet-fri
 - Jardinagem / Paisagismo: "a beautifully landscaped lush green garden with vibrant flowers and a perfectly cut lawn, morning sunlight\""""
 
 
-def _generate_scene_description(categoria: str, llm_client) -> str:
+def _generate_scene_description(categoria: str, llm_client, keywords: list = None) -> str:
     """
     Usa o LLM com few-shot prompting para gerar uma descrição de cena fotográfica
     específica para o nicho do cliente.
+
+    keywords: lista de serviços reais do negócio — usados para desambiguar categorias
+    amplas como 'Assistência Técnica' e garantir que a cena seja relevante.
 
     Retorna uma string com a cena, ou um fallback genérico se falhar.
     """
@@ -43,10 +46,15 @@ def _generate_scene_description(categoria: str, llm_client) -> str:
         "Output ONLY the scene description sentence. No explanations, no quotes, no extra text."
     )
 
+    # Incluir keywords para desambiguar categorias amplas (ex: 'Assistência Técnica' → clarifica que é de eletrodomésticos)
+    keywords_context = ""
+    if keywords:
+        keywords_context = f"\nThe business specifically offers: {', '.join(keywords[:5])}"
+
     user_prompt = (
-        f"Generate a cinematic photography scene description for this business niche: \"{categoria}\"\n\n"
+        f"Generate a cinematic photography scene description for this business niche: \"{categoria}\"{keywords_context}\n\n"
         f"Use these examples as style reference:\n{_SCENE_FEW_SHOT_EXAMPLES}\n\n"
-        f"Now generate ONE scene for: \"{categoria}\""
+        f"Now generate ONE scene for: \"{categoria}\"{keywords_context}"
     )
 
     try:
@@ -59,7 +67,7 @@ def _generate_scene_description(categoria: str, llm_client) -> str:
         logger.warning("Falha ao gerar cena via LLM: %s — usando fallback genérico", e)
 
     # Fallback genérico seguro
-    return f"clean, welcoming, professional environment for {categoria}"
+    return f"clean, welcoming environment for {categoria}"
 
 
 class GeminiImageClient:
@@ -99,9 +107,9 @@ class GeminiImageClient:
         else:
             palette = "Color palette: dark gray, black, and subtle hints of professional colors."
 
-        # Gera cena específica via LLM (few-shot) ou usa fallback genérico
+        # Gera cena específica via LLM (few-shot + keywords) ou usa fallback genérico
         if llm_client is not None:
-            scene = _generate_scene_description(categoria, llm_client)
+            scene = _generate_scene_description(categoria, llm_client, keywords)
         else:
             scene = f"clean, welcoming environment for {categoria}"
 
