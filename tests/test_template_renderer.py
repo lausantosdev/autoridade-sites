@@ -70,7 +70,8 @@ class TestReplaceConfigVars:
         result = replace_config_vars("{{locais_footer}}", config)
         assert "Curitiba" in result
         assert "São José dos Pinhais" in result
-        assert "<a href=" in result
+        assert "fa-map-marker-alt" in result   # ícone presente
+        assert "<a href=" not in result         # sem hyperlinks — removido intencionalmente
 
     def test_ano_current_year(self):
         config = _make_config()
