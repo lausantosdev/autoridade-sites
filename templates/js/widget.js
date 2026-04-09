@@ -132,7 +132,15 @@
         var msg = 'Olá, sou ' + nome + '.' + contexto +
                   ' gostaria de saber mais sobre os serviços.';
 
-        var waUrl = 'https://wa.me/' + (config.whatsappNumero || '') +
+        // Garante que o número de destino contenha apenas dígitos
+        var numeroDestino = (config.whatsappNumero || '').replace(/\D/g, '');
+        
+        // Adiciona DDI do Brasil caso tenha apenas 10 ou 11 dígitos (DDD + Número)
+        if (numeroDestino.length === 10 || numeroDestino.length === 11) {
+            numeroDestino = '55' + numeroDestino;
+        }
+
+        var waUrl = 'https://wa.me/' + numeroDestino +
                     '?text=' + encodeURIComponent(msg);
 
         // Abrir WhatsApp

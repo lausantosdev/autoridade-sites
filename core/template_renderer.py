@@ -56,7 +56,7 @@ def replace_config_vars(template: str, config: dict) -> str:
 
     categoria = empresa['categoria']
     locais_footer = '\n'.join(
-        f'<a href="{slugify(f"{categoria} {local}")}.html" title="{categoria} em {local}"><i class="fas fa-map-marker-alt"></i> {local}</a>'
+        f'<p><i class="fas fa-map-marker-alt"></i> {local}</p>'
         for local in locais
     )
 
