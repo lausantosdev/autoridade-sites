@@ -1,5 +1,5 @@
 """
-Autoridade Sites - Orquestrador Principal (CLI)
+SiteGen - Orquestrador Principal (CLI)
 
 Uso:
     python generate.py                   # Executa todo o pipeline
@@ -34,7 +34,7 @@ from core.output_builder import setup_output_dir, generate_fallback_index
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Autoridade Sites - Gerador de Sites SEO com IA")
+    parser = argparse.ArgumentParser(description="SiteGen - Gerador de Sites SEO com IA")
     parser.add_argument('--config', default='config.yaml', help='Arquivo de configuração')
     parser.add_argument('--step', choices=['mix', 'sitemap', 'topics', 'image', 'home', 'pages', 'validate', 'all'],
                         default='all', help='Passo específico a executar')
@@ -42,7 +42,7 @@ def main():
     args = parser.parse_args()
 
     print("\n" + "=" * 60)
-    print("  🚀 AUTORIDADE SITES - Gerador de Sites SEO com IA")
+    print("  🚀 SITEGEN - Gerador de Sites SEO com IA")
     print("=" * 60 + "\n")
 
     start_time = time.time()

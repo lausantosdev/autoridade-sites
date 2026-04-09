@@ -1,5 +1,5 @@
 """
-Autoridade Sites - Backend Server (FastAPI)
+SiteGen - Backend Server (FastAPI)
 Serve o frontend wizard e executa o pipeline via WebSocket
 """
 import os
@@ -38,7 +38,7 @@ from core.logger import get_logger
 logger = get_logger(__name__)
 
 
-app = FastAPI(title="Autoridade Sites SEO Generator")
+app = FastAPI(title="SiteGen SEO Generator")
 
 # Estado global das gerações
 generations = {}
@@ -429,6 +429,6 @@ def _build_config(data: dict) -> dict:
 
 
 if __name__ == "__main__":
-    print("\n🚀 Autoridade Sites - Server")
+    print("\n🚀 SiteGen - Server")
     print("   Abra http://localhost:8000 no navegador\n")
     uvicorn.run(app, host="0.0.0.0", port=8000)

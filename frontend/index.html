@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Autoridade Sites — Gerador SEO com IA</title>
+    <title>SiteGen — Gerador SEO com IA</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
@@ -47,7 +47,7 @@
         }
 
         .app-logo span {
-            color: #6366f1;
+            color: #00b4d8;
         }
 
         .app-tagline {
@@ -72,7 +72,7 @@
         }
 
         .step-dot.active {
-            background: #6366f1;
+            background: #00b4d8;
             width: 56px;
         }
 
@@ -148,8 +148,8 @@
         .field input:focus,
         .field textarea:focus,
         .field select:focus {
-            border-color: #6366f1;
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+            border-color: #00b4d8;
+            box-shadow: 0 0 0 3px rgba(0, 180, 216, 0.15);
         }
 
         .field input::placeholder,
@@ -214,8 +214,8 @@
 
         .upload-zone:hover,
         .upload-zone.dragover {
-            border-color: #6366f1;
-            background: rgba(99, 102, 241, 0.05);
+            border-color: #00b4d8;
+            background: rgba(0, 180, 216, 0.05);
         }
 
         .upload-zone i {
@@ -230,7 +230,7 @@
         }
 
         .upload-zone .upload-btn {
-            color: #6366f1;
+            color: #00b4d8;
             font-weight: 600;
             text-decoration: underline;
         }
@@ -269,11 +269,11 @@
 
         .tag {
             padding: 6px 14px;
-            background: rgba(99, 102, 241, 0.1);
-            border: 1px solid rgba(99, 102, 241, 0.2);
+            background: rgba(0, 180, 216, 0.1);
+            border: 1px solid rgba(0, 180, 216, 0.2);
             border-radius: 20px;
             font-size: 0.78rem;
-            color: #a5b4fc;
+            color: #48CAE4;
         }
 
         /* ===== BUTTONS ===== */
@@ -308,20 +308,20 @@
         }
 
         .btn-next {
-            background: #6366f1;
+            background: #00b4d8;
             color: white;
             flex: 1;
             max-width: 260px;
         }
 
         .btn-next:hover {
-            background: #4f46e5;
+            background: #0096c7;
             transform: translateY(-1px);
-            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+            box-shadow: 0 4px 15px rgba(0, 180, 216, 0.3);
         }
 
         .btn-generate {
-            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            background: linear-gradient(135deg, #00b4d8, #48CAE4);
             color: white;
             width: 100%;
             padding: 18px;
@@ -330,7 +330,7 @@
 
         .btn-generate:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4);
+            box-shadow: 0 8px 25px rgba(0, 180, 216, 0.4);
         }
 
         .btn:disabled {
@@ -380,8 +380,8 @@
         .review-estimate {
             text-align: center;
             padding: 20px;
-            background: rgba(99, 102, 241, 0.08);
-            border: 1px solid rgba(99, 102, 241, 0.2);
+            background: rgba(0, 180, 216, 0.08);
+            border: 1px solid rgba(0, 180, 216, 0.2);
             border-radius: 16px;
             margin: 24px 0;
         }
@@ -389,7 +389,7 @@
         .review-estimate .big-number {
             font-size: 2.5rem;
             font-weight: 800;
-            color: #6366f1;
+            color: #00b4d8;
             line-height: 1;
         }
 
@@ -431,7 +431,7 @@
         }
 
         .progress-bar {
-            stroke: #6366f1;
+            stroke: #00b4d8;
             stroke-linecap: round;
             transition: stroke-dashoffset 0.5s ease;
         }
@@ -529,7 +529,7 @@
         .stat-box .val {
             font-size: 1.5rem;
             font-weight: 800;
-            color: #6366f1;
+            color: #00b4d8;
         }
 
         .stat-box .lbl {
@@ -609,7 +609,7 @@
     <div class="app">
         <!-- Header -->
         <div class="app-header">
-            <div class="app-logo">Autoridade<span>Sites</span></div>
+            <div class="app-logo">Site<span>Gen</span></div>
             <div class="app-tagline">Gerador de Sites SEO com Inteligência Artificial</div>
         </div>
 
@@ -742,7 +742,7 @@
             </div>
 
             <div id="pagesEstimate"
-                style="padding:14px 18px; background:rgba(99,102,241,0.08); border:1px solid rgba(99,102,241,0.2); border-radius:12px; font-size:0.9rem; color:#a5b4fc; display:none;">
+                style="padding:14px 18px; background:rgba(0,180,216,0.08); border:1px solid rgba(0,180,216,0.2); border-radius:12px; font-size:0.9rem; color:#48CAE4; display:none;">
                 <i class="fas fa-calculator"></i> <span id="pagesCount"></span>
             </div>
 
@@ -760,8 +760,8 @@
             <div class="field">
                 <label>Cor Principal da Marca</label>
                 <div class="color-picker-wrap">
-                    <input type="color" id="cor_marca" value="#6366f1">
-                    <input type="text" class="color-preview" id="cor_marca_hex" value="#6366f1" readonly>
+                    <input type="color" id="cor_marca" value="#00b4d8">
+                    <input type="text" class="color-preview" id="cor_marca_hex" value="#00b4d8" readonly>
                 </div>
             </div>
 

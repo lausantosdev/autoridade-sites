@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard — Autoridade Sites</title>
+    <title>Dashboard — SiteGen</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
-            --primary: #2563EB;
-            --primary-light: #EFF6FF;
+            --primary: #00b4d8;
+            --primary-light: #E0F7FA;
             --bg: #F8FAFC;
             --surface: #FFFFFF;
             --text: #1E293B;
@@ -24,8 +24,8 @@
         }
 
         [data-theme="dark"] {
-            --primary: #3B82F6;
-            --primary-light: #1E3A5F;
+            --primary: #00b4d8;
+            --primary-light: #003D4F;
             --bg: #0F172A;
             --surface: #1E293B;
             --text: #F1F5F9;
@@ -37,8 +37,8 @@
 
         @media (prefers-color-scheme: dark) {
             :root:not([data-theme="light"]) {
-                --primary: #3B82F6;
-                --primary-light: #1E3A5F;
+                --primary: #00b4d8;
+                --primary-light: #003D4F;
                 --bg: #0F172A;
                 --surface: #1E293B;
                 --text: #F1F5F9;
@@ -339,12 +339,12 @@
         </div>
         <div id="error" style="display:none">
             <h2>Token inválido</h2>
-            <p>Acesse o link enviado pela Autoridade Sites.</p>
+            <p>Acesse o link enviado pelo SiteGen.</p>
         </div>
         <div id="dashboard" style="display:none">
             <header>
                 <div class="header-top">
-                    <div class="logo">Autoridade Sites</div>
+                    <div class="logo">SiteGen</div>
                     <button class="theme-toggle" id="theme-toggle" aria-label="Alternar tema">🌙 Escuro</button>
                 </div>
                 <div class="header-subtitle">Dashboard de Leads</div>
@@ -594,7 +594,7 @@
 
         function updateFooter() {
             const year = new Date().getFullYear();
-            document.querySelector('footer').innerHTML = `Autoridade Sites © ${year}`;
+            document.querySelector('footer').innerHTML = `SiteGen © ${year}`;
         }
 
         function initTheme() {

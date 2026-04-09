@@ -84,7 +84,7 @@ class OpenRouterClient:
                         response_format={"type": "json_object"},
                         extra_headers={
                             "HTTP-Referer": "https://autoridade-sites.local",
-                            "X-Title": "Autoridade Sites SEO Generator"
+                            "X-Title": "SiteGen SEO Generator"
                         }
                     )
 
@@ -157,7 +157,7 @@ class OpenRouterClient:
                     ],
                     extra_headers={
                         "HTTP-Referer": "https://autoridade-sites.local",
-                        "X-Title": "Autoridade Sites SEO Generator"
+                        "X-Title": "SiteGen SEO Generator"
                     }
                 )
 
