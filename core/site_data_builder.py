@@ -94,34 +94,35 @@ def resolve_theme_mode(config: dict, client: OpenRouterClient) -> str:
     return theme_mode
 
 
-def build_site_data(config: dict, client: OpenRouterClient) -> dict:
+def build_site_data(config: dict, client: OpenRouterClient, gemini_client=None) -> dict:
     """
     Constrói o objeto SiteData completo.
-    
+
     Args:
         config: Configuração do site (config.yaml parseado)
-        client: OpenRouterClient para gerar conteúdo via IA
-        
+        client: OpenRouterClient (fallback para a home)
+        gemini_client: GeminiClient opcional (primário para a home)
+
     Returns:
         dict compliant com a interface SiteData do SiteGen template
     """
     empresa = config['empresa']
     cor = empresa['cor_marca']
     r, g, b = hex_to_rgb(cor)
-    
+
     palavras = config.get('seo', {}).get('palavras_chave', [])
     locais = config.get('seo', {}).get('locais', [])
     servicos_manuais = config.get('empresa', {}).get('servicos_manuais', [])
     # display_names: rótulos visuais para cards e footer (desacoplados das keywords)
     display_names = _resolve_display_names(servicos_manuais, palavras)
-    
+
     phone_raw = empresa['telefone_whatsapp']
     phone_display = get_phone_display(config)
     whatsapp_link = get_whatsapp_link(config)
-    
-    # Gerar conteúdo da home via IA
+
+    # Gerar conteúdo da home via IA (Gemini → OpenAI → fallback genérico)
     logger.info("Gerando conteúdo da home page via IA")
-    ai_content = _generate_home_content(empresa, palavras, locais, client)
+    ai_content = _generate_home_content(empresa, palavras, locais, client, gemini_client)
     
     if not ai_content:
         logger.warning("IA retornou vazio. Usando fallbacks genéricos")
@@ -304,8 +305,8 @@ def build_site_data(config: dict, client: OpenRouterClient) -> dict:
     return site_data
 
 
-def _generate_home_content(empresa: dict, palavras: list, locais: list, client: OpenRouterClient) -> dict:
-    """Gera o conteúdo da home page via IA em uma única chamada."""
+def _generate_home_content(empresa: dict, palavras: list, locais: list, client: OpenRouterClient, gemini_client=None) -> dict:
+    """Gera o conteúdo da home page via IA. Tenta Gemini (primário) → OpenAI (fallback)."""
     servicos_str = ', '.join(palavras[:6]) if palavras else empresa['categoria']
     locais_str = ', '.join(locais[:4]) if locais else ''
     cidade_principal = locais[0] if locais else ''
@@ -374,8 +375,15 @@ REGRAS ABSOLUTAS:
 - NÃO invente capacidades específicas (certificações, atendimento 24h, etc.)
 - Cidade principal '{cidade_principal}' DEVE aparecer em seo_title, seo_meta_description e hero_subtitle"""
 
-    raw = client.generate_json(SYSTEM_PROMPT, user_prompt) or {}
-    return _flatten_json(raw)
+    # Mesmo padrão das subpáginas: Gemini → OpenAI fallback
+    raw = None
+    if gemini_client:
+        raw = gemini_client.generate_json(SYSTEM_PROMPT, user_prompt)
+        if not raw:
+            logger.warning("Home: Gemini falhou — acionando OpenAI fallback")
+    if not raw:
+        raw = client.generate_json(SYSTEM_PROMPT, user_prompt)
+    return _flatten_json(raw or {})
 
 
 def _build_services(palavras: list, ai_content: dict, display_names: list = None) -> list:

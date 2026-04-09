@@ -192,7 +192,7 @@ async def websocket_generate(websocket: WebSocket):
 
             async def _task_home_data():
                 """Gera conteúdo da home page via IA."""
-                return await asyncio.to_thread(build_site_data, config, phase1_client)
+                return await asyncio.to_thread(build_site_data, config, client, gemini_client=gemini)
 
             async def _task_topics_and_services():
                 """Gera tópicos do nicho e dados de serviços."""
