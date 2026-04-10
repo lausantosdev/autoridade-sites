@@ -84,12 +84,11 @@ async def apply_chat_edit(
     
     raw_response = ""
     try:
-        # Se for cliente Gemini existente na app:
         response = ai_client.generate_content(prompt)
         raw_response = response.text
-    except Exception:
-        # Tenta fallback generico
-        pass
+    except Exception as ai_err:
+        logger.error("Magic Editor: falha na chamada à IA — %s", ai_err)
+        raise ValueError(f"IA indisponível: {ai_err}") from ai_err
 
     import re
     json_match = re.search(r'\[.*\]', raw_response, re.DOTALL)
