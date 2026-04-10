@@ -68,6 +68,10 @@ async def health_check():
 # Estado global das gerações
 generations = {}
 
+# Garantir que os diretórios de runtime existam (não vão para o git)
+Path("output").mkdir(exist_ok=True)
+Path("uploads").mkdir(exist_ok=True)
+
 # Montar diretórios estáticos para visualização dos sites gerados e do painel
 app.mount("/out", StaticFiles(directory="output"), name="out")
 app.mount("/output", StaticFiles(directory="output"), name="output")
