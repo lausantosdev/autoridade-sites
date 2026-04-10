@@ -1,10 +1,12 @@
 """
 Deploy automático para Cloudflare Pages via Direct Upload API.
 
-FLUXO OBRIGATÓRIO (3 passos — não pular nenhum):
+FLUXO OBRIGATÓRIO (4 passos — não pular nenhum):
   1. POST /deployments           → obtém deployment_id + JWT de upload
   2. PUT  /{jwt}/file/{path}     → upload de CADA arquivo (um por um)
   3. POST /deployments/{id}      → finaliza/publica o deployment
+  4. POST /domains               → registra subdomínio do cliente (única vez)
+                                   Trata 409 como sucesso (já registrado)
 
 Documentação: https://developers.cloudflare.com/pages/how-to/use-direct-upload-with-continuous-integration/
 """
@@ -103,7 +105,28 @@ async def deploy_to_cloudflare_pages(subdomain: str, output_dir: str) -> str:
             result = await resp.json()
 
         site_url = f"https://{subdomain}.autoridade.digital"
-        logger.info(f"[CF Deploy] ✅ Site publicado: {site_url}")
+        logger.info(f"[CF Deploy] Site publicado: {site_url}")
+
+        # ── PASSO 4: Registrar Custom Domain do cliente ───────
+        # Substitui o wildcard *.autoridade.digital (Enterprise-only) por registros
+        # individuais via API — suportado no plano free, sem limite prático.
+        # 409 = domínio já registrado (re-deploy) → tratado como sucesso.
+        custom_domain = f"{subdomain}.autoridade.digital"
+        logger.info(f"[CF Deploy] Registrando custom domain: {custom_domain}")
+        async with session.post(
+            f"{CF_BASE}/domains",
+            headers={**HEADERS, "Content-Type": "application/json"},
+            json={"name": custom_domain},
+        ) as resp:
+            if resp.status == 409:
+                logger.info(f"[CF Deploy] Custom domain já registrado: {custom_domain}")
+            elif resp.status not in (200, 201):
+                body = await resp.text()
+                # Não falhar o deploy inteiro por erro no domínio — logar e continuar
+                logger.warning(f"[CF Deploy] Aviso: falha ao registrar domain — {resp.status}: {body}")
+            else:
+                logger.info(f"[CF Deploy] Custom domain registrado com sucesso: {custom_domain}")
+
         return site_url
 
 
