@@ -390,6 +390,43 @@
             margin-top: 12px;
             text-align: center;
         }
+        .login-info-msg {
+            color: var(--success);
+            font-size: 0.875rem;
+            margin-top: 12px;
+            text-align: center;
+        }
+        .login-field-pw { position: relative; }
+        .login-field-pw input { padding-right: 44px; }
+        .pw-toggle {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--text-muted);
+            font-size: 1rem;
+            padding: 2px;
+            line-height: 1;
+            transition: color 0.2s;
+        }
+        .pw-toggle:hover { color: var(--text); }
+        .login-forgot {
+            display: block;
+            text-align: center;
+            margin-top: 14px;
+            font-size: 0.85rem;
+            color: var(--primary);
+            cursor: pointer;
+            background: none;
+            border: none;
+            font-family: inherit;
+            text-decoration: underline;
+            opacity: 0.85;
+        }
+        .login-forgot:hover { opacity: 1; }
 
         /* Tab nav */
         .tab-nav {
@@ -564,11 +601,14 @@
                     <div class="login-field">
                         <input type="email" id="login-email" placeholder="Email" required autocomplete="email">
                     </div>
-                    <div class="login-field">
+                    <div class="login-field login-field-pw">
                         <input type="password" id="login-password" placeholder="Senha" required autocomplete="current-password">
+                        <button type="button" class="pw-toggle" id="pw-toggle-btn" onclick="togglePw()" title="Mostrar/ocultar senha">&#128065;</button>
                     </div>
                     <button type="submit" id="login-btn" class="login-submit">Entrar</button>
                     <div id="login-error" class="login-error-msg" style="display:none"></div>
+                    <div id="login-info" class="login-info-msg" style="display:none"></div>
+                    <button type="button" class="login-forgot" onclick="handleForgotPassword()">Esqueceu a senha?</button>
                 </form>
             </div>
         </div>
@@ -697,6 +737,44 @@
             document.getElementById('login').style.display = 'none';
             showLoading();
             await loadDashboard();
+        }
+
+        function togglePw() {
+            const input = document.getElementById('login-password');
+            const btn   = document.getElementById('pw-toggle-btn');
+            if (input.type === 'password') {
+                input.type = 'text';
+                btn.innerHTML = '&#128065;&#65039;'; // olho riscado
+            } else {
+                input.type = 'password';
+                btn.innerHTML = '&#128065;'; // olho aberto
+            }
+        }
+
+        async function handleForgotPassword() {
+            const email  = document.getElementById('login-email').value.trim();
+            const errEl  = document.getElementById('login-error');
+            const infoEl = document.getElementById('login-info');
+            errEl.style.display  = 'none';
+            infoEl.style.display = 'none';
+
+            if (!email) {
+                errEl.textContent    = 'Digite seu email acima antes de redefinir a senha.';
+                errEl.style.display  = 'block';
+                return;
+            }
+
+            const { error } = await _db.auth.resetPasswordForEmail(email, {
+                redirectTo: window.location.origin + '/dashboard'
+            });
+
+            if (error) {
+                errEl.textContent   = 'Erro: ' + error.message;
+                errEl.style.display = 'block';
+            } else {
+                infoEl.textContent   = 'Email enviado! Verifique sua caixa de entrada.';
+                infoEl.style.display = 'block';
+            }
         }
 
         async function handleLogout() {
