@@ -11,6 +11,9 @@ import uuid
 import time
 from pathlib import Path
 from datetime import datetime
+from dotenv import load_dotenv
+
+load_dotenv()
 
 import yaml
 import uvicorn
@@ -65,10 +68,33 @@ async def health_check():
 # Estado global das gerações
 generations = {}
 
-# Montar diretórios estáticos para visualização dos sites gerados
+# Montar diretórios estáticos para visualização dos sites gerados e do painel
 app.mount("/out", StaticFiles(directory="output"), name="out")
 app.mount("/output", StaticFiles(directory="output"), name="output")
+# Nota: /dashboard NÃO é servido como StaticFiles pois o servidor
+# injeta as variáveis de ambiente no HTML em tempo de execução.
 
+@app.get("/dashboard", response_class=HTMLResponse)
+@app.get("/dashboard/", response_class=HTMLResponse)
+async def serve_dashboard():
+    """
+    Serve o painel administrativo injetando as variáveis de ambiente no HTML.
+    Os placeholders SUPABASE_URL_AQUI e SUPABASE_ANON_KEY_AQUI são substituídos
+    em runtime — nunca ficam com valores reais no arquivo em disco (git-safe).
+    """
+    dashboard_path = Path("dashboard") / "index.html"
+    if not dashboard_path.exists():
+        raise HTTPException(404, "Dashboard não encontrado")
+    
+    html = dashboard_path.read_text(encoding="utf-8")
+    
+    supabase_url     = os.environ.get("SUPABASE_URL", "")
+    supabase_anon    = os.environ.get("SUPABASE_ANON_KEY", "")
+    
+    html = html.replace("SUPABASE_URL_AQUI", supabase_url)
+    html = html.replace("SUPABASE_ANON_KEY_AQUI", supabase_anon)
+    
+    return HTMLResponse(content=html)
 
 @app.get("/", response_class=HTMLResponse)
 async def serve_frontend():
@@ -649,6 +675,6 @@ async def list_historico(agency=Depends(get_current_agency)):
     return {"historico": result.data}
 
 if __name__ == "__main__":
-    print("\n🚀 SiteGen - Server")
+    print("\n--- SiteGen - Server ---")
     print("   Abra http://localhost:8000 no navegador\n")
     uvicorn.run(app, host="0.0.0.0", port=8000)
