@@ -14,3 +14,4 @@ python-jose[cryptography]==3.3.0
 supabase==2.10.0
 jsonpatch==1.33
 aiofiles==23.2.1
+json-repair>=0.25.0
