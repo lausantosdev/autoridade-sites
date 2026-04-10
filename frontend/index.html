@@ -633,8 +633,9 @@
             </div>
             <div class="field-row">
                 <div class="field">
-                    <label>Domínio do Site</label>
-                    <input type="text" id="dominio" placeholder="cleanpro.com.br">
+                    <label>Subdomínio <span style="font-size:0.8rem; font-weight:normal; color:#64748b">(.autoridade.digital)</span></label>
+                    <input type="text" id="subdomain" placeholder="cleanpro" pattern="[a-z0-9][a-z0-9\-]{1,61}[a-z0-9]" title="Use apenas letras minúsculas, números e hifens">
+                    <p class="field-hint">Seu site ficará em: <strong id="subdomain-preview">seusite.autoridade.digital</strong></p>
                 </div>
                 <div class="field">
                     <label>Nicho / Categoria</label>
@@ -782,21 +783,7 @@
                 <p class="field-hint">Defina a base visual do site gerado. Automático escolhe predefinindo dark/light baseado na categoria.</p>
             </div>
 
-            <div style="margin-top:32px; padding-top:24px; border-top:1px solid #1e293b;">
-                <h3 style="font-size:1.1rem; font-weight:600; margin-bottom:6px;">Captura de Leads</h3>
-                <p style="font-size:0.85rem; color:#64748b; margin-bottom:20px;">Opcional — conecte ao Cloudflare Worker para rastrear leads do WhatsApp.</p>
-
-                <div class="field">
-                    <label>URL do Cloudflare Worker</label>
-                    <input type="text" id="worker_url" placeholder="https://leads.meusite.workers.dev">
-                    <p class="field-hint">Endpoint do Worker que recebe os dados do formulário</p>
-                </div>
-                <div class="field">
-                    <label>Token do Cliente</label>
-                    <input type="text" id="client_token" placeholder="token-unico-do-cliente">
-                    <p class="field-hint">Identificador único para filtrar leads no Dashboard</p>
-                </div>
-            </div>
+            <!-- Cloud Worker Auto Injected -->
 
             <div class="btn-row">
                 <button class="btn btn-back" onclick="prevStep()"><i class="fas fa-arrow-left"></i> Voltar</button>
@@ -938,6 +925,12 @@
         });
 
         // ===== NAVIGATION =====
+        document.getElementById('subdomain').addEventListener('input', function() {
+            const val = this.value.toLowerCase().replace(/[^a-z0-9\-]/g, '');
+            this.value = val;
+            const preview = val ? `${val}.autoridade.digital` : 'seusite.autoridade.digital';
+            document.getElementById('subdomain-preview').textContent = preview;
+        });
         function showPanel(index) {
             document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
             const panel = document.querySelector(`[data-panel="${index}"]`);
@@ -975,11 +968,11 @@
         // ===== VALIDATION =====
         function validateStep0() {
             const nome = document.getElementById('empresa_nome').value.trim();
-            const dominio = document.getElementById('dominio').value.trim();
+            const subdomain = document.getElementById('subdomain').value.trim();
             const categoria = document.getElementById('categoria').value.trim();
             const telefone = document.getElementById('telefone').value.trim();
             if (!nome) { alert('Preencha o nome da empresa'); return false; }
-            if (!dominio) { alert('Preencha o domínio do site'); return false; }
+            if (!subdomain) { alert('Preencha o subdomínio do site'); return false; }
             if (!categoria) { alert('Preencha o nicho/categoria'); return false; }
             if (!telefone) { alert('Preencha o WhatsApp'); return false; }
 
@@ -1133,7 +1126,7 @@
 
             document.getElementById('r_nome').textContent = document.getElementById('empresa_nome').value;
             document.getElementById('r_categoria').textContent = document.getElementById('categoria').value;
-            document.getElementById('r_dominio').textContent = document.getElementById('dominio').value || '(não definido)';
+            document.getElementById('r_dominio').textContent = document.getElementById('subdomain').value ? document.getElementById('subdomain').value + '.autoridade.digital' : '(não definido)';
             document.getElementById('r_telefone').textContent = document.getElementById('telefone').value;
             document.getElementById('r_keywords').textContent = `${keywords.length} keywords`;
             document.getElementById('r_locais').textContent = `${locais.length} cidades/bairros`;
@@ -1161,9 +1154,11 @@
             btn.disabled = true;
 
             // Coletar dados
+            const rawSub = document.getElementById('subdomain').value.trim() || 'meu-site';
             const data = {
                 empresa_nome: document.getElementById('empresa_nome').value.trim(),
-                dominio: document.getElementById('dominio').value.trim() || 'meu-site.com.br',
+                subdomain: rawSub,
+                dominio: rawSub, // manter pra compatibilidade local ws
                 categoria: document.getElementById('categoria').value.trim(),
                 telefone: document.getElementById('telefone').value.trim(),
                 horario: document.getElementById('horario').value.trim(),
@@ -1177,8 +1172,6 @@
                 locations: document.getElementById('locais').value,
                 model: 'deepseek/deepseek-v3.2',
                 max_workers: 30,
-                worker_url: document.getElementById('worker_url').value.trim(),
-                client_token: document.getElementById('client_token').value.trim()
             };
 
             // Mostrar painel de progresso

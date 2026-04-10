@@ -14,7 +14,12 @@ from datetime import datetime
 
 import yaml
 import uvicorn
-from fastapi import FastAPI, WebSocket, UploadFile, File, Form, HTTPException
+from fastapi import FastAPI, WebSocket, UploadFile, File, Form, HTTPException, Depends
+from fastapi.middleware.cors import CORSMiddleware
+from core.auth import get_current_agency
+from core.supabase_client import get_supabase
+from core.job_queue import run_generation_job, check_rate_limit
+from core.magic_editor import apply_chat_edit
 from fastapi.responses import HTMLResponse, FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
@@ -39,6 +44,23 @@ logger = get_logger(__name__)
 
 
 app = FastAPI(title="SiteGen SEO Generator")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "https://painel.autoridade.digital",  # painel em produção
+        "http://localhost:8000",               # desenvolvimento local
+        "http://localhost:3000",               # dev frontend alternativo
+    ],
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=["*"],
+)
+
+@app.get("/health")
+async def health_check():
+    """Health check para monitoramento de uptime."""
+    return {"status": "ok", "service": "sitegen-cloud"}
 
 # Estado global das gerações
 generations = {}
@@ -419,14 +441,212 @@ def _build_config(data: dict) -> dict:
             'max_retries': 3,
         },
         'leads': {
-            'worker_url':   data.get('worker_url', ''),
-            'client_token': data.get('client_token', ''),
+            # Na versão cloud, worker_url vem das variáveis de ambiente
+            # e client_token é gerado automaticamente pelo Supabase.
+            # O wizard não coleta mais esses campos do usuário.
+            'worker_url':   os.environ.get('WORKER_URL', ''),
+            'client_token': data.get('client_token', ''),  # ainda usado no fluxo WebSocket local
         }
     }
 
+# ── API Cloud: Clientes ───────────────────────────────────────
 
+@app.get("/api/clientes")
+async def list_clientes(agency=Depends(get_current_agency)):
+    """Lista todos os clientes da agência com métricas básicas."""
+    agency_id = agency["sub"]
+    sb = get_supabase()
+    
+    result = sb.table("clientes_perfil") \
+        .select("id, empresa_nome, subdomain, custom_domain, site_url, status, last_generated, cor_marca, categoria") \
+        .eq("agency_id", agency_id) \
+        .order("created_at", desc=True) \
+        .execute()
+    
+    return {"clientes": result.data}
 
+@app.post("/api/clientes")
+async def create_cliente(data: dict, agency=Depends(get_current_agency)):
+    """Cria um novo perfil de cliente e dispara geração."""
+    agency_id = agency["sub"]
+    
+    # Validação mínima
+    required = ["empresa_nome", "subdomain", "categoria", "telefone", "keywords", "locais"]
+    for field in required:
+        if not data.get(field):
+            raise HTTPException(400, f"Campo obrigatório: {field}")
+            
+    import re
+    subdomain = re.sub(r"[^a-z0-9\-]", "", data["subdomain"].lower())
+    if len(subdomain) < 3:
+        raise HTTPException(400, "subdomain deve ter ao menos 3 caracteres válidos")
+    
+    sb = get_supabase()
+    
+    cliente = sb.table("clientes_perfil").insert({
+        "agency_id":       agency_id,
+        "empresa_nome":    data["empresa_nome"],
+        "subdomain":       subdomain,
+        "categoria":       data["categoria"],
+        "cor_marca":       data.get("cor_marca", "#2563EB"),
+        "servicos":        data.get("servicos", []),
+        "telefone":        data["telefone"],
+        "endereco":        data.get("endereco", ""),
+        "google_maps_url": data.get("google_maps_url"),
+        "horario":         data.get("horario", "Segunda a Sexta, 8h às 18h"),
+        "keywords":        data["keywords"],
+        "locais":          data["locais"],
+        "theme_mode":      data.get("theme_mode", "auto"),
+        "max_workers":     data.get("max_workers", 30),
+    }).execute()
+    
+    client_id = cliente.data[0]["id"]
+    
+    job = sb.table("jobs").insert({
+        "agency_id": agency_id,
+        "client_id": client_id,
+        "status":    "pending",
+        "step":      "queue",
+    }).execute()
+    
+    job_id = job.data[0]["id"]
+    
+    config_data = {**data, "subdomain": subdomain, "agency_id": agency_id}
+    asyncio.create_task(run_generation_job(job_id, config_data, agency_id))
+    
+    return {
+        "cliente_id": client_id,
+        "job_id":     job_id,
+        "message":    f"Geração iniciada — acompanhe em /api/jobs/{job_id}/status",
+    }
 
+@app.get("/api/clientes/{cliente_id}")
+async def get_cliente(cliente_id: str, agency=Depends(get_current_agency)):
+    agency_id = agency["sub"]
+    sb = get_supabase()
+    result = sb.table("clientes_perfil") \
+        .select("*") \
+        .eq("id", cliente_id) \
+        .eq("agency_id", agency_id) \
+        .single() \
+        .execute()
+    if not result.data:
+        raise HTTPException(404, "Cliente não encontrado")
+    return result.data
+
+@app.post("/api/clientes/{client_id}/chat-edit")
+async def chat_edit_cliente(
+    client_id: str,
+    data: dict,
+    agency=Depends(get_current_agency),
+):
+    instruction = data.get("instruction", "").strip()
+    if not instruction:
+        raise HTTPException(400, "instruction não pode ser vazio")
+    
+    agency_id = agency["sub"]
+    
+    gemini = None
+    try:
+        from core.gemini_client import GeminiClient
+        gemini = GeminiClient(model='gemini-2.5-flash')
+    except Exception as e:
+        raise HTTPException(500, f"IA Indisponivel: {e}")
+        
+    try:
+        result = await apply_chat_edit(client_id, agency_id, instruction, gemini)
+    except (ValueError, PermissionError) as e:
+        raise HTTPException(400 if isinstance(e, ValueError) else 403, str(e))
+    
+    if result.get("changed"):
+        sb = get_supabase()
+        profile = result["profile"]
+        
+        job = sb.table("jobs").insert({
+            "agency_id": agency_id,
+            "client_id": client_id,
+            "status":    "pending",
+            "step":      "queue",
+        }).execute()
+        
+        job_id = job.data[0]["id"]
+        config_data = {**profile, "subdomain": profile["subdomain"]}
+        asyncio.create_task(run_generation_job(job_id, config_data, agency_id))
+        
+        result["job_id"] = job_id
+    
+    return result
+
+# ── API Cloud: Jobs ───────────────────────────────────────────
+
+@app.get("/api/jobs/{job_id}/status")
+async def get_job_status(job_id: str, agency=Depends(get_current_agency)):
+    agency_id = agency["sub"]
+    sb = get_supabase()
+    
+    result = sb.table("jobs") \
+        .select("id, status, step, progress_pct, error_message, started_at, finished_at, logs") \
+        .eq("id", job_id) \
+        .eq("agency_id", agency_id) \
+        .single() \
+        .execute()
+    
+    if not result.data:
+        raise HTTPException(404, "Job não encontrado")
+    
+    job = result.data
+    job["logs"] = job.get("logs", [])[-20:]
+    return job
+
+@app.get("/api/jobs")
+async def list_jobs(agency=Depends(get_current_agency)):
+    agency_id = agency["sub"]
+    sb = get_supabase()
+    result = sb.table("jobs") \
+        .select("id, status, step, progress_pct, created_at, finished_at, client_id, error_message") \
+        .eq("agency_id", agency_id) \
+        .order("created_at", desc=True) \
+        .limit(50) \
+        .execute()
+    return {"jobs": result.data}
+
+# ── API Cloud: Leads e Relatórios ─────────────────────────────
+
+@app.get("/api/leads")
+async def list_leads(
+    client_token: str = None,
+    limit: int = 100,
+    agency=Depends(get_current_agency),
+):
+    agency_id = agency["sub"]
+    sb = get_supabase()
+    
+    query = sb.table("leads").select("*").order("created_at", desc=True).limit(min(limit, 500))
+    
+    if client_token:
+        query = query.eq("client_token", client_token)
+    else:
+        tokens_result = sb.table("clientes_perfil").select("client_token").eq("agency_id", agency_id).execute()
+        tokens = [r["client_token"] for r in tokens_result.data]
+        if tokens:
+            query = query.in_("client_token", tokens)
+        else:
+            return {"leads": [], "total": 0}
+            
+    result = query.execute()
+    return {"leads": result.data, "total": len(result.data)}
+
+@app.get("/api/historico")
+async def list_historico(agency=Depends(get_current_agency)):
+    agency_id = agency["sub"]
+    sb = get_supabase()
+    result = sb.table("historico_geracao") \
+        .select("*, clientes_perfil(empresa_nome, subdomain)") \
+        .eq("agency_id", agency_id) \
+        .order("created_at", desc=True) \
+        .limit(100) \
+        .execute()
+    return {"historico": result.data}
 
 if __name__ == "__main__":
     print("\n🚀 SiteGen - Server")
