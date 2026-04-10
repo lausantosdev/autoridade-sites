@@ -756,6 +756,7 @@
                 });
 
                 hideLoading();
+                showDashboard();
 
                 if (!resp.ok) { renderLeadsError(); return; }
 
@@ -766,6 +767,7 @@
                 renderTable(leads);
             } catch (err) {
                 hideLoading();
+                showDashboard();
                 renderLeadsError();
             }
         }
