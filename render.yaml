@@ -12,9 +12,9 @@ services:
         sync: false
       - key: SUPABASE_URL
         sync: false
-      - key: SUPABASE_SERVICE_KEY
+      - key: SUPABASE_ANON_KEY
         sync: false
-      - key: SUPABASE_JWT_SECRET
+      - key: SUPABASE_SERVICE_KEY
         sync: false
       - key: CLOUDFLARE_ACCOUNT_ID
         sync: false
@@ -22,5 +22,7 @@ services:
         sync: false
       - key: CLOUDFLARE_PAGES_PROJECT
         value: autoridade-digital
+      - key: WORKER_URL
+        sync: false
       - key: ENVIRONMENT
         value: production
