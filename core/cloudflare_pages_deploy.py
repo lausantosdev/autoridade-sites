@@ -180,22 +180,69 @@ async def _upsert_cname(name: str, target: str, zone_id: str, api_token: str) ->
 async def _register_pages_domain(
     project_name: str, subdomain: str, account_id: str, api_token: str,
 ) -> None:
-    """Vincula {subdomain}.autoridade.digital ao projeto Pages do cliente."""
+    """
+    Vincula {subdomain}.autoridade.digital ao projeto Pages do cliente.
+    Se o domínio já estava registrado em estado quebrado (err/pending de tentativa anterior),
+    deleta e re-registra para forçar re-verificação com o CNAME novo.
+    """
     custom_domain = f"{subdomain}.{BASE_DOMAIN}"
     headers = {"Authorization": f"Bearer {api_token}", "Content-Type": "application/json"}
-    url = (
+    base_url = (
         f"https://api.cloudflare.com/client/v4/accounts/{account_id}"
         f"/pages/projects/{project_name}/domains"
     )
+
     async with aiohttp.ClientSession() as s:
-        async with s.post(url, json={"name": custom_domain}, headers=headers) as r:
-            if r.status == 409:
-                logger.info("[CF Deploy] Custom domain já registrado: %s", custom_domain)
-            elif r.status in (200, 201):
-                logger.info("[CF Deploy] Custom domain registrado: %s", custom_domain)
+        # ── Tentar registrar ───────────────────────────────────────────
+        async with s.post(base_url, json={"name": custom_domain}, headers=headers) as r:
+            body = await r.text()
+            status = r.status
+            logger.info("[CF Deploy] POST domain %s → HTTP %s: %s", custom_domain, status, body[:300])
+
+            if status in (200, 201):
+                logger.info("[CF Deploy] ✅ Custom domain registrado: %s", custom_domain)
+                return
+
+            if status == 409:
+                # Domínio já existia — pode estar em estado de erro da tentativa anterior
+                # Buscar o registro atual para ver o status de verificação
+                logger.info("[CF Deploy] Domain 409 — verificando status atual de %s", custom_domain)
+                async with s.get(base_url, headers=headers) as gr:
+                    gdata = await gr.json()
+                    existing = gdata.get("result", [])
+                    domain_rec = next((d for d in existing if d.get("name") == custom_domain), None)
+
+                if domain_rec:
+                    dom_status = domain_rec.get("status", "unknown")
+                    logger.info("[CF Deploy] Status do domain '%s': %s", custom_domain, dom_status)
+
+                    if dom_status in ("active",):
+                        logger.info("[CF Deploy] ✅ Domain já ativo — nada a fazer")
+                        return
+
+                    # Status quebrado (error, blocked, pending) → forçar re-verificação
+                    logger.warning(
+                        "[CF Deploy] Domain em estado '%s' — deletando e re-registrando", dom_status
+                    )
+                    del_url = f"{base_url}/{custom_domain}"
+                    async with s.delete(del_url, headers=headers) as dr:
+                        logger.info("[CF Deploy] DELETE domain → HTTP %s", dr.status)
+                else:
+                    logger.warning("[CF Deploy] 409 mas domain não encontrado na lista — re-tentando")
+
+                # Re-registrar após delete
+                await asyncio.sleep(2)
+                async with s.post(base_url, json={"name": custom_domain}, headers=headers) as r2:
+                    body2 = await r2.text()
+                    logger.info(
+                        "[CF Deploy] Re-registro domain %s → HTTP %s: %s",
+                        custom_domain, r2.status, body2[:200]
+                    )
             else:
-                body = await r.text()
-                logger.warning("[CF Deploy] Custom domain %s: %s — %s", r.status, custom_domain, body[:200])
+                logger.warning(
+                    "[CF Deploy] ⚠️ Erro ao registrar domain %s: HTTP %s — %s",
+                    custom_domain, status, body[:300]
+                )
 
 
 async def delete_client_resources(subdomain: str) -> dict:
