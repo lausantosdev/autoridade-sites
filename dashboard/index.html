@@ -646,7 +646,6 @@
                     <button class="tab-btn" data-tab="clientes" onclick="switchTab('clientes')">🏢 Clientes</button>
                     <button class="tab-btn" data-tab="auditoria" onclick="switchTab('auditoria')">💰 Auditoria</button>
                     <button class="tab-btn" data-tab="jobs" onclick="switchTab('jobs')">⚙️ Jobs</button>
-                    <button class="tab-btn" data-tab="sites" onclick="switchTab('sites')">🌐 Sites</button>
                 </nav>
             </header>
             <main>
@@ -657,10 +656,18 @@
                     <section id="leads-table"></section>
                 </div>
 
-                <!-- Aba Clientes (nova) -->
+                <!-- Aba Clientes -->
                 <div id="tab-clientes" class="tab-content" style="display:none">
                     <div class="section-header">
                         <h2>Clientes</h2>
+                        <button onclick="openNovoSite()" style="
+                            padding:10px 20px;background:var(--primary);color:#fff;
+                            border:none;border-radius:10px;font-size:0.9rem;font-weight:600;
+                            cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:8px;
+                            transition:opacity 0.2s;
+                        " onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
+                            ➕ Novo Site
+                        </button>
                     </div>
                     <div id="clientes-list"></div>
                 </div>
@@ -702,6 +709,167 @@
                 </div>
             </main>
             <footer></footer>
+        </div>
+    </div>
+
+    <!-- ===== NOVO SITE MODAL (WIZARD) ===== -->
+    <div id="novo-site-modal" style="
+        display:none; position:fixed; inset:0; z-index:1000;
+        background:rgba(0,0,0,0.6); align-items:center; justify-content:center;
+        padding:20px;
+    ">
+        <div style="
+            background:var(--surface); border-radius:16px; padding:32px;
+            width:100%; max-width:640px; box-shadow:0 20px 60px rgba(0,0,0,0.4);
+            max-height:90vh; overflow-y:auto;
+        ">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;">
+                <h3 style="font-size:1.25rem;font-weight:700;">➕ Novo Site (Nuvem)</h3>
+                <button onclick="closeNovoSite()" style="
+                    background:none;border:none;font-size:1.5rem;cursor:pointer;
+                    color:var(--text-muted);line-height:1;padding:2px 6px;
+                ">&times;</button>
+            </div>
+
+            <!-- Etapas -->
+            <div style="display:flex; gap:10px; margin-bottom:24px;">
+                <div id="step1-indicator" style="flex:1; height:4px; background:var(--primary); border-radius:2px;"></div>
+                <div id="step2-indicator" style="flex:1; height:4px; background:var(--border); border-radius:2px;"></div>
+                <div id="step3-indicator" style="flex:1; height:4px; background:var(--border); border-radius:2px;"></div>
+            </div>
+
+            <form id="novo-site-form" onsubmit="event.preventDefault()">
+                <!-- STEP 1: Empresa -->
+                <div id="step1">
+                    <h4 style="margin-bottom:16px;font-size:1rem;">1. Informações da Empresa</h4>
+                    
+                    <div style="display:flex; gap:16px; margin-bottom:16px;">
+                        <div style="flex:1">
+                            <label style="display:block;font-size:0.85rem;color:var(--text-muted);margin-bottom:6px">Nome da Empresa *</label>
+                            <input type="text" id="ns_nome" required
+                                style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);">
+                        </div>
+                        <div style="flex:1">
+                            <label style="display:block;font-size:0.85rem;color:var(--text-muted);margin-bottom:6px">Categoria/Nicho *</label>
+                            <input type="text" id="ns_categoria" required placeholder="Ex: Energia Solar"
+                                style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);">
+                        </div>
+                    </div>
+
+                    <div style="display:flex; gap:16px; margin-bottom:16px;">
+                        <div style="flex:1">
+                            <label style="display:block;font-size:0.85rem;color:var(--text-muted);margin-bottom:6px">Telefone/WhatsApp *</label>
+                            <input type="text" id="ns_telefone" required placeholder="5511999999999"
+                                style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);">
+                        </div>
+                        <div style="flex:1">
+                            <label style="display:block;font-size:0.85rem;color:var(--text-muted);margin-bottom:6px">Cor Principal (Hex) *</label>
+                            <div style="display:flex;gap:8px">
+                                <input type="color" id="ns_cor_picker" value="#2563EB" style="width:40px;height:40px;border:none;border-radius:8px;cursor:pointer;padding:0" 
+                                    onchange="document.getElementById('ns_cor').value = this.value">
+                                <input type="text" id="ns_cor" required value="#2563EB"
+                                    style="flex:1;padding:10px 12px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);"
+                                    oninput="document.getElementById('ns_cor_picker').value = this.value">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom:16px;">
+                        <label style="display:block;font-size:0.85rem;color:var(--text-muted);margin-bottom:6px">Endereço (opcional)</label>
+                        <input type="text" id="ns_endereco" placeholder="Rua Exemplo, 123"
+                            style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);">
+                    </div>
+                    
+                    <div style="margin-bottom:24px;">
+                        <label style="display:block;font-size:0.85rem;color:var(--text-muted);margin-bottom:6px">Horário de Funcionamento</label>
+                        <input type="text" id="ns_horario" value="Segunda a Sexta, 8h às 18h"
+                            style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);">
+                    </div>
+
+                    <div style="display:flex;justify-content:flex-end;">
+                        <button type="button" onclick="ns_nextStep(2)" style="
+                            padding:10px 24px;background:var(--primary);color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;
+                        ">Próximo ➔</button>
+                    </div>
+                </div>
+
+                <!-- STEP 2: SEO -->
+                <div id="step2" style="display:none">
+                    <h4 style="margin-bottom:16px;font-size:1rem;">2. Estrutura e SEO</h4>
+
+                    <div style="margin-bottom:16px;">
+                        <label style="display:block;font-size:0.85rem;color:var(--text-muted);margin-bottom:6px">Subdomínio (sem espaços/acentos) *</label>
+                        <div style="display:flex;align-items:center;">
+                            <input type="text" id="ns_subdomain" required placeholder="ex: meunegocio"
+                                style="flex:1;padding:10px 12px;border:1px solid var(--border);border-radius:8px 0 0 8px;background:var(--bg);color:var(--text);">
+                            <div style="padding:10px 12px;background:var(--border);border-radius:0 8px 8px 0;font-size:0.85rem;">.autoridade.digital</div>
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom:16px;">
+                        <label style="display:block;font-size:0.85rem;color:var(--text-muted);margin-bottom:6px">Palavras-chave (uma por linha) *</label>
+                        <textarea id="ns_keywords" required rows="4" placeholder="Energia Solar Residencial&#10;Painel Solar Industrial"
+                            style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-family:inherit;resize:vertical;"></textarea>
+                    </div>
+
+                    <div style="margin-bottom:24px;">
+                        <label style="display:block;font-size:0.85rem;color:var(--text-muted);margin-bottom:6px">Locais/Cidades (um por linha) *</label>
+                        <textarea id="ns_locais" required rows="3" placeholder="São Paulo&#10;Campinas"
+                            style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-family:inherit;resize:vertical;"></textarea>
+                    </div>
+
+                    <div style="display:flex;justify-content:space-between;">
+                        <button type="button" onclick="ns_prevStep(1)" style="
+                            padding:10px 24px;background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:8px;font-weight:600;cursor:pointer;
+                        ">⬅ Voltar</button>
+                        <button type="button" onclick="ns_nextStep(3)" style="
+                            padding:10px 24px;background:var(--primary);color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;
+                        ">Próximo ➔</button>
+                    </div>
+                </div>
+
+                <!-- STEP 3: Config -->
+                <div id="step3" style="display:none">
+                    <h4 style="margin-bottom:16px;font-size:1rem;">3. Configurações Finais</h4>
+
+                    <div style="margin-bottom:16px;">
+                        <label style="display:block;font-size:0.85rem;color:var(--text-muted);margin-bottom:6px">Serviços Manuais (opcional) (um por linha)</label>
+                        <textarea id="ns_servicos" rows="3" placeholder="Instalação&#10;Manutenção"
+                            style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-family:inherit;resize:vertical;"></textarea>
+                    </div>
+
+                    <div style="margin-bottom:16px;">
+                        <label style="display:block;font-size:0.85rem;color:var(--text-muted);margin-bottom:6px">Google Maps Embed/URL (opcional)</label>
+                        <input type="text" id="ns_maps" placeholder="<iframe src='...'> ou https://maps..."
+                            style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);">
+                    </div>
+
+                    <div style="display:flex; gap:16px; margin-bottom:24px;">
+                        <div style="flex:1">
+                            <label style="display:block;font-size:0.85rem;color:var(--text-muted);margin-bottom:6px">Tema Padrão</label>
+                            <select id="ns_theme" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);">
+                                <option value="auto">Auto (Claro/Escuro)</option>
+                                <option value="light">Claro forçado</option>
+                                <option value="dark">Escuro forçado</option>
+                            </select>
+                        </div>
+                        <div style="flex:1">
+                            <label style="display:block;font-size:0.85rem;color:var(--text-muted);margin-bottom:6px">Workers</label>
+                            <input type="number" id="ns_workers" value="30" min="1" max="50"
+                                style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);">
+                        </div>
+                    </div>
+
+                    <div style="display:flex;justify-content:space-between;">
+                        <button type="button" onclick="ns_prevStep(2)" style="
+                            padding:10px 24px;background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:8px;font-weight:600;cursor:pointer;
+                        ">⬅ Voltar</button>
+                        <button type="button" onclick="submitNovoSite()" id="ns_submit_btn" style="
+                            padding:10px 32px;background:#10b981;color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;
+                        ">🚀 Iniciar Geração</button>
+                    </div>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -1077,17 +1245,30 @@
                     <div class="cliente-card-domain">
                         <a href="${escapeHtml(siteUrl)}" target="_blank">${escapeHtml(siteUrl)}</a>
                     </div>
-                    <div style="font-size:0.8rem;color:var(--text-muted)">
+                    <div style="font-size:0.8rem;color:var(--text-muted);margin-bottom:12px">
                         ${escapeHtml(c.categoria || '')}
                     </div>
                     <div class="cliente-card-footer">
                         <span style="font-size:0.78rem;color:var(--text-muted)">
                             Gerado: ${lastGen}
                         </span>
-                        <div style="display:flex;gap:8px">
-                            <button class="tab-btn" style="padding:4px 10px;font-size:0.78rem;border:1px solid var(--border);border-radius:4px"
-                                onclick="filterLeadsByClient('${escapeHtml(c.subdomain)}')">
-                                Ver Leads
+                        <div style="display:flex;gap:6px;flex-wrap:wrap">
+                            <a href="${escapeHtml(siteUrl)}" target="_blank" rel="noopener"
+                               style="padding:4px 10px;font-size:0.78rem;background:#7c3aed;
+                                      border-radius:6px;text-decoration:none;color:#fff;">
+                               🌐 Ver Site
+                            </a>
+                            <button onclick="openMagicEdit('${escapeHtml(c.id)}', '${escapeHtml(c.empresa_nome)}', 'cliente')"
+                               style="padding:4px 10px;font-size:0.78rem;background:#0f766e;
+                                      border:none;border-radius:6px;color:#fff;cursor:pointer;
+                                      font-family:inherit;">
+                               ✨ Magic Edit
+                            </button>
+                            <button onclick="regenerarCliente('${escapeHtml(c.id)}', '${escapeHtml(c.empresa_nome)}')"
+                               style="padding:4px 10px;font-size:0.78rem;background:#b45309;
+                                      border:none;border-radius:6px;color:#fff;cursor:pointer;
+                                      font-family:inherit;">
+                               🔄 Regenerar
                             </button>
                         </div>
                     </div>
@@ -1097,7 +1278,27 @@
 
         function filterLeadsByClient(subdomain) {
             switchTab('leads');
-            // Implementação futura: filtrar leads pelo subdomain
+        }
+
+        async function regenerarCliente(clienteId, empresaNome) {
+            if (!confirm(`Regenerar o site de "${empresaNome}" completamente? Isso vai criar um novo job e pode levar ~10-15 min.`)) return;
+
+            const token = _session?.access_token;
+            try {
+                const resp = await fetch(`${API_BASE}/api/clientes/${clienteId}/regenerar`, {
+                    method: 'POST',
+                    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }
+                });
+                const data = await resp.json();
+                if (resp.ok) {
+                    alert(`✅ Job criado! ID: ${data.job_id}\nAcompanhe na aba ⚙️ Jobs.`);
+                    switchTab('jobs');
+                } else {
+                    alert('❌ Erro: ' + (data.detail || JSON.stringify(data)));
+                }
+            } catch(e) {
+                alert('❌ Erro de rede: ' + e.message);
+            }
         }
 
         // ── Aba Auditoria ──────────────────────────────────────────────
@@ -1402,12 +1603,115 @@
                 </tr>`;
         }
 
+        // ── Novo Site (Wizard) logic ──────────────────────────────────
+        
+        function openNovoSite() {
+            // Reset form
+            document.getElementById('novo-site-form').reset();
+            document.getElementById('ns_cor').value = '#2563EB';
+            document.getElementById('ns_cor_picker').value = '#2563EB';
+            document.getElementById('ns_horario').value = 'Segunda a Sexta, 8h às 18h';
+            document.getElementById('ns_workers').value = '30';
+            document.getElementById('ns_theme').value = 'auto';
+            
+            ns_showStep(1);
+            document.getElementById('novo-site-modal').style.display = 'flex';
+        }
+
+        function closeNovoSite() {
+            document.getElementById('novo-site-modal').style.display = 'none';
+        }
+
+        function ns_showStep(step) {
+            document.getElementById('step1').style.display = step === 1 ? 'block' : 'none';
+            document.getElementById('step2').style.display = step === 2 ? 'block' : 'none';
+            document.getElementById('step3').style.display = step === 3 ? 'block' : 'none';
+            
+            document.getElementById('step1-indicator').style.background = step >= 1 ? 'var(--primary)' : 'var(--border)';
+            document.getElementById('step2-indicator').style.background = step >= 2 ? 'var(--primary)' : 'var(--border)';
+            document.getElementById('step3-indicator').style.background = step >= 3 ? 'var(--primary)' : 'var(--border)';
+        }
+
+        function ns_nextStep(next) {
+            // simple validation check before advancing
+            if (next === 2) {
+                if (!document.getElementById('ns_nome').value || !document.getElementById('ns_categoria').value || !document.getElementById('ns_telefone').value) {
+                    alert("Preencha todos os campos obrigatórios da etapa 1.");
+                    return;
+                }
+            }
+            if (next === 3) {
+                if (!document.getElementById('ns_subdomain').value || !document.getElementById('ns_keywords').value || !document.getElementById('ns_locais').value) {
+                    alert("Preencha todos os campos obrigatórios da etapa 2.");
+                    return;
+                }
+            }
+            ns_showStep(next);
+        }
+
+        function ns_prevStep(prev) {
+            ns_showStep(prev);
+        }
+
+        async function submitNovoSite() {
+            const btn = document.getElementById('ns_submit_btn');
+            
+            const payload = {
+                empresa_nome: document.getElementById('ns_nome').value.trim(),
+                categoria: document.getElementById('ns_categoria').value.trim(),
+                telefone: document.getElementById('ns_telefone').value.trim(),
+                cor_marca: document.getElementById('ns_cor').value.trim(),
+                endereco: document.getElementById('ns_endereco').value.trim(),
+                horario: document.getElementById('ns_horario').value.trim(),
+                subdomain: document.getElementById('ns_subdomain').value.trim(),
+                keywords: document.getElementById('ns_keywords').value.split('\n').map(s=>s.trim()).filter(Boolean),
+                locais: document.getElementById('ns_locais').value.split('\n').map(s=>s.trim()).filter(Boolean),
+                servicos: document.getElementById('ns_servicos').value.split('\n').map(s=>s.trim()).filter(Boolean),
+                google_maps_url: document.getElementById('ns_maps').value.trim(),
+                theme_mode: document.getElementById('ns_theme').value,
+                max_workers: parseInt(document.getElementById('ns_workers').value) || 30
+            };
+
+            btn.textContent = 'Aguarde...';
+            btn.disabled = true;
+
+            const token = _session?.access_token;
+            try {
+                const resp = await fetch(`${API_BASE}/api/clientes`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+                
+                const data = await resp.json();
+                
+                if (resp.ok) {
+                    closeNovoSite();
+                    switchTab('jobs');
+                } else {
+                    alert('❌ Erro: ' + (data.detail || JSON.stringify(data)));
+                    btn.textContent = '🚀 Iniciar Geração';
+                    btn.disabled = false;
+                }
+            } catch (err) {
+                alert('❌ Erro de rede: ' + err.message);
+                btn.textContent = '🚀 Iniciar Geração';
+                btn.disabled = false;
+            }
+        }
+
         // ── Magic Edit Modal ─────────────────────────────────────────
 
-        let _magicEditSiteId = null;
 
-        function openMagicEdit(siteId, empresaNome) {
-            _magicEditSiteId = siteId;
+        let _magicEditSiteId = null;
+        let _magicEditType = 'site'; // 'site' ou 'cliente'
+
+        function openMagicEdit(id, empresaNome, type = 'site') {
+            _magicEditSiteId = id;
+            _magicEditType = type;
             document.getElementById('magic-edit-title').textContent = `✨ Magic Edit — ${empresaNome}`;
             document.getElementById('magic-edit-instruction').value = '';
             document.getElementById('magic-edit-result').style.display = 'none';
@@ -1433,7 +1737,11 @@
 
             const token = _session?.access_token;
             try {
-                const resp = await fetch(`${API_BASE}/api/sites/${_magicEditSiteId}/magic-edit`, {
+                const endpoint = _magicEditType === 'cliente' 
+                    ? `${API_BASE}/api/clientes/${_magicEditSiteId}/chat-edit`
+                    : `${API_BASE}/api/sites/${_magicEditSiteId}/magic-edit`;
+
+                const resp = await fetch(endpoint, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -1444,15 +1752,20 @@
 
                 const data = await resp.json();
 
-                if (resp.ok && data.ok) {
+                if (resp.ok) {
                     resultEl.style.display = 'block';
                     resultEl.style.color = '#10b981';
-                    resultEl.innerHTML = `
-                        ✅ ${data.message}<br>
-                        ${data.deploy_url ? `🌐 <a href="${data.deploy_url}" target="_blank" style="color:#00b4d8">${data.deploy_url}</a>` : ''}
-                    `;
-                    // Atualizar lista
-                    await loadSitesTab();
+                    
+                    if (_magicEditType === 'cliente') {
+                        resultEl.innerHTML = `✅ Edição aplicada! Novo Job de regeneração criado (ID: ${data.job_id || 'N/A'}). Acompanhe na aba Jobs.`;
+                        await loadClientesTab();
+                    } else {
+                        resultEl.innerHTML = `
+                            ✅ ${data.message}<br>
+                            ${data.deploy_url ? `🌐 <a href="${data.deploy_url}" target="_blank" style="color:#00b4d8">${data.deploy_url}</a>` : ''}
+                        `;
+                        await loadSitesTab();
+                    }
                 } else {
                     resultEl.style.display = 'block';
                     resultEl.style.color = '#ef4444';
@@ -1463,7 +1776,7 @@
                 resultEl.style.color = '#ef4444';
                 resultEl.textContent = '❌ Erro de rede: ' + err.message;
             } finally {
-                btn.textContent = 'Aplicar';
+                btn.textContent = '✨ Aplicar';
                 btn.disabled = false;
             }
         }
