@@ -424,7 +424,13 @@ async def run_fast_sync_job(job_id: str, config_data: dict, agency_id: str):
             'leads': {
                 'worker_url': os.environ.get('WORKER_URL', ''),
                 'client_token': _get_client_token(subdomain),
-            }
+            },
+            'api': {
+                'provider':    os.environ.get('AI_PROVIDER', 'openrouter'),
+                'model':       os.environ.get('AI_MODEL', 'deepseek/deepseek-v3.2'),
+                'max_workers': config_data.get('max_workers', 30),
+                'max_retries': 3,
+            },
         }
         
         # 3. Identificar raw_ai_override da home
