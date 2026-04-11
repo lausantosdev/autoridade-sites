@@ -1635,15 +1635,18 @@
                 });
                 const data = await resp.json();
                 if (resp.ok) {
+                    const cf = data.cf_results || {};
+                    const cfLines = Object.entries(cf).map(([k,v]) => `  ${k}: ${v}`).join('\n');
                     if (data.warnings && data.warnings.length) {
                         alert(
                             `✅ "${empresaNome}" removido do painel.\n\n` +
-                            `⚠️ Aviso: não foi possível limpar todos os recursos no Cloudflare:\n` +
+                            `⚠️ Aviso (Cloudflare):\n` +
                             data.warnings.join('\n') +
+                            `\n\nDetalhes CF:\n${cfLines}` +
                             `\n\nVocê pode deletar manualmente no painel Cloudflare Pages.`
                         );
                     } else {
-                        alert(`✅ "${empresaNome}" deletado! Projeto Pages e DNS removidos.`);
+                        alert(`✅ "${empresaNome}" deletado!\n\nResultados CF:\n${cfLines}`);
                     }
                     await loadClientesTab();
                 } else {

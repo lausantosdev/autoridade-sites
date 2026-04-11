@@ -782,13 +782,20 @@ async def deletar_cliente(client_id: str, agency=Depends(get_current_agency)):
     subdomain = perfil["subdomain"]
 
     errors = []
+    cf_results = {}
 
     # 1. Limpar recursos na Cloudflare (melhor-esforço — não bloqueia o delete)
     try:
-        await delete_client_resources(subdomain)
+        cf_results = await delete_client_resources(subdomain)
+        logger.info("CF delete results para %s: %s", subdomain, cf_results)
+        # Se algum resultado contém "erro", adicionar ao warnings
+        for k, v in cf_results.items():
+            if isinstance(v, str) and "erro" in v.lower():
+                errors.append(f"CF {k}: {v}")
     except Exception as e:
         logger.warning("Erro ao limpar CF para %s: %s", subdomain, e)
-        errors.append(f"CF cleanup: {e}")
+        errors.append(f"CF cleanup falhou: {e}")
+        cf_results = {"error": str(e)}
 
     # 2. Deletar do Supabase (CASCADE apaga pages_cache automaticamente)
     sb.table("clientes_perfil") \
@@ -801,6 +808,7 @@ async def deletar_cliente(client_id: str, agency=Depends(get_current_agency)):
         "deleted": True,
         "cliente": perfil["empresa_nome"],
         "subdomain": subdomain,
+        "cf_results": cf_results,
         "warnings": errors or None,
     }
 
