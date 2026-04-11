@@ -196,3 +196,63 @@ async def _register_pages_domain(
             else:
                 body = await r.text()
                 logger.warning("[CF Deploy] Custom domain %s: %s — %s", r.status, custom_domain, body[:200])
+
+
+async def delete_client_resources(subdomain: str) -> dict:
+    """
+    Remove todos os recursos Cloudflare de um cliente deletado:
+      - Projeto Pages: DELETE /pages/projects/{subdomain}
+      - DNS CNAME: DELETE /zones/{zone}/dns_records/{id}
+    Operação melhor-esforço: erros são registrados mas não lançados.
+    Retorna dict com status de cada operação.
+    """
+    account_id, api_token = _env()
+    headers = {"Authorization": f"Bearer {api_token}", "Content-Type": "application/json"}
+    results = {}
+
+    async with aiohttp.ClientSession() as s:
+        # ── 1. Deletar projeto Pages ──────────────────────────────────
+        pages_url = (
+            f"https://api.cloudflare.com/client/v4/accounts/{account_id}"
+            f"/pages/projects/{subdomain}"
+        )
+        async with s.delete(pages_url, headers=headers) as r:
+            if r.status in (200, 201):
+                results["pages_project"] = "deletado"
+                logger.info("[CF Delete] Projeto Pages '%s' deletado", subdomain)
+            elif r.status == 404:
+                results["pages_project"] = "não encontrado (ok)"
+                logger.info("[CF Delete] Projeto Pages '%s' não existia", subdomain)
+            else:
+                body = await r.text()
+                results["pages_project"] = f"erro {r.status}: {body[:100]}"
+                logger.warning("[CF Delete] Falha ao deletar projeto Pages '%s': %s", subdomain, body[:200])
+
+        # ── 2. Deletar CNAME DNS ──────────────────────────────────────
+        zone_id = await _get_zone_id(BASE_DOMAIN, api_token)
+        if zone_id:
+            dns_api = f"https://api.cloudflare.com/client/v4/zones/{zone_id}/dns_records"
+            # Buscar o record ID
+            async with s.get(
+                dns_api,
+                params={"name": f"{subdomain}.{BASE_DOMAIN}", "type": "CNAME"},
+                headers=headers,
+            ) as r:
+                existing = (await r.json()).get("result", [])
+
+            if existing:
+                record_id = existing[0]["id"]
+                async with s.delete(f"{dns_api}/{record_id}", headers=headers) as r:
+                    if r.status in (200, 201):
+                        results["dns_cname"] = "deletado"
+                        logger.info("[CF Delete] CNAME %s.%s deletado", subdomain, BASE_DOMAIN)
+                    else:
+                        body = await r.text()
+                        results["dns_cname"] = f"erro {r.status}"
+                        logger.warning("[CF Delete] Falha ao deletar CNAME: %s", body[:200])
+            else:
+                results["dns_cname"] = "não encontrado (ok)"
+        else:
+            results["dns_cname"] = "zone não encontrada"
+
+    return results

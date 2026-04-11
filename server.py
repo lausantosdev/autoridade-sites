@@ -743,6 +743,54 @@ async def redeploy_cliente(client_id: str, agency=Depends(get_current_agency)):
         "edit_type": "tier_1.5_redeploy",
     }
 
+@app.delete("/api/clientes/{client_id}")
+async def deletar_cliente(client_id: str, agency=Depends(get_current_agency)):
+    """
+    Deleta PERMANENTEMENTE um cliente e todos os seus recursos:
+      - Supabase: clientes_perfil (cascade → pages_cache, set null → jobs/historico)
+      - Cloudflare Pages: projeto isolado do cliente
+      - Cloudflare DNS: CNAME {subdomain}.autoridade.digital
+    """
+    from core.cloudflare_pages_deploy import delete_client_resources
+    agency_id = agency["sub"]
+    sb = get_supabase()
+
+    # Buscar o perfil para obter o subdomain antes de deletar
+    result = sb.table("clientes_perfil") \
+        .select("id,subdomain,empresa_nome") \
+        .eq("id", client_id) \
+        .eq("agency_id", agency_id) \
+        .single() \
+        .execute()
+    if not result.data:
+        raise HTTPException(404, "Cliente não encontrado")
+
+    perfil = result.data
+    subdomain = perfil["subdomain"]
+
+    errors = []
+
+    # 1. Limpar recursos na Cloudflare (melhor-esforço — não bloqueia o delete)
+    try:
+        await delete_client_resources(subdomain)
+    except Exception as e:
+        logger.warning("Erro ao limpar CF para %s: %s", subdomain, e)
+        errors.append(f"CF cleanup: {e}")
+
+    # 2. Deletar do Supabase (CASCADE apaga pages_cache automaticamente)
+    sb.table("clientes_perfil") \
+        .delete() \
+        .eq("id", client_id) \
+        .eq("agency_id", agency_id) \
+        .execute()
+
+    return {
+        "deleted": True,
+        "cliente": perfil["empresa_nome"],
+        "subdomain": subdomain,
+        "warnings": errors or None,
+    }
+
 # ── API Cloud: Jobs ───────────────────────────────────────────
 
 @app.get("/api/jobs/{job_id}/status")

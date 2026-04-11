@@ -1276,6 +1276,12 @@
                                       font-family:inherit;">
                                🔄 Regenerar
                             </button>
+                            <button onclick="deletarCliente('${escapeHtml(c.id)}', '${escapeHtml(c.empresa_nome)}', '${escapeHtml(c.subdomain)}')"
+                               style="padding:4px 10px;font-size:0.78rem;background:#7f1d1d;
+                                      border:none;border-radius:6px;color:#fca5a5;cursor:pointer;
+                                      font-family:inherit;" title="Remove cliente, site, DNS e projeto Pages">
+                               🗑️ Deletar
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -1319,6 +1325,39 @@
                 if (resp.ok) {
                     alert(`✅ Job criado! ID: ${data.job_id}\nAcompanhe na aba ⚙️ Jobs.`);
                     switchTab('jobs');
+                } else {
+                    alert('❌ Erro: ' + (data.detail || JSON.stringify(data)));
+                }
+            } catch(e) {
+                alert('❌ Erro de rede: ' + e.message);
+            }
+        }
+
+        async function deletarCliente(clienteId, empresaNome, subdomain) {
+            // Confirmação dupla: digitar o nome do cliente
+            const confirmado = prompt(
+                `⚠️ Isso vai deletar PERMANENTEMENTE:\n` +
+                `  • O cliente "${empresaNome}"\n` +
+                `  • Todas as páginas e cache\n` +
+                `  • O projeto Pages: ${subdomain}\n` +
+                `  • O registro DNS: ${subdomain}.autoridade.digital\n\n` +
+                `Para confirmar, digite o nome do cliente exatamente:`
+            );
+            if (confirmado !== empresaNome) {
+                if (confirmado !== null) alert('❌ Nome incorreto. Operação cancelada.');
+                return;
+            }
+
+            const token = _session?.access_token;
+            try {
+                const resp = await fetch(`${API_BASE}/api/clientes/${clienteId}`, {
+                    method: 'DELETE',
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                const data = await resp.json();
+                if (resp.ok) {
+                    alert(`✅ "${empresaNome}" deletado com sucesso!`);
+                    await loadClientesTab();
                 } else {
                     alert('❌ Erro: ' + (data.detail || JSON.stringify(data)));
                 }
