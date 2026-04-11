@@ -646,6 +646,7 @@
                     <button class="tab-btn" data-tab="clientes" onclick="switchTab('clientes')">🏢 Clientes</button>
                     <button class="tab-btn" data-tab="auditoria" onclick="switchTab('auditoria')">💰 Auditoria</button>
                     <button class="tab-btn" data-tab="jobs" onclick="switchTab('jobs')">⚙️ Jobs</button>
+                    <button class="tab-btn" data-tab="sites" onclick="switchTab('sites')">🌐 Sites</button>
                 </nav>
             </header>
             <main>
@@ -678,6 +679,26 @@
                         <h2>Jobs de Geração</h2>
                     </div>
                     <div id="jobs-list"></div>
+                </div>
+
+                <!-- Aba Sites (catálogo de todos os sites gerados) -->
+                <div id="tab-sites" class="tab-content" style="display:none">
+                    <div class="section-header">
+                        <h2>Sites Gerados</h2>
+                        <div style="display:flex;gap:10px;align-items:center;">
+                            <input type="text" id="sites-search"
+                                placeholder="🔍 Buscar por nome ou domínio..."
+                                oninput="filterSites(this.value)"
+                                style="padding:8px 14px;border:1px solid var(--border);border-radius:8px;
+                                       background:var(--bg);color:var(--text);font-size:0.875rem;
+                                       outline:none;min-width:260px;font-family:inherit;">
+                            <button onclick="loadSitesTab()" class="tab-btn"
+                                style="border:1px solid var(--border);border-radius:8px;padding:7px 14px;">
+                                🔄
+                            </button>
+                        </div>
+                    </div>
+                    <div id="sites-list"></div>
                 </div>
             </main>
             <footer></footer>
@@ -909,6 +930,7 @@
             if (tabName === 'clientes')  loadClientesTab();
             if (tabName === 'auditoria') loadAuditoriaTab();
             if (tabName === 'jobs')      loadJobsTab();
+            if (tabName === 'sites')     loadSitesTab();
         }
 
         // ── Aba Leads ──────────────────────────────────────────────────
@@ -1206,6 +1228,121 @@
                 clearInterval(_jobsPollingTimer);
                 _jobsPollingTimer = null;
             }
+        }
+
+        // ── Aba Sites ──────────────────────────────────────────────
+
+        let _allSites = [];
+
+        async function loadSitesTab() {
+            const el = document.getElementById('sites-list');
+            el.innerHTML = '<div class="empty-state"><div class="spinner" style="margin:0 auto"></div></div>';
+
+            const token = _session?.access_token;
+            try {
+                const resp = await fetch(`${API_BASE}/api/sites`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+
+                if (!resp.ok) {
+                    el.innerHTML = `<div class="empty-state"><div class="empty-state-icon">⚠️</div><h3>Erro ao carregar sites</h3></div>`;
+                    return;
+                }
+
+                const data = await resp.json();
+                _allSites = data.sites || [];
+
+                renderSites(_allSites);
+            } catch (err) {
+                el.innerHTML = `<div class="empty-state"><div class="empty-state-icon">⚠️</div><h3>Erro ao carregar sites</h3></div>`;
+            }
+        }
+
+        function filterSites(query) {
+            const q = query.toLowerCase().trim();
+            if (!q) { renderSites(_allSites); return; }
+            const filtered = _allSites.filter(s =>
+                (s.empresa_nome || '').toLowerCase().includes(q) ||
+                (s.subdomain   || '').toLowerCase().includes(q) ||
+                (s.categoria   || '').toLowerCase().includes(q)
+            );
+            renderSites(filtered);
+        }
+
+        function renderSites(sites) {
+            const el = document.getElementById('sites-list');
+
+            if (!sites || sites.length === 0) {
+                el.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🌐</div>
+                        <h3>Nenhum site encontrado</h3>
+                        <p>Os sites gerados pelo wizard aparecerão aqui automaticamente.</p>
+                    </div>`;
+                return;
+            }
+
+            el.innerHTML = `
+                <div style="overflow-x:auto">
+                <table class="audit-table">
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Empresa</th>
+                            <th>Domínio</th>
+                            <th>Categoria</th>
+                            <th>Páginas</th>
+                            <th>Custo BRL</th>
+                            <th>Status</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${sites.map(renderSiteRow).join('')}
+                    </tbody>
+                </table>
+                </div>
+                <p style="font-size:0.8rem;color:var(--text-muted);margin-top:12px">
+                    ${sites.length} site(s) encontrado(s)
+                </p>`;
+        }
+
+        function renderSiteRow(s) {
+            const date = s.created_at
+                ? new Date(s.created_at).toLocaleDateString('pt-BR')
+                : '-';
+            const badgeClass = s.status === 'live' ? 'badge-live' : 'badge-pending';
+            const badgeLabel = s.status === 'live' ? '🟢 Live' : '📦 ZIP';
+            const deployUrl  = s.deploy_url || '';
+            const zipUrl     = `/api/download/${escapeHtml(s.subdomain)}`;
+
+            return `
+                <tr>
+                    <td>${date}</td>
+                    <td><strong>${escapeHtml(s.empresa_nome)}</strong></td>
+                    <td style="font-size:0.82rem;color:var(--text-muted)">${escapeHtml(s.subdomain)}.autoridade.digital</td>
+                    <td style="font-size:0.82rem">${escapeHtml(s.categoria || '-')}</td>
+                    <td>${s.pages || '-'}</td>
+                    <td>R$${parseFloat(s.cost_brl || 0).toFixed(2)}</td>
+                    <td><span class="badge ${badgeClass}">${badgeLabel}</span></td>
+                    <td>
+                        <div style="display:flex;gap:6px;flex-wrap:wrap">
+                            <a href="${zipUrl}" download
+                               style="padding:4px 10px;font-size:0.78rem;border:1px solid var(--border);
+                                      border-radius:6px;text-decoration:none;color:var(--text-muted);
+                                      white-space:nowrap;">
+                               📥 ZIP
+                            </a>
+                            ${deployUrl ? `
+                            <a href="${escapeHtml(deployUrl)}" target="_blank" rel="noopener"
+                               style="padding:4px 10px;font-size:0.78rem;background:#7c3aed;
+                                      border-radius:6px;text-decoration:none;color:#fff;
+                                      white-space:nowrap;">
+                               🌐 Ver Site
+                            </a>` : ''}
+                        </div>
+                    </td>
+                </tr>`;
         }
 
 function showLoading() {

@@ -42,6 +42,7 @@ from core.config_loader import _parse_keyword_csv
 from core.imagen_client import GeminiImageClient
 from core.topic_generator import generate_services_data
 from core.output_builder import setup_output_dir, generate_fallback_index
+from core.cloudflare_pages_deploy import deploy_to_cloudflare_pages
 from core.logger import get_logger
 logger = get_logger(__name__)
 
@@ -403,15 +404,47 @@ async def websocket_generate(websocket: WebSocket):
                 'zip',
                 output_dir
             )
-            
+
             # Tempo final
             t1 = time.time()
             elapsed = int(t1 - t0)
             mins, secs = divmod(elapsed, 60)
             duration_str = f"{mins}m {secs}s" if mins > 0 else f"{secs}s"
-            
-            # Resultado final
+
+            # ── Deploy automático para Cloudflare Pages ───────────
+            deploy_url = None
+            deploy_status = "zip_only"
+            try:
+                await websocket.send_json({"type": "status", "message": "Publicando site no ar..."})
+                deploy_url = await deploy_to_cloudflare_pages(dominio, output_dir)
+                deploy_status = "live"
+                logger.info("Deploy concluído: %s", deploy_url)
+            except Exception as deploy_err:
+                logger.warning("Deploy Cloudflare falhou (site gerado OK): %s", deploy_err)
+
+            # ── Registrar no Supabase ─────────────────────────────
             summary = accumulator.get_summary()
+            try:
+                sb = get_supabase()
+                sb.table("sites_gerados").insert({
+                    "subdomain":    dominio,
+                    "empresa_nome": config['empresa']['nome'],
+                    "categoria":    config['empresa']['categoria'],
+                    "telefone":     config['empresa'].get('telefone_whatsapp', ''),
+                    "deploy_url":   deploy_url,
+                    "zip_filename": f"{dominio}_site.zip",
+                    "pages":        results['total_pages'],
+                    "words":        results['stats'].get('total_words', 0),
+                    "cost_usd":     summary['total']['cost_usd'],
+                    "cost_brl":     summary['total']['cost_brl'],
+                    "duration":     duration_str,
+                    "status":       deploy_status,
+                }).execute()
+                logger.info("Site registrado no Supabase: %s", dominio)
+            except Exception as db_err:
+                logger.warning("Falha ao registrar no Supabase (não crítico): %s", db_err)
+
+            # Resultado final
             await websocket.send_json({
                 "type": "complete",
                 "message": "Site gerado com sucesso!",
@@ -430,7 +463,9 @@ async def websocket_generate(websocket: WebSocket):
                     "duration": duration_str,
                     "providers": summary
                 },
-                "download": f"/api/download/{dominio}"
+                "download":   f"/api/download/{dominio}",
+                "deploy_url": deploy_url,
+                "deploy_status": deploy_status,
             })
             
         finally:
@@ -704,6 +739,31 @@ async def list_leads(
             
     result = query.execute()
     return {"leads": result.data, "total": len(result.data)}
+
+@app.get("/api/sites")
+async def list_sites(agency=Depends(get_current_agency), q: str = None):
+    """Lista todos os sites gerados, com deploy_url e link para ZIP."""
+    sb = get_supabase()
+    query = sb.table("sites_gerados") \
+        .select("*") \
+        .order("created_at", desc=True) \
+        .limit(200)
+
+    result = query.execute()
+    sites = result.data or []
+
+    # Filtro de busca server-side (complementa o filtro JS client-side)
+    if q:
+        q_lower = q.lower()
+        sites = [
+            s for s in sites
+            if q_lower in (s.get("empresa_nome") or "").lower()
+            or q_lower in (s.get("subdomain") or "").lower()
+            or q_lower in (s.get("categoria") or "").lower()
+        ]
+
+    return {"sites": sites, "total": len(sites)}
+
 
 @app.get("/api/historico")
 async def list_historico(agency=Depends(get_current_agency)):
