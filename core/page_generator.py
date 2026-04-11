@@ -17,6 +17,7 @@ from core.config_loader import get_phone_display
 from core.template_renderer import replace_config_vars as _replace_config_vars
 from core.logger import get_logger
 from core.exceptions import APIError
+from core.supabase_client import get_supabase
 logger = get_logger(__name__)
 
 # Tempo máximo (segundos) para gerar UMA página completa.
@@ -340,6 +341,26 @@ REGRAS ABSOLUTAS:
                 output_path = os.path.join(output_dir, page['filename'])
                 with open(output_path, 'w', encoding='utf-8') as f:
                     f.write(html)
+                    
+                # Otimização Nuvem: Salvar cache se tiver client_id
+                client_id = config['empresa'].get('client_id')
+                if client_id:
+                    try:
+                        sb = get_supabase()
+                        slug = page['filename'].replace('.html', '')
+                        sb.table("pages_cache").upsert({
+                            "client_id": client_id,
+                            "subdomain": config['empresa']['dominio'],
+                            "page_slug": slug,
+                            "page_type": "subpage",
+                            "ai_json": flat_result,
+                            "keyword": page.get('keyword'),
+                            "location": page.get('location'),
+                            "title": page.get('title')
+                        }, on_conflict="client_id,page_slug").execute()
+                    except Exception as e:
+                        logger.error("%s: erro ao salvar cache - %s", page['filename'], e)
+                        
                 return  # Sucesso
 
             # ❌ Validação falhou

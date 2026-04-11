@@ -143,6 +143,7 @@ async def run_generation_job(job_id: str, config_data: dict, agency_id: str) -> 
 
         config_dict = {
             'empresa': {
+                'client_id': config_data.get('client_id'),
                 'nome': config_data.get('empresa_nome', ''),
                 'dominio': subdomain,
                 'categoria': config_data.get('categoria', ''),
@@ -260,6 +261,21 @@ async def run_generation_job(job_id: str, config_data: dict, agency_id: str) -> 
             except Exception as e:
                 logger.error("Erro na home page: %s. Usando fallback.", e)
                 generate_fallback_index(config, output_dir)
+                
+            # Salvar cache da home page
+            if config['empresa'].get('client_id'):
+                try:
+                    sb = get_supabase()
+                    raw_ai = site_data.get("_raw_ai", {})
+                    sb.table("pages_cache").upsert({
+                        "client_id": config['empresa']['client_id'],
+                        "subdomain": subdomain,
+                        "page_slug": "home",
+                        "page_type": "home",
+                        "ai_json": raw_ai
+                    }, on_conflict="client_id,page_slug").execute()
+                except Exception as e:
+                    logger.error("Erro ao salvar cache da home: %s", e)
 
             if servicos_data:
                 dados_js_path = Path(output_dir) / "js" / "dados.js"

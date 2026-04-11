@@ -276,6 +276,8 @@ def build_site_data(config: dict, client: OpenRouterClient, gemini_client=None) 
             "workerUrl": config.get('leads', {}).get('worker_url', ''),
             "clientToken": config.get('leads', {}).get('client_token', ''),
         },
+        
+        "_raw_ai": ai_content,  # Guarda para cache
     }
     
     # Resolver tema: config.yaml > IA > fallback light

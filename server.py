@@ -615,7 +615,7 @@ async def create_cliente(data: dict, agency=Depends(get_current_agency)):
     
     job_id = job.data[0]["id"]
     
-    config_data = {**data, "subdomain": subdomain, "agency_id": agency_id}
+    config_data = {**data, "subdomain": subdomain, "agency_id": agency_id, "client_id": client_id}
     asyncio.create_task(run_generation_job(job_id, config_data, agency_id))
     
     return {
