@@ -812,6 +812,22 @@ async def get_job_status(job_id: str, agency=Depends(get_current_agency)):
     job["logs"] = job.get("logs", [])[-20:]
     return job
 
+@app.get("/api/clientes/{client_id}/ultimo-relatorio")
+async def get_ultimo_relatorio(client_id: str, agency=Depends(get_current_agency)):
+    """Retorna o último historico_geracao do cliente (para o modal de relatório)."""
+    agency_id = agency["sub"]
+    sb = get_supabase()
+    result = sb.table("historico_geracao") \
+        .select("*") \
+        .eq("client_id", client_id) \
+        .eq("agency_id", agency_id) \
+        .order("created_at", desc=True) \
+        .limit(1) \
+        .execute()
+    if not result.data:
+        raise HTTPException(404, "Nenhum relatório encontrado para este cliente")
+    return result.data[0]
+
 @app.get("/api/jobs")
 async def list_jobs(agency=Depends(get_current_agency)):
     agency_id = agency["sub"]
