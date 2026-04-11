@@ -695,6 +695,54 @@ async def chat_edit_cliente(
     
     return result
 
+@app.post("/api/clientes/{client_id}/redeploy")
+async def redeploy_cliente(client_id: str, agency=Depends(get_current_agency)):
+    """
+    Redeploy rápido (Tier 1.5) — usa pages_cache sem chamar a IA.
+    Ideal para quando a geração passou mas o deploy falhou, ou o usuário 
+    quer republicar sem alterar o conteúdo.
+    """
+    from core.job_queue import run_fast_sync_job
+    agency_id = agency["sub"]
+    sb = get_supabase()
+
+    # Buscar o perfil completo do cliente
+    result = sb.table("clientes_perfil") \
+        .select("*") \
+        .eq("id", client_id) \
+        .eq("agency_id", agency_id) \
+        .single() \
+        .execute()
+    if not result.data:
+        raise HTTPException(404, "Cliente não encontrado")
+    profile = result.data
+
+    # Verificar se tem cache
+    cache_check = sb.table("pages_cache") \
+        .select("id", count="exact") \
+        .eq("client_id", client_id) \
+        .execute()
+    if not cache_check.count or cache_check.count == 0:
+        raise HTTPException(400, "Cache vazio — use 'Regenerar' para uma geração completa com IA.")
+
+    # Criar job e disparar fast sync
+    job = sb.table("jobs").insert({
+        "agency_id": agency_id,
+        "client_id": client_id,
+        "status":    "pending",
+        "step":      "queue",
+    }).execute()
+    job_id = job.data[0]["id"]
+
+    config_data = {**profile, "client_id": client_id}
+    asyncio.create_task(run_fast_sync_job(job_id, config_data, agency_id))
+
+    return {
+        "job_id": job_id,
+        "message": f"Fast Redeploy iniciado — acompanhe em /api/jobs/{job_id}/status",
+        "edit_type": "tier_1.5_redeploy",
+    }
+
 # ── API Cloud: Jobs ───────────────────────────────────────────
 
 @app.get("/api/jobs/{job_id}/status")

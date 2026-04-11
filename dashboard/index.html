@@ -1264,6 +1264,12 @@
                                       font-family:inherit;">
                                ✨ Magic Edit
                             </button>
+                            <button onclick="redeployCliente('${escapeHtml(c.id)}', '${escapeHtml(c.empresa_nome)}')"
+                               style="padding:4px 10px;font-size:0.78rem;background:#0369a1;
+                                      border:none;border-radius:6px;color:#fff;cursor:pointer;
+                                      font-family:inherit;" title="Republica usando o cache existente (rápido, sem IA)">
+                               ⚡ Redeploy
+                            </button>
                             <button onclick="regenerarCliente('${escapeHtml(c.id)}', '${escapeHtml(c.empresa_nome)}')"
                                style="padding:4px 10px;font-size:0.78rem;background:#b45309;
                                       border:none;border-radius:6px;color:#fff;cursor:pointer;
@@ -1278,6 +1284,26 @@
 
         function filterLeadsByClient(subdomain) {
             switchTab('leads');
+        }
+
+        async function redeployCliente(clienteId, empresaNome) {
+            if (!confirm(`Republicar "${empresaNome}" usando o cache existente? (rápido, sem IA)`)) return;
+            const token = _session?.access_token;
+            try {
+                const resp = await fetch(`${API_BASE}/api/clientes/${clienteId}/redeploy`, {
+                    method: 'POST',
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                const data = await resp.json();
+                if (resp.ok) {
+                    alert(`⚡ Fast Redeploy iniciado! Job ID: ${data.job_id}\nAcompanhe na aba Jobs.`);
+                    switchTab('jobs');
+                } else {
+                    alert('❌ ' + (data.detail || JSON.stringify(data)));
+                }
+            } catch(e) {
+                alert('❌ Erro de rede: ' + e.message);
+            }
         }
 
         async function regenerarCliente(clienteId, empresaNome) {
@@ -1757,7 +1783,13 @@
                     resultEl.style.color = '#10b981';
                     
                     if (_magicEditType === 'cliente') {
-                        resultEl.innerHTML = `✅ Edição aplicada! Novo Job de regeneração criado (ID: ${data.job_id || 'N/A'}). Acompanhe na aba Jobs.`;
+                        if (data.job_id) {
+                            const tier = data.edit_type === 'tier_1.5_fast_sync' ? '⚡ Fast Sync' : '🔄 Regeração Completa';
+                            resultEl.innerHTML = `✅ Edição aplicada! ${tier} iniciado (ID: ${data.job_id}). Acompanhe na aba Jobs.`;
+                            switchTab('jobs');
+                        } else {
+                            resultEl.innerHTML = `ℹ️ Nenhuma alteração detectada pelo editor. Use o botão <strong>⚡ Redeploy</strong> para republicar sem mudanças.`;
+                        }
                         await loadClientesTab();
                     } else {
                         resultEl.innerHTML = `
