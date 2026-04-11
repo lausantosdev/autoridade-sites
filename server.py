@@ -809,14 +809,29 @@ async def get_job_status(job_id: str, agency=Depends(get_current_agency)):
         raise HTTPException(404, "Job não encontrado")
     
     job = result.data
-    job["logs"] = job.get("logs", [])[-20:]
+    job["logs"] = (job.get("logs") or [])[-20:]  # None-safe slice
     return job
 
 @app.get("/api/clientes/{client_id}/ultimo-relatorio")
 async def get_ultimo_relatorio(client_id: str, agency=Depends(get_current_agency)):
-    """Retorna o último historico_geracao do cliente (para o modal de relatório)."""
+    """
+    Retorna o último historico_geracao do cliente.
+    Se não houver registro (ex: cliente criado via Fast Sync/Redeploy sem geração completa),
+    retorna 200 com dados vazios em vez de 404 para não quebrar o modal do dashboard.
+    """
     agency_id = agency["sub"]
     sb = get_supabase()
+
+    # Buscar subdomain do cliente
+    cliente = sb.table("clientes_perfil") \
+        .select("subdomain,empresa_nome") \
+        .eq("id", client_id) \
+        .eq("agency_id", agency_id) \
+        .single() \
+        .execute()
+    if not cliente.data:
+        raise HTTPException(404, "Cliente não encontrado")
+
     result = sb.table("historico_geracao") \
         .select("*") \
         .eq("client_id", client_id) \
@@ -824,9 +839,28 @@ async def get_ultimo_relatorio(client_id: str, agency=Depends(get_current_agency
         .order("created_at", desc=True) \
         .limit(1) \
         .execute()
+
     if not result.data:
-        raise HTTPException(404, "Nenhum relatório encontrado para este cliente")
-    return result.data[0]
+        # Sem histórico ainda — retorna placeholder para o modal exibir versão simples
+        return {
+            "client_id":             client_id,
+            "subdomain":             cliente.data["subdomain"],
+            "empresa_nome":          cliente.data["empresa_nome"],
+            "total_pages_generated": None,
+            "valid_pages":           None,
+            "error_pages":           None,
+            "duration_seconds":      None,
+            "cost_brl":              None,
+            "tokens_used":           None,
+            "gemini_tokens":         None,
+            "openai_tokens":         None,
+            "created_at":            None,
+            "_no_history":           True,
+        }
+
+    rel = result.data[0]
+    rel["subdomain"] = cliente.data["subdomain"]
+    return rel
 
 @app.get("/api/jobs")
 async def list_jobs(agency=Depends(get_current_agency)):
