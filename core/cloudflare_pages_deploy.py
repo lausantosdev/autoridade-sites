@@ -59,17 +59,18 @@ async def deploy_to_cloudflare_pages(subdomain: str, output_dir: str) -> str:
         logger.debug("[CF Deploy] POST %s", url_deployment)
         async with session.post(
             url_deployment,
-            headers=HEADERS,
+            headers={**HEADERS, "Content-Type": "application/json"},
+            json={"branch": "main"},
         ) as resp:
+            body = await resp.text()
+            logger.info("[CF Deploy] POST /deployments → HTTP %s | %s", resp.status, body[:500])
             if resp.status not in (200, 201):
-                body = await resp.text()
                 raise RuntimeError(
                     f"CF Pages: falha ao iniciar deployment — HTTP {resp.status}\n"
                     f"Projeto: '{CF_PROJECT_NAME}' | Account: '{CF_ACCOUNT_ID}'\n"
-                    f"Verifique se o projeto existe na Cloudflare e se o nome está correto.\n"
-                    f"Resposta da API: {body}"
+                    f"Resposta completa: {body}"
                 )
-            data = await resp.json()
+            data = await resp.json(content_type=None)
 
         deployment_id = data["result"]["id"]
         upload_jwt    = data["result"]["jwt"]  # JWT temporário para uploads
