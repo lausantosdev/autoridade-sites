@@ -764,8 +764,11 @@
                 return;
             }
 
+            const redirectBase = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+                ? 'http://localhost:8000'
+                : 'https://sitegen.onrender.com';
             const { error } = await _db.auth.resetPasswordForEmail(email, {
-                redirectTo: window.location.origin + '/dashboard'
+                redirectTo: redirectBase + '/dashboard'
             });
 
             if (error) {
