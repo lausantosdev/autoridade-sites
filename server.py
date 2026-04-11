@@ -100,6 +100,48 @@ async def serve_dashboard():
     
     return HTMLResponse(content=html)
 
+
+@app.post("/api/auth/reset-password")
+async def reset_password(request: Request):
+    """
+    Envia email de redefinição de senha via Supabase server-side.
+    Evita problemas de CORS/DNS ao chamar o Supabase diretamente do browser.
+    """
+    import httpx
+    try:
+        body = await request.json()
+        email = (body.get("email") or "").strip()
+        if not email:
+            return JSONResponse({"ok": False, "error": "Email obrigatório"}, status_code=400)
+
+        supabase_url = os.environ.get("SUPABASE_URL", "")
+        service_key  = os.environ.get("SUPABASE_SERVICE_KEY", "")
+
+        if not supabase_url or not service_key:
+            return JSONResponse({"ok": False, "error": "Servidor não configurado"}, status_code=500)
+
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            resp = await client.post(
+                f"{supabase_url}/auth/v1/recover",
+                headers={
+                    "apikey": service_key,
+                    "Authorization": f"Bearer {service_key}",
+                    "Content-Type": "application/json",
+                },
+                json={
+                    "email": email,
+                    "options": {"redirect_to": "https://sitegen.onrender.com/dashboard"}
+                }
+            )
+
+        if resp.status_code in (200, 204):
+            return JSONResponse({"ok": True})
+        return JSONResponse({"ok": False, "error": f"Supabase: {resp.text}"}, status_code=400)
+
+    except Exception as e:
+        return JSONResponse({"ok": False, "error": str(e)}, status_code=500)
+
+
 @app.get("/", response_class=HTMLResponse)
 async def serve_frontend():
     """Serve o frontend wizard."""

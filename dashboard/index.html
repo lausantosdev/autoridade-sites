@@ -764,19 +764,23 @@
                 return;
             }
 
-            const redirectBase = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-                ? 'http://localhost:8000'
-                : 'https://sitegen.onrender.com';
-            const { error } = await _db.auth.resetPasswordForEmail(email, {
-                redirectTo: redirectBase + '/dashboard'
-            });
-
-            if (error) {
-                errEl.textContent   = 'Erro: ' + error.message;
+            try {
+                const resp = await fetch('/api/auth/reset-password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email })
+                });
+                const result = await resp.json();
+                if (result.ok) {
+                    infoEl.textContent   = 'Email enviado! Verifique sua caixa de entrada.';
+                    infoEl.style.display = 'block';
+                } else {
+                    errEl.textContent   = 'Erro: ' + result.error;
+                    errEl.style.display = 'block';
+                }
+            } catch (e) {
+                errEl.textContent   = 'Erro de rede. Tente novamente.';
                 errEl.style.display = 'block';
-            } else {
-                infoEl.textContent   = 'Email enviado! Verifique sua caixa de entrada.';
-                infoEl.style.display = 'block';
             }
         }
 
