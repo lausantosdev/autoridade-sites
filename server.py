@@ -102,15 +102,14 @@ async def serve_dashboard():
 
 
 @app.post("/api/auth/reset-password")
-async def reset_password(request: Request):
+async def reset_password(body: dict):
     """
     Envia email de redefinição de senha via Supabase server-side.
     Evita problemas de CORS/DNS ao chamar o Supabase diretamente do browser.
     """
     import httpx
     try:
-        body = await request.json()
-        email = (body.get("email") or "").strip()
+        email = str(body.get("email") or "").strip()
         if not email:
             return JSONResponse({"ok": False, "error": "Email obrigatório"}, status_code=400)
 
