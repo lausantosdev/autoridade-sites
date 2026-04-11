@@ -3,6 +3,7 @@ Job Queue para geração assíncrona de sites.
 Estado sempre persistido no Supabase antes de cada step.
 """
 import os
+import re
 import asyncio
 import traceback
 from datetime import datetime, timezone
@@ -12,6 +13,23 @@ from core.supabase_client import get_supabase
 import logging
 
 logger = logging.getLogger(__name__)
+
+
+def _extract_maps_url(value: str) -> str:
+    """Extrai a URL de embed do Google Maps.
+
+    Aceita tanto a URL direta quanto um iframe HTML completo cole do Google Maps.
+    Se for um iframe, extrai o valor do atributo src.
+    """
+    if not value:
+        return ''
+    value = value.strip()
+    if '<iframe' in value:
+        match = re.search(r'src=["\']([^"\']+)["\']', value)
+        if match:
+            return match.group(1)
+        return ''
+    return value
 
 async def _append_log(job_id: str, level: str, message: str) -> None:
     """Adiciona uma entrada de log ao job no Supabase."""
@@ -153,7 +171,7 @@ async def run_generation_job(job_id: str, config_data: dict, agency_id: str) -> 
                 'servicos_manuais': config_data.get('servicos', []),
                 'cor_marca': config_data.get('cor_marca', '#2563EB'),
                 'endereco': config_data.get('endereco', ''),
-                'google_maps_embed': config_data.get('google_maps_url', ''),
+                'google_maps_embed': _extract_maps_url(config_data.get('google_maps_url', '')),
             },
             'seo': {
                 'palavras_chave': config_data.get('keywords', []),
@@ -412,7 +430,7 @@ async def run_fast_sync_job(job_id: str, config_data: dict, agency_id: str):
                 'servicos_manuais': config_data.get('servicos', []),
                 'cor_marca': config_data.get('cor_marca', '#2563EB'),
                 'endereco': config_data.get('endereco', ''),
-                'google_maps_embed': config_data.get('google_maps_url', ''),
+                'google_maps_embed': _extract_maps_url(config_data.get('google_maps_url', '')),
             },
             'seo': {
                 'palavras_chave': config_data.get('keywords', []),

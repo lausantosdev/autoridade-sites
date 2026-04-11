@@ -498,6 +498,23 @@ async def download_site(dominio: str):
     )
 
 
+def _extract_maps_url_from_input(value: str) -> str:
+    """Extrai a URL de embed do Google Maps.
+
+    Aceita tanto a URL direta quanto um iframe HTML completo colado do Google Maps.
+    Se for um iframe, extrai o valor do atributo src.
+    """
+    if not value:
+        return ''
+    value = value.strip()
+    if '<iframe' in value:
+        match = re.search(r'src=["\']([^"\']+)["\']', value)
+        if match:
+            return match.group(1)
+        return ''
+    return value
+
+
 def _build_config(data: dict) -> dict:
     """Constrói config.yaml a partir dos dados do frontend."""
     # Parse keywords
@@ -512,11 +529,7 @@ def _build_config(data: dict) -> dict:
     # Parse locations
     locations = [l.strip() for l in data.get('locations', '').split('\n') if l.strip()]
     
-    google_maps_input = data.get('google_maps', '')
-    if '<iframe' in google_maps_input:
-        match = re.search(r'src="([^"]+)"', google_maps_input)
-        if match:
-            google_maps_input = match.group(1)
+    google_maps_input = _extract_maps_url_from_input(data.get('google_maps', ''))
             
     return {
         'empresa': {
@@ -596,7 +609,7 @@ async def create_cliente(data: dict, agency=Depends(get_current_agency)):
         "servicos":        data.get("servicos", []),
         "telefone":        data["telefone"],
         "endereco":        data.get("endereco", ""),
-        "google_maps_url": data.get("google_maps_url"),
+        "google_maps_url": _extract_maps_url_from_input(data.get("google_maps_url", "")),
         "horario":         data.get("horario", "Segunda a Sexta, 8h às 18h"),
         "keywords":        data["keywords"],
         "locais":          data["locais"],
