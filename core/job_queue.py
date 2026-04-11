@@ -392,8 +392,8 @@ async def run_fast_sync_job(job_id: str, config_data: dict, agency_id: str):
         output_dir = str(Path("output") / subdomain)
         os.makedirs(output_dir, exist_ok=True)
         
-        # 1. Obter cache do Supabase
-        await update_job_step(job_id, "fetching_cache", 15)
+        # 1. Obter cache do Supabase ("validating" = pré-vôo, step válido na tabela)
+        await update_job_step(job_id, "validating", 15)
         res = sb.table("pages_cache").select("*").eq("client_id", client_id).execute()
         cache_data = res.data
         if not cache_data:
