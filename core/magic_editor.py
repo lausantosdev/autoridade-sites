@@ -79,13 +79,15 @@ async def apply_chat_edit(
     
     profile = result.data
     
-    # 2. Solicitar patch
-    prompt = f"{SYSTEM_PROMPT}\n\nPerfil atual:\n{json.dumps(profile, ensure_ascii=False, indent=2)}\n\nInstrução: {instruction}"
+    # 2. Solicitar patch — user_prompt passa apenas o contexto (sem repetir SYSTEM_PROMPT)
+    user_prompt = (
+        f"Perfil atual:\n{json.dumps(profile, ensure_ascii=False, indent=2)}\n\n"
+        f"Instrução: {instruction}"
+    )
     
     raw_response = ""
     try:
-        response = ai_client.generate_content(prompt)
-        raw_response = response.text
+        raw_response = ai_client.generate_text(SYSTEM_PROMPT, user_prompt) or ""
     except Exception as ai_err:
         logger.error("Magic Editor: falha na chamada à IA — %s", ai_err)
         raise ValueError(f"IA indisponível: {ai_err}") from ai_err
