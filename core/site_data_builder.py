@@ -94,7 +94,7 @@ def resolve_theme_mode(config: dict, client: OpenRouterClient) -> str:
     return theme_mode
 
 
-def build_site_data(config: dict, client: OpenRouterClient, gemini_client=None) -> dict:
+def build_site_data(config: dict, client: OpenRouterClient = None, gemini_client=None, raw_ai_override: dict = None) -> dict:
     """
     Constrói o objeto SiteData completo.
 
@@ -102,6 +102,7 @@ def build_site_data(config: dict, client: OpenRouterClient, gemini_client=None) 
         config: Configuração do site (config.yaml parseado)
         client: OpenRouterClient (fallback para a home)
         gemini_client: GeminiClient opcional (primário para a home)
+        raw_ai_override: Opcional. Se passado, bypassa a IA e usa este JSON estruturado (útil para fast sync).
 
     Returns:
         dict compliant com a interface SiteData do SiteGen template
@@ -120,13 +121,17 @@ def build_site_data(config: dict, client: OpenRouterClient, gemini_client=None) 
     phone_display = get_phone_display(config)
     whatsapp_link = get_whatsapp_link(config)
 
-    # Gerar conteúdo da home via IA (Gemini → OpenAI → fallback genérico)
-    logger.info("Gerando conteúdo da home page via IA")
-    ai_content = _generate_home_content(empresa, palavras, locais, client, gemini_client)
-    
-    if not ai_content:
-        logger.warning("IA retornou vazio. Usando fallbacks genéricos")
-        ai_content = _fallback_content(empresa, palavras)
+    if raw_ai_override:
+        logger.info("Usando raw_ai_override para a home page (bypass de IA)")
+        ai_content = raw_ai_override
+    else:
+        # Gerar conteúdo da home via IA (Gemini → OpenAI → fallback genérico)
+        logger.info("Gerando conteúdo da home page via IA")
+        ai_content = _generate_home_content(empresa, palavras, locais, client, gemini_client)
+        
+        if not ai_content:
+            logger.warning("IA retornou vazio. Usando fallbacks genéricos")
+            ai_content = _fallback_content(empresa, palavras)
     
     # WhatsApp link com mensagem genérica (home page)
     msg_home = f"Olá, gostaria de saber mais sobre os serviços de {empresa['categoria']}."

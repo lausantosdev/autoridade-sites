@@ -663,8 +663,14 @@ async def chat_edit_cliente(
         raise HTTPException(400 if isinstance(e, ValueError) else 403, str(e))
     
     if result.get("changed"):
+        from core.job_queue import run_fast_sync_job
         sb = get_supabase()
         profile = result["profile"]
+        changed_fields = result["changed"]
+        
+        # Tier 2 re-render requires AI if core SEO/Content structure is affected
+        tier_2_fields = {"keywords", "locais", "servicos", "categoria"}
+        needs_tier_2 = any(f in tier_2_fields for f in changed_fields)
         
         job = sb.table("jobs").insert({
             "agency_id": agency_id,
@@ -675,8 +681,16 @@ async def chat_edit_cliente(
         
         job_id = job.data[0]["id"]
         config_data = {**profile, "subdomain": profile["subdomain"]}
-        asyncio.create_task(run_generation_job(job_id, config_data, agency_id))
         
+        if needs_tier_2:
+            logger.info("Tier 2 Edit Detected (%s). Disparando fully re-generate.", changed_fields)
+            asyncio.create_task(run_generation_job(job_id, config_data, agency_id))
+            result["edit_type"] = "tier_2_full_regen"
+        else:
+            logger.info("Tier 1.5 Edit Detected (%s). Disparando FAST SYNC.", changed_fields)
+            asyncio.create_task(run_fast_sync_job(job_id, config_data, agency_id))
+            result["edit_type"] = "tier_1.5_fast_sync"
+            
         result["job_id"] = job_id
     
     return result

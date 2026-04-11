@@ -362,3 +362,134 @@ async def run_generation_job(job_id: str, config_data: dict, agency_id: str) -> 
         err = traceback.format_exc()
         logger.error("Job %s falhou: %s", job_id, err)
         await mark_job_failed(job_id, str(e))
+
+async def run_fast_sync_job(job_id: str, config_data: dict, agency_id: str):
+    """
+    Tier 1.5 Fast Re-render:
+    Reconstrói o site inteiro em segundos (< 2 min) usando as informações atualizadas
+    do config_data cruzadas com a infraestrutura no `pages_cache`.
+    SEM chamadas à IA (bypass).
+    """
+    import shutil
+    from pathlib import Path
+    from core.cloudflare_pages_deploy import deploy_to_cloudflare_pages
+    from core.site_data_builder import build_site_data
+    from core.template_injector import inject_template
+    from core.page_generator import _generate_single_page
+    from core.sitemap_generator import generate_sitemap
+    
+    sb = get_supabase()
+    
+    try:
+        await update_job_step(job_id, "queue", 5, "generating")
+        await _append_log(job_id, "info", "Iniciando Fast Sync (Tier 1.5) - Bypass na Inteligência Artificial")
+        
+        client_id = config_data.get('id') or config_data.get('client_id')
+        subdomain = config_data.get('subdomain')
+        if not client_id or not subdomain:
+            raise ValueError(f"Faltam dados essenciais para fast_sync: client_id={client_id}, subdomain={subdomain}")
+            
+        output_dir = str(Path("output") / subdomain)
+        os.makedirs(output_dir, exist_ok=True)
+        
+        # 1. Obter cache do Supabase
+        await update_job_step(job_id, "fetching_cache", 15)
+        res = sb.table("pages_cache").select("*").eq("client_id", client_id).execute()
+        cache_data = res.data
+        if not cache_data:
+            raise ValueError("O cache está vazio. Uma regeneração completa (Tier 2) é necessária.")
+            
+        # 2. Config Mock
+        config_dict = {
+            'empresa': {
+                'client_id': client_id,
+                'nome': config_data.get('empresa_nome', ''),
+                'dominio': subdomain,
+                'categoria': config_data.get('categoria', ''),
+                'telefone_whatsapp': config_data.get('telefone', ''),
+                'telefone_ligar': config_data.get('telefone', ''),
+                'horario': config_data.get('horario', 'Segunda a Sexta, 8h às 18h'),
+                'servicos_manuais': config_data.get('servicos', []),
+                'cor_marca': config_data.get('cor_marca', '#2563EB'),
+                'endereco': config_data.get('endereco', ''),
+                'google_maps_embed': config_data.get('google_maps_url', ''),
+            },
+            'seo': {
+                'palavras_chave': config_data.get('keywords', []),
+                'locais': config_data.get('locais', []),
+            },
+            'theme': {
+                'mode': config_data.get('theme_mode', 'auto'),
+            },
+            'leads': {
+                'worker_url': os.environ.get('WORKER_URL', ''),
+                'client_token': _get_client_token(subdomain),
+            }
+        }
+        
+        # 3. Identificar raw_ai_override da home
+        home_cache = next((r for r in cache_data if r['page_type'] == 'home'), None)
+        if not home_cache:
+            raise ValueError("Cache da home não encontrado. Tier 2 requerido.")
+            
+        # 4. Injetar Home
+        await update_job_step(job_id, "home_page", 30)
+        site_data = await asyncio.to_thread(build_site_data, config_dict, raw_ai_override=home_cache['ai_json'])
+        
+        # Manter imagem local hero.jpg de execuções passadas se existir
+        hero_img_path = Path(output_dir) / "hero-image.jpg"
+        
+        await asyncio.to_thread(inject_template, site_data, output_dir, str(hero_img_path) if hero_img_path.exists() else None)
+        
+        # 5. Injetar Subpages
+        await update_job_step(job_id, "subpages", 50)
+        subpages_cache = [r for r in cache_data if r['page_type'] == 'subpage']
+        
+        with open("templates/page.html", 'r', encoding='utf-8') as f:
+            template = f.read()
+        from core.template_renderer import replace_config_vars as _replace_config_vars
+        template = _replace_config_vars(template, config_dict)
+        
+        # Mapeando todos para o pool de interlinking
+        all_pages_dummy = [{'title': c['title'], 'filename': c['page_slug'] + '.html'} for c in subpages_cache]
+        
+        async def _run_fast_subpages():
+            def f_thread():
+                for idx, sc in enumerate(subpages_cache):
+                    page_def = {
+                        'title': sc.get('title', ''), 
+                        'filename': sc['page_slug'] + '.html',
+                        'keyword': sc.get('keyword', ''),
+                        'location': sc.get('location', '')
+                    }
+                    _generate_single_page(
+                        page=page_def, 
+                        all_pages=all_pages_dummy,
+                        config=config_dict, 
+                        topics={}, # topics not used since ai bypassed
+                        template=template,
+                        output_dir=output_dir,
+                        raw_ai_override=sc['ai_json']
+                    )
+            await asyncio.to_thread(f_thread)
+            
+        await _run_fast_subpages()
+        
+        # Sitemap
+        generate_sitemap(all_pages_dummy, config_dict, output_dir)
+        
+        # Deploy
+        await update_job_step(job_id, "deploying", 80)
+        deploy_url = await deploy_to_cloudflare_pages(subdomain, output_dir)
+        sb.table("clientes_perfil").update({
+            "status": "live",
+            "last_generated": datetime.now(timezone.utc).isoformat(),
+        }).eq("subdomain", subdomain).execute()
+        
+        await update_job_step(job_id, "done", 100, status="complete")
+        await _append_log(job_id, "info", f"Fast Deploy: {deploy_url}")
+        
+    except Exception as e:
+        err = f"Fast Sync falhou: {str(e)}\n{traceback.format_exc()}"
+        logger.error(err)
+        await mark_job_failed(job_id, err)

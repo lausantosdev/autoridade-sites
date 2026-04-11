@@ -167,8 +167,8 @@ def generate_all_pages(
 
 def _generate_single_page(
     page: dict, all_pages: list, config: dict, topics: dict,
-    client: OpenRouterClient, template: str, output_dir: str,
-    gemini_client=None, stats_accumulator=None
+    client: OpenRouterClient = None, template: str = "", output_dir: str = "",
+    gemini_client=None, stats_accumulator=None, raw_ai_override: dict = None
 ):
     """Gera uma única página SEO com validação e retry automático."""
     empresa = config['empresa']['nome']
@@ -263,35 +263,40 @@ REGRAS ABSOLUTAS:
 - LINKS: somente em seo_p1 e seo_p5, usando HTML puro <a href="filename.html">âncora relevante</a>
 - GEO: FAQ deve responder perguntas reais que alguém faria a uma IA sobre esse serviço nessa cidade"""
 
-            # Tentar Gemini primeiro (structured output = JSON garantido)
-            result = None
-            used_flat = False
-            
-            if gemini_client:
-                result = gemini_client.generate_json(SYSTEM_PROMPT, user_prompt)
-                if result:
-                    used_flat = True
-                    logger.debug("%s: Gemini OK", page['filename'])
-                    if stats_accumulator:
-                        stats_accumulator.record("gemini", gemini_client._last_input_tokens, gemini_client._last_output_tokens)
-                else:
-                    logger.warning("%s: Gemini falhou — acionando OpenAI fallback", page['filename'])
-            
-            # Fallback: OpenAI GPT-4o Mini
-            if not result and client:
-                result = client.generate_json(SYSTEM_PROMPT, user_prompt)
-                if result:
-                    used_flat = True
-                    logger.info("%s: OpenAI fallback OK", page['filename'])
-                    if stats_accumulator:
-                        stats_accumulator.record("openai", client._last_input_tokens, client._last_output_tokens)
-            
-            # Falha total: fail-fast sem mais providers
-            if not result:
-                raise APIError("Gemini e OpenAI falharam — serviço temporariamente indisponível. Tente novamente em alguns minutos.")
-            
-            # flat_result: ambos os providers retornam JSON flat
-            flat_result = result if used_flat else _flatten_json(result)
+            flat_result = None
+            if raw_ai_override:
+                flat_result = raw_ai_override
+                logger.info("%s: Usando raw_ai_override (bypass de IA)", page['filename'])
+            else:
+                # Tentar Gemini primeiro (structured output = JSON garantido)
+                result = None
+                used_flat = False
+                
+                if gemini_client:
+                    result = gemini_client.generate_json(SYSTEM_PROMPT, user_prompt)
+                    if result:
+                        used_flat = True
+                        logger.debug("%s: Gemini OK", page['filename'])
+                        if stats_accumulator:
+                            stats_accumulator.record("gemini", gemini_client._last_input_tokens, gemini_client._last_output_tokens)
+                    else:
+                        logger.warning("%s: Gemini falhou — acionando OpenAI fallback", page['filename'])
+                
+                # Fallback: OpenAI GPT-4o Mini
+                if not result and client:
+                    result = client.generate_json(SYSTEM_PROMPT, user_prompt)
+                    if result:
+                        used_flat = True
+                        logger.info("%s: OpenAI fallback OK", page['filename'])
+                        if stats_accumulator:
+                            stats_accumulator.record("openai", client._last_input_tokens, client._last_output_tokens)
+                
+                # Falha total: fail-fast sem mais providers
+                if not result:
+                    raise APIError("Gemini e OpenAI falharam — serviço temporariamente indisponível. Tente novamente em alguns minutos.")
+                
+                # flat_result: ambos os providers retornam JSON flat
+                flat_result = result if used_flat else _flatten_json(result)
 
             # Substituir placeholders do GPT no template
             html = template
