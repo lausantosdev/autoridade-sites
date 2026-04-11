@@ -450,26 +450,34 @@ async def run_fast_sync_job(job_id: str, config_data: dict, agency_id: str):
         from core.template_renderer import replace_config_vars as _replace_config_vars
         template = _replace_config_vars(template, config_dict)
         
-        # Mapeando todos para o pool de interlinking
-        all_pages_dummy = [{'title': c['title'], 'filename': c['page_slug'] + '.html'} for c in subpages_cache]
+        # Extrair metadados da página de dentro do ai_json._page_meta
+        def _extract_page_def(sc: dict) -> dict:
+            ai_json  = sc.get('ai_json', {}) or {}
+            meta     = ai_json.get('_page_meta', {})
+            slug     = sc['page_slug']
+            return {
+                'title':    meta.get('title', slug),
+                'filename': slug + '.html',
+                'keyword':  meta.get('keyword', ''),
+                'location': meta.get('location', ''),
+            }
+        
+        all_pages_dummy = [_extract_page_def(c) for c in subpages_cache]
         
         async def _run_fast_subpages():
             def f_thread():
-                for idx, sc in enumerate(subpages_cache):
-                    page_def = {
-                        'title': sc.get('title', ''), 
-                        'filename': sc['page_slug'] + '.html',
-                        'keyword': sc.get('keyword', ''),
-                        'location': sc.get('location', '')
-                    }
+                for sc in subpages_cache:
+                    page_def = _extract_page_def(sc)
+                    # Remove _page_meta do ai_json antes de passar como override
+                    ai_json_clean = {k: v for k, v in (sc.get('ai_json') or {}).items() if k != '_page_meta'}
                     _generate_single_page(
                         page=page_def, 
                         all_pages=all_pages_dummy,
                         config=config_dict, 
-                        topics={}, # topics not used since ai bypassed
+                        topics={},
                         template=template,
                         output_dir=output_dir,
-                        raw_ai_override=sc['ai_json']
+                        raw_ai_override=ai_json_clean
                     )
             await asyncio.to_thread(f_thread)
             

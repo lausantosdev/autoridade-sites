@@ -353,15 +353,22 @@ REGRAS ABSOLUTAS:
                     try:
                         sb = get_supabase()
                         slug = page['filename'].replace('.html', '')
+                        # Embute metadados da página dentro do ai_json para não precisar de colunas extras
+                        cache_json = {
+                            **flat_result,
+                            "_page_meta": {
+                                "keyword":  page.get('keyword', ''),
+                                "location": page.get('location', ''),
+                                "title":    page.get('title', ''),
+                                "slug":     slug,
+                            }
+                        }
                         sb.table("pages_cache").upsert({
                             "client_id": client_id,
                             "subdomain": config['empresa']['dominio'],
                             "page_slug": slug,
                             "page_type": "subpage",
-                            "ai_json": flat_result,
-                            "keyword": page.get('keyword'),
-                            "location": page.get('location'),
-                            "title": page.get('title')
+                            "ai_json":   cache_json,
                         }, on_conflict="client_id,page_slug").execute()
                     except Exception as e:
                         logger.error("%s: erro ao salvar cache - %s", page['filename'], e)
