@@ -1635,7 +1635,16 @@
                 });
                 const data = await resp.json();
                 if (resp.ok) {
-                    alert(`✅ "${empresaNome}" deletado com sucesso!`);
+                    if (data.warnings && data.warnings.length) {
+                        alert(
+                            `✅ "${empresaNome}" removido do painel.\n\n` +
+                            `⚠️ Aviso: não foi possível limpar todos os recursos no Cloudflare:\n` +
+                            data.warnings.join('\n') +
+                            `\n\nVocê pode deletar manualmente no painel Cloudflare Pages.`
+                        );
+                    } else {
+                        alert(`✅ "${empresaNome}" deletado! Projeto Pages e DNS removidos.`);
+                    }
                     await loadClientesTab();
                 } else {
                     alert('❌ Erro: ' + (data.detail || JSON.stringify(data)));

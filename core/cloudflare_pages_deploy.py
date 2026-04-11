@@ -264,16 +264,17 @@ async def delete_client_resources(subdomain: str) -> dict:
             f"/pages/projects/{subdomain}"
         )
         async with s.delete(pages_url, headers=headers) as r:
-            if r.status in (200, 201):
+            raw = await r.text()
+            logger.info("[CF Delete] DELETE projeto Pages '%s' → HTTP %s: %s", subdomain, r.status, raw[:200])
+            if r.status in (200, 201, 204):
                 results["pages_project"] = "deletado"
-                logger.info("[CF Delete] Projeto Pages '%s' deletado", subdomain)
+                logger.info("[CF Delete] ✅ Projeto Pages '%s' deletado", subdomain)
             elif r.status == 404:
                 results["pages_project"] = "não encontrado (ok)"
                 logger.info("[CF Delete] Projeto Pages '%s' não existia", subdomain)
             else:
-                body = await r.text()
-                results["pages_project"] = f"erro {r.status}: {body[:100]}"
-                logger.warning("[CF Delete] Falha ao deletar projeto Pages '%s': %s", subdomain, body[:200])
+                results["pages_project"] = f"erro {r.status}: {raw[:100]}"
+                logger.warning("[CF Delete] Falha ao deletar projeto Pages '%s': %s", subdomain, raw[:200])
 
         # ── 2. Deletar CNAME DNS ──────────────────────────────────────
         zone_id = await _get_zone_id(BASE_DOMAIN, api_token)
