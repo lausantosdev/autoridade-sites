@@ -1141,13 +1141,6 @@
             const costBrl = (parseFloat(cost) * 5.8).toFixed(2);
             document.getElementById('r_cost').textContent = `Custo estimado: ~$${cost} USD (~R$${costBrl})`;
 
-            // Leads
-            const workerUrl = document.getElementById('worker_url').value.trim();
-            if (workerUrl) {
-                document.getElementById('r_cost').insertAdjacentHTML('afterend',
-                    '<div style="font-size:0.85rem; color:#a5b4fc; margin-top:8px;">🔗 Captura de leads ativada</div>'
-                );
-            }
         }
 
         // ===== GENERATION =====
