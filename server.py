@@ -122,15 +122,13 @@ async def reset_password(body: dict):
         async with httpx.AsyncClient(timeout=10.0) as client:
             resp = await client.post(
                 f"{supabase_url}/auth/v1/recover",
+                params={"redirect_to": "https://sitegen.onrender.com/dashboard"},
                 headers={
                     "apikey": service_key,
                     "Authorization": f"Bearer {service_key}",
                     "Content-Type": "application/json",
                 },
-                json={
-                    "email": email,
-                    "options": {"redirect_to": "https://sitegen.onrender.com/dashboard"}
-                }
+                json={"email": email}
             )
 
         if resp.status_code in (200, 204):

@@ -612,6 +612,26 @@
                 </form>
             </div>
         </div>
+        <!-- Tela de redefinição de senha (link de recovery email) -->
+        <div id="reset-password" style="display:none; flex:1; align-items:center; justify-content:center;">
+            <div class="login-box">
+                <div class="login-logo">SiteGen <span>Cloud</span></div>
+                <p class="login-subtitle">Defina sua nova senha</p>
+                <form id="reset-form" onsubmit="handleSetNewPassword(event)">
+                    <div class="login-field login-field-pw">
+                        <input type="password" id="new-password" placeholder="Nova senha (mín. 6 caracteres)" required minlength="6" autocomplete="new-password">
+                        <button type="button" class="pw-toggle" onclick="togglePwField('new-password', this)" title="Mostrar/ocultar">&#128065;</button>
+                    </div>
+                    <div class="login-field login-field-pw">
+                        <input type="password" id="confirm-password" placeholder="Confirmar nova senha" required minlength="6" autocomplete="new-password">
+                        <button type="button" class="pw-toggle" onclick="togglePwField('confirm-password', this)" title="Mostrar/ocultar">&#128065;</button>
+                    </div>
+                    <button type="submit" id="reset-btn" class="login-submit">Salvar nova senha</button>
+                    <div id="reset-error" class="login-error-msg" style="display:none"></div>
+                    <div id="reset-info" class="login-info-msg" style="display:none"></div>
+                </form>
+            </div>
+        </div>
         <div id="dashboard" style="display:none; flex:1; flex-direction:column;">
             <header>
                 <div class="header-top">
@@ -693,6 +713,22 @@
 
             showLoading();
 
+            // Detecta token de recovery no hash da URL (vindo do email de redefinição)
+            const hashParams = new URLSearchParams(window.location.hash.substring(1));
+            if (hashParams.get('type') === 'recovery' && hashParams.get('access_token')) {
+                const { error } = await _db.auth.setSession({
+                    access_token:  hashParams.get('access_token'),
+                    refresh_token: hashParams.get('refresh_token') || ''
+                });
+                document.getElementById('loading').style.display = 'none';
+                if (!error) {
+                    showResetPassword();
+                } else {
+                    showLogin();
+                }
+                return;
+            }
+
             const { data: { session } } = await _db.auth.getSession();
 
             if (session) {
@@ -707,9 +743,17 @@
         // ── Autenticação ───────────────────────────────────────────────
 
         function showLogin() {
-            document.getElementById('loading').style.display = 'none';
-            document.getElementById('login').style.display = 'flex';
-            document.getElementById('dashboard').style.display = 'none';
+            document.getElementById('loading').style.display        = 'none';
+            document.getElementById('login').style.display          = 'flex';
+            document.getElementById('dashboard').style.display      = 'none';
+            document.getElementById('reset-password').style.display = 'none';
+        }
+
+        function showResetPassword() {
+            document.getElementById('loading').style.display        = 'none';
+            document.getElementById('login').style.display          = 'none';
+            document.getElementById('dashboard').style.display      = 'none';
+            document.getElementById('reset-password').style.display = 'flex';
         }
 
         async function handleLogin(e) {
@@ -739,15 +783,54 @@
             await loadDashboard();
         }
 
-        function togglePw() {
-            const input = document.getElementById('login-password');
-            const btn   = document.getElementById('pw-toggle-btn');
+        function togglePwField(fieldId, btn) {
+            const input = document.getElementById(fieldId);
             if (input.type === 'password') {
                 input.type = 'text';
-                btn.innerHTML = '&#128065;&#65039;'; // olho riscado
+                btn.innerHTML = '&#128065;&#65039;';
             } else {
                 input.type = 'password';
-                btn.innerHTML = '&#128065;'; // olho aberto
+                btn.innerHTML = '&#128065;';
+            }
+        }
+
+        function togglePw() {
+            togglePwField('login-password', document.getElementById('pw-toggle-btn'));
+        }
+
+        async function handleSetNewPassword(e) {
+            e.preventDefault();
+            const newPw     = document.getElementById('new-password').value;
+            const confirmPw = document.getElementById('confirm-password').value;
+            const errEl     = document.getElementById('reset-error');
+            const infoEl    = document.getElementById('reset-info');
+            const btn       = document.getElementById('reset-btn');
+
+            errEl.style.display  = 'none';
+            infoEl.style.display = 'none';
+
+            if (newPw !== confirmPw) {
+                errEl.textContent   = 'As senhas não coincidem.';
+                errEl.style.display = 'block';
+                return;
+            }
+
+            btn.textContent = 'Salvando...';
+            btn.disabled = true;
+
+            const { error } = await _db.auth.updateUser({ password: newPw });
+
+            if (error) {
+                errEl.textContent   = 'Erro: ' + error.message;
+                errEl.style.display = 'block';
+                btn.textContent     = 'Salvar nova senha';
+                btn.disabled        = false;
+            } else {
+                infoEl.textContent   = '✅ Senha atualizada! Redirecionando para o login...';
+                infoEl.style.display = 'block';
+                setTimeout(() => {
+                    window.location.href = '/dashboard';
+                }, 2000);
             }
         }
 
