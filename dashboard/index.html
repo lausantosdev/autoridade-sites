@@ -705,6 +705,57 @@
         </div>
     </div>
 
+    <!-- ===== MAGIC EDIT MODAL ===== -->
+    <div id="magic-edit-modal" style="
+        display:none; position:fixed; inset:0; z-index:1000;
+        background:rgba(0,0,0,0.6); align-items:center; justify-content:center;
+        padding:20px;
+    " onclick="if(event.target===this) closeMagicEdit()">
+        <div style="
+            background:var(--surface); border-radius:16px; padding:32px;
+            width:100%; max-width:520px; box-shadow:0 20px 60px rgba(0,0,0,0.4);
+        ">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+                <h3 id="magic-edit-title" style="font-size:1.1rem;font-weight:700;">✨ Magic Edit</h3>
+                <button onclick="closeMagicEdit()" style="
+                    background:none;border:none;font-size:1.4rem;cursor:pointer;
+                    color:var(--text-muted);line-height:1;padding:2px 6px;
+                ">&times;</button>
+            </div>
+
+            <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:16px;line-height:1.6;">
+                Descreva em linguagem natural o que quer mudar. O Magic Editor vai interpretar, atualizar os dados e republicar o site automaticamente.
+            </p>
+
+            <textarea id="magic-edit-instruction" rows="4" placeholder="Ex: Mude o telefone para 41999990000&#10;Ex: Atualize a categoria para Energia Solar Residencial&#10;Ex: Marque este site como live"
+                style="width:100%;padding:12px 14px;border:1px solid var(--border);border-radius:10px;
+                       background:var(--bg);color:var(--text);font-size:0.92rem;
+                       font-family:inherit;resize:vertical;outline:none;line-height:1.6;"
+                onkeydown="if(event.ctrlKey && event.key==='Enter') submitMagicEdit()">
+            </textarea>
+            <p style="font-size:0.75rem;color:var(--text-muted);margin-top:4px;">Ctrl+Enter para aplicar</p>
+
+            <div style="display:flex;gap:12px;margin-top:20px;">
+                <button onclick="submitMagicEdit()" id="magic-edit-btn" style="
+                    flex:1;padding:12px;background:#0f766e;color:#fff;
+                    border:none;border-radius:10px;font-size:0.95rem;font-weight:600;
+                    cursor:pointer;font-family:inherit;transition:opacity 0.2s;
+                ">✨ Aplicar</button>
+                <button onclick="closeMagicEdit()" style="
+                    padding:12px 20px;background:var(--bg);color:var(--text-muted);
+                    border:1px solid var(--border);border-radius:10px;font-size:0.95rem;
+                    cursor:pointer;font-family:inherit;
+                ">Cancelar</button>
+            </div>
+
+            <div id="magic-edit-result" style="
+                display:none;margin-top:16px;padding:12px 16px;
+                background:var(--bg);border-radius:8px;font-size:0.88rem;
+                line-height:1.6;
+            "></div>
+        </div>
+    </div>
+
     <script>
 
         const SUPABASE_URL = 'SUPABASE_URL_AQUI';
@@ -1340,9 +1391,81 @@
                                       white-space:nowrap;">
                                🌐 Ver Site
                             </a>` : ''}
+                            <button onclick="openMagicEdit('${escapeHtml(s.id)}', '${escapeHtml(s.empresa_nome)}')" 
+                               style="padding:4px 10px;font-size:0.78rem;background:#0f766e;
+                                      border:none;border-radius:6px;color:#fff;cursor:pointer;
+                                      white-space:nowrap;font-family:inherit;">
+                               ✨ Magic Edit
+                            </button>
                         </div>
                     </td>
                 </tr>`;
+        }
+
+        // ── Magic Edit Modal ─────────────────────────────────────────
+
+        let _magicEditSiteId = null;
+
+        function openMagicEdit(siteId, empresaNome) {
+            _magicEditSiteId = siteId;
+            document.getElementById('magic-edit-title').textContent = `✨ Magic Edit — ${empresaNome}`;
+            document.getElementById('magic-edit-instruction').value = '';
+            document.getElementById('magic-edit-result').style.display = 'none';
+            document.getElementById('magic-edit-result').innerHTML = '';
+            document.getElementById('magic-edit-modal').style.display = 'flex';
+            document.getElementById('magic-edit-instruction').focus();
+        }
+
+        function closeMagicEdit() {
+            document.getElementById('magic-edit-modal').style.display = 'none';
+            _magicEditSiteId = null;
+        }
+
+        async function submitMagicEdit() {
+            const instruction = document.getElementById('magic-edit-instruction').value.trim();
+            if (!instruction) { alert('Digite uma instrução'); return; }
+
+            const btn = document.getElementById('magic-edit-btn');
+            const resultEl = document.getElementById('magic-edit-result');
+            btn.textContent = 'Processando...';
+            btn.disabled = true;
+            resultEl.style.display = 'none';
+
+            const token = _session?.access_token;
+            try {
+                const resp = await fetch(`${API_BASE}/api/sites/${_magicEditSiteId}/magic-edit`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ instruction })
+                });
+
+                const data = await resp.json();
+
+                if (resp.ok && data.ok) {
+                    resultEl.style.display = 'block';
+                    resultEl.style.color = '#10b981';
+                    resultEl.innerHTML = `
+                        ✅ ${data.message}<br>
+                        ${data.deploy_url ? `🌐 <a href="${data.deploy_url}" target="_blank" style="color:#00b4d8">${data.deploy_url}</a>` : ''}
+                    `;
+                    // Atualizar lista
+                    await loadSitesTab();
+                } else {
+                    resultEl.style.display = 'block';
+                    resultEl.style.color = '#ef4444';
+                    resultEl.textContent = '❌ Erro: ' + (data.detail || JSON.stringify(data));
+                }
+            } catch(err) {
+                resultEl.style.display = 'block';
+                resultEl.style.color = '#ef4444';
+                resultEl.textContent = '❌ Erro de rede: ' + err.message;
+            } finally {
+                btn.textContent = 'Aplicar';
+                btn.disabled = false;
+            }
         }
 
 function showLoading() {
