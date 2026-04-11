@@ -40,16 +40,35 @@ async def deploy_to_cloudflare_pages(subdomain: str, output_dir: str) -> str:
         logger.warning(f"output_dir não encontrado: {output_dir}")
         return f"https://{subdomain}.autoridade.digital"
 
+    # Validação rápida das variáveis de ambiente — detecta misconfigurações antes de qualquer chamada
+    if CF_ACCOUNT_ID == "account" or CF_API_TOKEN == "token":
+        raise RuntimeError(
+            "CF Pages: variáveis de ambiente incompletas. "
+            "Configure CLOUDFLARE_ACCOUNT_ID e CLOUDFLARE_API_TOKEN no Render."
+        )
+    
+    logger.info(
+        "[CF Deploy] Config: account=%s project=%s",
+        CF_ACCOUNT_ID, CF_PROJECT_NAME
+    )
+
     async with aiohttp.ClientSession() as session:
         # ── PASSO 1: Iniciar deployment ───────────────────────
         logger.info(f"[CF Deploy] Iniciando deployment para '{subdomain}'...")
+        url_deployment = f"{CF_BASE}/deployments"
+        logger.debug("[CF Deploy] POST %s", url_deployment)
         async with session.post(
-            f"{CF_BASE}/deployments",
+            url_deployment,
             headers=HEADERS,
         ) as resp:
             if resp.status not in (200, 201):
                 body = await resp.text()
-                raise RuntimeError(f"CF Pages: falha ao iniciar deployment — {resp.status}: {body}")
+                raise RuntimeError(
+                    f"CF Pages: falha ao iniciar deployment — HTTP {resp.status}\n"
+                    f"Projeto: '{CF_PROJECT_NAME}' | Account: '{CF_ACCOUNT_ID}'\n"
+                    f"Verifique se o projeto existe na Cloudflare e se o nome está correto.\n"
+                    f"Resposta da API: {body}"
+                )
             data = await resp.json()
 
         deployment_id = data["result"]["id"]
