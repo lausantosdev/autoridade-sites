@@ -52,15 +52,30 @@ def replace_config_vars(template: str, config: dict) -> str:
     )
 
     cidade_principal = locais[0] if locais else ''
+
+    # Montar lista de serviços para o footer:
+    # Prioridade: servicos_manuais (nomes institucionais) → fallback: primeiras 6 keywords.
+    # Isso evita que palavras-chave SEO apareçam misturadas com os serviços no footer.
+    if servicos_manuais:
+        # Usa apenas os serviços manuais como labels; para o href usa a keyword de mesma posição
+        footer_items = [
+            (servicos_manuais[i], palavras[i] if i < len(palavras) else servicos_manuais[i])
+            for i in range(len(servicos_manuais))
+            if servicos_manuais[i].strip()
+        ]
+    else:
+        # Sem serviços manuais: usa as 6 primeiras keywords como fallback
+        footer_items = [(p, p) for p in palavras[:6]]
+
     if cidade_principal:
         servicos_footer = '\n'.join(
-            f'<a href="{slugify(f"{p} {cidade_principal}")}.html" title="{_get_display_label(i, p)} em {cidade_principal}">{_get_display_label(i, p)}</a>'
-            for i, p in enumerate(palavras)
+            f'<a href="{slugify(f"{kw} {cidade_principal}")}.html" title="{label} em {cidade_principal}">{label}</a>'
+            for label, kw in footer_items
         )
     else:
         servicos_footer = '\n'.join(
-            f'<a href="mapa-do-site.html">{_get_display_label(i, p)}</a>'
-            for i, p in enumerate(palavras)
+            f'<a href="mapa-do-site.html">{label}</a>'
+            for label, _ in footer_items
         )
 
     categoria = empresa['categoria']
