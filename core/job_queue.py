@@ -152,6 +152,7 @@ async def run_generation_job(job_id: str, config_data: dict, agency_id: str) -> 
 
     try:
         await update_job_step(job_id, "validating", 2)
+        _gen_start = datetime.now(timezone.utc)
 
         # ── Construir config.yaml temporário a partir do config_data ──
         # config_data vem do payload do POST /api/clientes.
@@ -343,21 +344,25 @@ async def run_generation_job(job_id: str, config_data: dict, agency_id: str) -> 
             generate_report(results, config, api_stats, output_dir)
 
             # Registrar no histórico
+            _gen_end = datetime.now(timezone.utc)
             sb = get_supabase()
             summary = accumulator.get_summary()
+            client_id = config_data.get('client_id')
             sb.table("historico_geracao").insert({
-                "agency_id": agency_id,
-                "job_id": job_id,
+                "agency_id":             agency_id,
+                "client_id":             client_id,
+                "job_id":                job_id,
                 "total_pages_generated": results.get('total_pages', 0),
-                "valid_pages": results.get('valid_pages', 0),
-                "error_pages": len(results.get('errors', [])),
-                "cost_usd": float(summary.get('total', {}).get('cost_usd', 0)),
-                "cost_brl": float(summary.get('total', {}).get('cost_brl', 0)),
-                "tokens_used": int(summary.get('total', {}).get('tokens', 0)),
-                "gemini_tokens": int(summary.get('gemini', {}).get('input_tokens', 0) +
-                                     summary.get('gemini', {}).get('output_tokens', 0)),
-                "openai_tokens": int(summary.get('openai', {}).get('input_tokens', 0) +
-                                     summary.get('openai', {}).get('output_tokens', 0)),
+                "valid_pages":           results.get('valid_pages', 0),
+                "error_pages":           len(results.get('errors', [])),
+                "duration_seconds":      int((_gen_end - _gen_start).total_seconds()),
+                "cost_usd":  float(summary.get('total', {}).get('cost_usd', 0)),
+                "cost_brl":  float(summary.get('total', {}).get('cost_brl', 0)),
+                "tokens_used":    int(summary.get('total', {}).get('tokens', 0)),
+                "gemini_tokens":  int(summary.get('gemini', {}).get('input_tokens', 0) +
+                                      summary.get('gemini', {}).get('output_tokens', 0)),
+                "openai_tokens":  int(summary.get('openai', {}).get('input_tokens', 0) +
+                                      summary.get('openai', {}).get('output_tokens', 0)),
             }).execute()
 
             await update_job_step(job_id, "deploying", 93)
