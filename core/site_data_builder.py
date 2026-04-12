@@ -54,6 +54,24 @@ def _resolve_display_names(servicos_manuais: list, palavras_chave: list) -> list
     return [kw for kw in palavras_chave[:6]]
 
 
+def _compute_regiao_ampla(locais: list) -> str:
+    """
+    Deriva a 'região ampla' a partir da lista de áreas atendidas.
+    Funciona tanto para bairros quanto para cidades.
+
+    Exemplos:
+        ["Vila Industrial"]                  → "Vila Industrial e Região"
+        ["Moema", "Pinheiros", "Santana"]    → "Moema, Pinheiros e Região"
+        ["Curitiba", "São José dos Pinhais"] → "Curitiba e Região"
+        []                                   → ''
+    """
+    if not locais:
+        return ''
+    if len(locais) == 1:
+        return f"{locais[0]} e Região"
+    return f"{locais[0]}, {locais[1]} e Região"
+
+
 def resolve_theme_mode(config: dict, client: OpenRouterClient) -> str:
     """
     Resolve o tema (light/dark) de forma leve.
@@ -313,10 +331,18 @@ def build_site_data(config: dict, client: OpenRouterClient = None, gemini_client
 
 
 def _generate_home_content(empresa: dict, palavras: list, locais: list, client: OpenRouterClient, gemini_client=None) -> dict:
-    """Gera o conteúdo da home page via IA. Tenta Gemini (primário) → OpenAI (fallback)."""
+    """
+    Gera o conteúdo da home page via IA (Gemini → OpenAI fallback).
+
+    Arquitetura HUB & SPOKE:
+    A Home é o HUB — fala da marca e da categoria em sentido amplo.
+    Subpáginas são os SPOKES — cada uma reivindica um par keyword + localidade.
+    O H1/hero da Home NUNCA deve estar amarrado a um bairro ou cidade específica,
+    pois isso causaria canibalismo de palavras-chave contra as próprias subpáginas.
+    """
     servicos_str = ', '.join(palavras[:6]) if palavras else empresa['categoria']
-    locais_str = ', '.join(locais[:4]) if locais else ''
-    cidade_principal = locais[0] if locais else ''
+    locais_str = ', '.join(locais[:6]) if locais else ''
+    regiao_ampla = _compute_regiao_ampla(locais)
     icons_str = ', '.join(AVAILABLE_ICONS)
 
     # Gerar lista numerada de serviços para o prompt
@@ -326,50 +352,50 @@ def _generate_home_content(empresa: dict, palavras: list, locais: list, client: 
     )
 
     user_prompt = f"""Gere conteúdo de ALTA CONVERSÃO para a HOME PAGE da empresa '{empresa['nome']}' ({empresa['categoria']}).
-Cidade principal: {cidade_principal}
-Cidades atendidas: {locais_str}
+Região de atuação: {regiao_ampla}
+Áreas atendidas (para contexto): {locais_str}
 Serviços: {servicos_str}
 
 Retorne um JSON FLAT com estas chaves exatas:
 
-SEO (cidade principal OBRIGATÓRIA em title e meta_description):
-- seo_title (8-12 palavras — DEVE conter categoria + cidade principal + empresa)
-- seo_meta_description (25-30 palavras — DEVE mencionar empresa, categoria e cidade principal)
-- seo_meta_keywords (10 termos separados por vírgula — inclua variações com cidade)
+SEO (foco na MARCA e CATEGORIA — sem travar em área específica):
+- seo_title (8-12 palavras — padrão: "{empresa['nome']} — [categoria] | {regiao_ampla}". Posiciona a empresa como referência regional, não local de bairro)
+- seo_meta_description (25-30 palavras — menciona empresa, categoria e cobertura regional. Ex: "A [empresa] oferece [categoria] de qualidade em {regiao_ampla}. Atendimento personalizado e resultados comprovados.")
+- seo_meta_keywords (10 termos separados por vírgula — misture categoria + variações de serviços, sem focar em um bairro só)
 - seo_og_title (igual ao seo_title ou variação curta)
-- seo_og_description (15-20 palavras chamativas com categoria + cidade)
+- seo_og_description (15-20 palavras chamativas com categoria + cobertura ampla)
 
-HERO:
-- hero_badge_text (máx 4 palavras — DEVE incluir categoria ou cidade. Ex: "Petshop em Moema", "Mecânica em Vila Industrial", "Clínica Veterinária em [cidade]". NUNCA usar frases genéricas como "Especialistas Locais" ou "Qualidade Premium")
-- hero_title_line_1 (3-5 palavras — fala do DESEJO DO CLIENTE, não da empresa. Ex: "Seu Pet Merece", "Procurando um bom", "Cansado de procurar?". PROIBIDO: "Cuidados de Alto Nível", "Soluções Completas", "Qualidade Premium", frases institucionais)
-- hero_title_line_2 (3-5 palavras com destaque colorido — inclui categoria ou cidade. Complementa linha_1 formando frase coesa)
-- hero_subtitle (10-15 palavras no MÁXIMO. Frase direta, sem textão. ERRADO: "Oferecemos atendimento completo com toda a equipe especializada no cuidado do seu animal, com carinho desde 2010". CERTO: "Atendimento veterinário especializado com carinho e profissionalismo.")
+HERO — REGRA CRÍTICA DE SEO: a Home é o HUB de autoridade da marca. O hero NUNCA deve citar um bairro/cidade específico no badge ou no título, pois isso canibaliza as subpáginas. Foque em POSICIONAMENTO DE MARCA e no DESEJO DO CLIENTE:
+- hero_badge_text (máx 4 palavras — foca em CATEGORIA ou POSICIONAMENTO. Ex: "Mecânica de Confiança", "Petshop Especializado", "Clínica Veterinária Premium". PROIBIDO: incluir nome de bairro ou cidade)
+- hero_title_line_1 (3-5 palavras — fala do DESEJO DO CLIENTE, não da empresa. Ex: "Seu Pet Merece", "Procurando um bom", "Cansado de problemas com". PROIBIDO: "Cuidados de Alto Nível", "Soluções Completas", frases institucionais)
+- hero_title_line_2 (3-5 palavras com destaque colorido — complementa linha_1 com a CATEGORIA ou BENEFÍCIO CENTRAL. PROIBIDO: bairro ou cidade específico. Ex: "Atendimento Veterinário?", "Mecânico Confiável?", "Assessoria Jurídica?")
+- hero_subtitle (10-15 palavras no MÁXIMO. Frase direta mencionando a empresa e a cobertura ampla. Ex: "A {empresa['nome']} atende {regiao_ampla} com qualidade e compromisso.")
 
 SERVIÇOS — Gere APENAS descrição curta e ícone para cada serviço listado:
 {servicos_prompt}
 Ícones — use EXATAMENTE um destes: {icons_str}
 
 SEÇÃO SERVIÇOS (títulos da seção):
-- services_title (6-10 palavras — ex: "Soluções em [categoria] em [cidade]")
-- services_subtitle (8-12 palavras complementares)
+- services_title (6-10 palavras — ex: "Soluções em {empresa['categoria']} para Toda a Região")
+- services_subtitle (8-12 palavras complementares, sem geo-lock)
 
 AUTORIDADE (Sobre Nós — inclua messaging de confiança e diferenciais da empresa):
-- authority_title (6-9 palavras — por que nos escolher)
-- authority_manifesto (60-90 palavras — tom profissional, menciona cidade e categoria,
+- authority_title (6-9 palavras — por que nos escolher, foco na marca)
+- authority_manifesto (60-90 palavras — tom profissional, menciona a cobertura regional ({regiao_ampla}),
   inclua 2-3 diferenciais genéricos como atendimento personalizado e compromisso com resultado.
   NÃO invente prêmios, certificações, datas ou horários específicos.)
 
-FAQ — 3 perguntas reais de quem busca {empresa['categoria']} em {cidade_principal}:
-- faq_1_question, faq_1_answer (40-60 palavras)
-- faq_2_question, faq_2_answer (40-60 palavras)
-- faq_3_question, faq_3_answer (40-60 palavras)
+FAQ — 3 perguntas GERAIS de quem busca {empresa['categoria']} (sem amarrar a cidade específica):
+- faq_1_question, faq_1_answer (40-60 palavras — pergunta sobre o serviço/processo geral)
+- faq_2_question, faq_2_answer (40-60 palavras — responde objeção de compra/contratação)
+- faq_3_question, faq_3_answer (40-60 palavras — pergunta sobre cobertura ou forma de contato)
 
 CTA FINAL:
-- mega_cta_title (4-6 palavras urgentes)
+- mega_cta_title (4-6 palavras urgentes — sem geo-lock)
 - mega_cta_subtitle (8-12 palavras complementares)
 
 FOOTER:
-- footer_descricao (10-15 palavras sobre a empresa com categoria e cidade)
+- footer_descricao (10-15 palavras — empresa + categoria + cobertura. Ex: "{empresa['nome']}: {empresa['categoria']} de excelência em {regiao_ampla}.")
 
 TEMA VISUAL:
 - theme_mode ("light" ou "dark")
@@ -380,7 +406,8 @@ TEMA VISUAL:
 REGRAS ABSOLUTAS:
 - NÃO invente prêmios, datas de fundação, horários ou números sem base
 - NÃO invente capacidades específicas (certificações, atendimento 24h, etc.)
-- Cidade principal '{cidade_principal}' DEVE aparecer em seo_title, seo_meta_description e hero_subtitle"""
+- NUNCA coloque nome de bairro ou cidade específicos no hero_badge_text, hero_title_line_1 ou hero_title_line_2
+- A Home é o HUB de MARCA — as subpáginas cuidam do SEO local por bairro/cidade"""
 
     # Mesmo padrão das subpáginas: Gemini → OpenAI fallback
     raw = None
