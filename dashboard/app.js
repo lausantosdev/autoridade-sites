@@ -550,6 +550,11 @@
                     text-decoration:none;text-align:center;font-weight:600;font-size:0.9rem;">
                     🌐 Ver Site
                 </a>
+                <a href="/api/download/${escapeHtml(slug)}" download style="
+                    flex:1;padding:12px;background:#0f766e;color:#fff;border-radius:10px;
+                    text-decoration:none;text-align:center;font-weight:600;font-size:0.9rem;">
+                    📥 Baixar ZIP
+                </a>
                 <button onclick="closeRelatorio()" style="
                     padding:12px 20px;background:var(--bg);border:1px solid var(--border);
                     border-radius:10px;cursor:pointer;font-family:inherit;color:var(--text);">
@@ -594,6 +599,11 @@
                     flex:1;padding:12px;background:#7c3aed;color:#fff;border-radius:10px;
                     text-decoration:none;text-align:center;font-weight:600;font-size:0.9rem;">
                     🌐 Ver Site
+                </a>
+                <a href="/api/download/${escapeHtml(subdomain)}" download style="
+                    flex:1;padding:12px;background:#0f766e;color:#fff;border-radius:10px;
+                    text-decoration:none;text-align:center;font-weight:600;font-size:0.9rem;">
+                    📥 Baixar ZIP
                 </a>
                 <button onclick="closeRelatorio()" style="
                     padding:12px 20px;background:var(--bg);border:1px solid var(--border);
