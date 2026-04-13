@@ -265,6 +265,7 @@ def _inject_leads_form(html: str, site_data: dict) -> str:
     seo = site_data.get('seo', {})
     keyword = seo.get('keyword', '')
     # local não é usado no bottom-CTA da Home (evita canibalismo de keywords com subpáginas)
+    local = ""
     cor_marca = site_data.get('theme', {}).get('color', '#6366f1')
     
     # 3. HTML Form e CSS Inline para o container (seção oculta inicialmente)
