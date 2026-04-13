@@ -28,9 +28,9 @@ from core.topic_generator import generate_topics
 from core.page_generator import generate_all_pages, get_retry_log, _replace_config_vars
 from core.validator import validate_site, generate_report
 from core.site_data_builder import build_site_data, resolve_theme_mode
-from core.template_injector import inject_template
+from core.home_renderer import render_home
 from core.imagen_client import GeminiImageClient
-from core.output_builder import setup_output_dir, generate_fallback_index
+from core.output_builder import setup_output_dir
 
 
 def main():
@@ -183,20 +183,17 @@ def main():
 
         # Injetar home page (precisa de site_data + hero_img_path prontos)
         if site_data:
-            print("🏠 Injetando home page premium (SiteGen)...")
+            print("🏠 Injetando home page estática (SiteGen)...")
             try:
-                inject_template(
+                render_home(
                     site_data=site_data,
                     output_dir=output_dir,
                     hero_image_path=str(hero_img_path) if hero_img_path.exists() else None,
                 )
             except Exception as e:
-                print(f"  ⚠ Erro ao injetar home: {e}")
-                print("  ↳ Gerando home com template HTML fallback...")
-                generate_fallback_index(config, output_dir)
+                print(f"  ⚠ Erro ao gerar home estática: {e}")
         else:
-            print("  ↳ Gerando home com template HTML fallback...")
-            generate_fallback_index(config, output_dir)
+            print("  ⚠ Erro: site_data não foi gerado. Home page não gerada.")
         print()
 
     else:
@@ -232,15 +229,13 @@ def main():
                 site_data = build_site_data(config, client)
                 print()
                 print("🏠 Injetando home page premium (SiteGen)...")
-                inject_template(
+                render_home(
                     site_data=site_data,
                     output_dir=output_dir,
                     hero_image_path=str(hero_img_path) if hero_img_path.exists() else None,
                 )
             except Exception as e:
-                print(f"  ⚠ Erro na home SiteGen: {e}")
-                print("  ↳ Gerando home com template HTML fallback...")
-                generate_fallback_index(config, output_dir)
+                print(f"  ⚠ Erro ao gerar home estática: {e}")
             print()
 
     if args.step == 'home':

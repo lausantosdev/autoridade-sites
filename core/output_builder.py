@@ -71,12 +71,3 @@ def setup_output_dir(output_dir: str, config: dict):
         robots_path.write_text(robots_content, encoding='utf-8')
 
 
-def generate_fallback_index(config: dict, output_dir: str):
-    """Fallback: gera index.html do template HTML puro (caso SiteGen falhe)."""
-    index_template = TEMPLATES_DIR / "index.html"
-    if index_template.exists():
-        content = index_template.read_text(encoding='utf-8')
-        content = replace_config_vars(content, config)
-        output_path = Path(output_dir) / "index.html"
-        output_path.write_text(content, encoding='utf-8')
-        logger.info("Home page fallback gerada (template HTML puro)")

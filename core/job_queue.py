@@ -129,10 +129,10 @@ async def run_generation_job(job_id: str, config_data: dict, agency_id: str) -> 
     from core.page_generator import generate_all_pages
     from core.validator import validate_site, generate_report
     from core.site_data_builder import build_site_data
-    from core.template_injector import inject_template
+    from core.home_renderer import render_home
     from core.imagen_client import GeminiImageClient
     from core.topic_generator import generate_topics, generate_services_data
-    from core.output_builder import setup_output_dir, generate_fallback_index
+    from core.output_builder import setup_output_dir
     import json
     import yaml
     import uuid
@@ -259,14 +259,13 @@ async def run_generation_job(job_id: str, config_data: dict, agency_id: str) -> 
             await update_job_step(job_id, "home_page", 40)
             try:
                 await asyncio.to_thread(
-                    inject_template,
+                    render_home,
                     site_data=site_data,
                     output_dir=output_dir,
                     hero_image_path=str(hero_img_path) if hero_img_path.exists() else None,
                 )
             except Exception as e:
-                logger.error("Erro na home page: %s. Usando fallback.", e)
-                generate_fallback_index(config, output_dir)
+                logger.error("Erro ao gerar home estática: %s", e)
                 
             # Salvar cache da home page
             if config['empresa'].get('client_id'):
@@ -384,7 +383,7 @@ async def run_fast_sync_job(job_id: str, config_data: dict, agency_id: str):
     from pathlib import Path
     from core.cloudflare_pages_deploy import deploy_to_cloudflare_pages
     from core.site_data_builder import build_site_data
-    from core.template_injector import inject_template
+    from core.home_renderer import render_home
     from core.page_generator import _generate_single_page
     from core.sitemap_generator import generate_sitemap
     
@@ -455,7 +454,12 @@ async def run_fast_sync_job(job_id: str, config_data: dict, agency_id: str):
         # Manter imagem local hero.jpg de execuções passadas se existir
         hero_img_path = Path(output_dir) / "hero-image.webp"
         
-        await asyncio.to_thread(inject_template, site_data, output_dir, str(hero_img_path) if hero_img_path.exists() else None)
+        await asyncio.to_thread(
+            render_home,
+            site_data,
+            output_dir,
+            str(hero_img_path) if hero_img_path.exists() else None,
+        )
         
         # 5. Injetar Subpages
         await update_job_step(job_id, "subpages", 50)
