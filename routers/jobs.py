@@ -14,12 +14,24 @@ async def get_job_status(job_id: str, agency=Depends(get_current_agency)):
     agency_id = agency["sub"]
     sb = get_supabase()
 
-    result = sb.table("jobs") \
-        .select("id, status, step, progress_pct, error_message, started_at, finished_at, logs") \
-        .eq("id", job_id) \
-        .eq("agency_id", agency_id) \
-        .single() \
-        .execute()
+    try:
+        result = sb.table("jobs") \
+            .select("id, status, step, progress_pct, error_message, started_at, finished_at, logs") \
+            .eq("id", job_id) \
+            .eq("agency_id", agency_id) \
+            .single() \
+            .execute()
+    except Exception as e:
+        # Coluna inexistente ou erro de schema — tentar sem 'logs'
+        try:
+            result = sb.table("jobs") \
+                .select("id, status, step, progress_pct, error_message, started_at, finished_at") \
+                .eq("id", job_id) \
+                .eq("agency_id", agency_id) \
+                .single() \
+                .execute()
+        except Exception as e2:
+            raise HTTPException(503, f"Erro ao consultar job: {e2}")
 
     if not result.data:
         raise HTTPException(404, "Job não encontrado")
