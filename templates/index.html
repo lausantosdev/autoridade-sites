@@ -14,6 +14,7 @@
     <link rel="canonical" href="https://{{dominio}}/">
     <meta name="theme-color" content="{{cor_marca}}">
     <title>{{empresa_nome}} — {{empresa_categoria}} em {{cidade_principal}}</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 
     <!-- Schema Markup -->
     <script type="application/ld+json">
@@ -36,8 +37,13 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" onload="this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"></noscript>
+    <!-- Font Awesome — carregado de forma não-bloqueante (PageSpeed) -->
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" as="style" onload="this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"></noscript>
+    <!-- Preload hero image para otimizar LCP (PageSpeed) -->
+    <link rel="preload" as="image" href="images/hero.webp" type="image/webp" fetchpriority="high">
     <link rel="stylesheet" href="css/reset.css">
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/widget.css?v=2">
@@ -73,7 +79,7 @@
 
     <!-- Hero -->
     <section class="hero">
-        <div class="hero-bg-image" style="background-image: url('images/hero.jpg');"></div>
+        <div class="hero-bg-image" style="background-image: url('images/hero.webp');"></div>
         <div class="hero-overlay"></div>
         <div class="container hero-container">
             <div class="hero-content">
@@ -256,8 +262,8 @@
         <i class="fab fa-whatsapp"></i>
     </a>
 
-    <script src="js/dados.js"></script>
-    <script src="js/main.js"></script>
+    <script src="js/dados.js" defer></script>
+    <script src="js/main.js" defer></script>
 
     <!-- Widget de Captura de Leads -->
     <script>
@@ -271,6 +277,6 @@
       local: ""
     };
     </script>
-    <script src="js/widget.js?v=2"></script>
+    <script src="js/widget.js?v=2" defer></script>
 </body>
 </html>

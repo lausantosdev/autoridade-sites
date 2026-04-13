@@ -19,10 +19,15 @@
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" onload="this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"></noscript>
 
     <!-- Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <!-- Font Awesome — carregado de forma não-bloqueante (PageSpeed) -->
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" as="style" onload="this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"></noscript>
+    <!-- Preload hero image para otimizar LCP (PageSpeed) -->
+    <link rel="preload" as="image" href="images/hero.webp" type="image/webp" fetchpriority="high">
 
     <!-- CSS -->
     <link rel="stylesheet" href="css/reset.css">
@@ -62,7 +67,7 @@
 
     <!-- ===== HERO ===== -->
     <section id="hero" class="hero">
-        <div class="hero-bg-image" style="background-image: url('images/hero.jpg');"></div>
+        <div class="hero-bg-image" style="background-image: url('images/hero.webp');"></div>
         <div class="hero-overlay"></div>
         <div class="container hero-container">
             <div class="hero-content">
@@ -278,8 +283,8 @@
     </a>
 
     <!-- JS -->
-    <script src="js/dados.js"></script>
-    <script src="js/main.js"></script>
+    <script src="js/dados.js" defer></script>
+    <script src="js/main.js" defer></script>
 
     <!-- Widget de Captura de Leads -->
     <script>
@@ -293,6 +298,6 @@
       local: "@local"
     };
     </script>
-    <script src="js/widget.js?v=2"></script>
+    <script src="js/widget.js?v=2" defer></script>
 </body>
 </html>
