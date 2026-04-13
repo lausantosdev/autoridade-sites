@@ -131,7 +131,7 @@ def main():
         print()
 
     theme_mode = config.get('theme', {}).get('mode', 'dark')
-    hero_img_path = Path(output_dir) / "hero-image.jpg"
+    hero_img_path = Path(output_dir) / "hero-image.webp"
 
     # ── Fase paralela (--step all): Hero + Home Data ──────────────
     # Topics já foi executado acima (pode usar cache).
@@ -139,7 +139,7 @@ def main():
     if args.step == 'all':
         from concurrent.futures import ThreadPoolExecutor, as_completed
 
-        hero_img_legacy = Path(output_dir) / "images" / "hero.jpg"
+        hero_img_legacy = Path(output_dir) / "images" / "hero.webp"
         need_hero = not hero_img_path.exists() and not hero_img_legacy.exists()
 
         def _run_hero():
@@ -203,7 +203,7 @@ def main():
         # Modo individual: manter sequencial para debug
         # 6.6 Gerar Imagem Hero (Imagen 3)
         if args.step in ('home', 'image'):
-            hero_img_legacy = Path(output_dir) / "images" / "hero.jpg"
+            hero_img_legacy = Path(output_dir) / "images" / "hero.webp"
             if not hero_img_path.exists() and not hero_img_legacy.exists():
                 print("🎨 Gerando Imagem Hero com Google Gemini...")
                 try:

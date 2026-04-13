@@ -74,7 +74,7 @@ def inject_template(
     
     # 6. Copiar hero image se fornecida (e se não for o mesmo arquivo)
     if hero_image_path and os.path.exists(hero_image_path):
-        dest = os.path.join(output_dir, 'hero-image.jpg')
+        dest = os.path.join(output_dir, 'hero-image.webp')
         if os.path.abspath(hero_image_path) != os.path.abspath(dest):
             shutil.copy2(hero_image_path, dest)
     
@@ -113,13 +113,16 @@ def _inject_meta_tags(html: str, site_data: dict) -> str:
     for marker, value in replacements.items():
         html = html.replace(marker, _escape_html_attr(str(value)))
 
+    # Injetar preload da hero image (LCP otimizado para PageSpeed)
+    hero_preload = '\n    <link rel="preload" as="image" href="./hero-image.webp" type="image/webp" fetchpriority="high">'
+
     # Injetar canonical, og:url e robots antes do </head>
     extra_tags = (
         f'\n    <link rel="canonical" href="{canonical_url}">'
         f'\n    <meta property="og:url" content="{canonical_url}">'
         f'\n    <meta name="robots" content="index, follow">'
     )
-    html = html.replace('</head>', extra_tags + '\n</head>', 1)
+    html = html.replace('</head>', hero_preload + extra_tags + '\n</head>', 1)
 
     return html
 

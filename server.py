@@ -256,7 +256,7 @@ async def websocket_generate(websocket: WebSocket):
                 "type": "step", "step": 4,
                 "message": "Gerando imagem, home page e inteligência de negócio em paralelo..."
             })
-            hero_img_path = Path(output_dir) / "hero-image.jpg"
+            hero_img_path = Path(output_dir) / "hero-image.webp"
 
             # Phase 1 usa Gemini (primário) ou OpenAI (fallback) — nunca None
             phase1_client = gemini or client
@@ -275,7 +275,7 @@ async def websocket_generate(websocket: WebSocket):
                         config.get('theme', {}).get('mode', 'dark'),
                         phase1_client,
                     )
-                    legacy_path = Path(output_dir) / "images" / "hero.jpg"
+                    legacy_path = Path(output_dir) / "images" / "hero.webp"
                     legacy_path.parent.mkdir(parents=True, exist_ok=True)
                     if hero_img_path.exists():
                         shutil.copy2(str(hero_img_path), str(legacy_path))

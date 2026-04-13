@@ -134,7 +134,7 @@ class GeminiImageClient:
                 prompt=prompt,
                 config=types.GenerateImagesConfig(
                     number_of_images=1,
-                    output_mime_type="image/jpeg",
+                    output_mime_type="image/jpeg",  # API retorna JPEG; convertemos para WebP abaixo
                     aspect_ratio="16:9"
                 )
             )
@@ -143,7 +143,7 @@ class GeminiImageClient:
                 raw_bytes = generated_image.image.image_bytes
                 Path(output_path).parent.mkdir(parents=True, exist_ok=True)
                 pil_img = Image.open(io.BytesIO(raw_bytes))
-                pil_img.convert("RGB").save(output_path, format="JPEG", quality=90)
+                pil_img.convert("RGB").save(output_path, format="WEBP", quality=80)
                 logger.info("Imagem gerada: %s", output_path)
                 return True
 

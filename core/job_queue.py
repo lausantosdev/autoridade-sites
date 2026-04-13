@@ -232,7 +232,7 @@ async def run_generation_job(job_id: str, config_data: dict, agency_id: str) -> 
 
             await update_job_step(job_id, "hero", 15)
 
-            hero_img_path = Path(output_dir) / "hero-image.jpg"
+            hero_img_path = Path(output_dir) / "hero-image.webp"
 
             async def _task_hero():
                 try:
@@ -248,7 +248,7 @@ async def run_generation_job(job_id: str, config_data: dict, agency_id: str) -> 
                         phase1_client,
                     )
                     import shutil as _shutil
-                    legacy_path = Path(output_dir) / "images" / "hero.jpg"
+                    legacy_path = Path(output_dir) / "images" / "hero.webp"
                     legacy_path.parent.mkdir(parents=True, exist_ok=True)
                     if hero_img_path.exists():
                         _shutil.copy2(str(hero_img_path), str(legacy_path))
@@ -466,7 +466,7 @@ async def run_fast_sync_job(job_id: str, config_data: dict, agency_id: str):
         site_data = await asyncio.to_thread(build_site_data, config_dict, raw_ai_override=home_cache['ai_json'])
         
         # Manter imagem local hero.jpg de execuções passadas se existir
-        hero_img_path = Path(output_dir) / "hero-image.jpg"
+        hero_img_path = Path(output_dir) / "hero-image.webp"
         
         await asyncio.to_thread(inject_template, site_data, output_dir, str(hero_img_path) if hero_img_path.exists() else None)
         

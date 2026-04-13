@@ -202,7 +202,7 @@ def build_site_data(config: dict, client: OpenRouterClient = None, gemini_client
             "titleLine1": ai_content.get('hero_title_line_1', empresa['nome']),
             "titleLine2": ai_content.get('hero_title_line_2', empresa['categoria']),
             "subtitle": ai_content.get('hero_subtitle', f"{empresa['nome']} — profissionais qualificados e resultados comprovados."),
-            "heroImagePath": "./hero-image.jpg",
+            "heroImagePath": "./hero-image.webp",
         },
         
         # NOTA: A chave "featuresSection" é exigida pelo template React (App.tsx).
