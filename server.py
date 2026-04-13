@@ -23,7 +23,7 @@ from core.auth import get_current_agency
 from core.supabase_client import get_supabase
 from core.job_queue import run_generation_job, check_rate_limit
 from core.magic_editor import apply_chat_edit
-from fastapi.responses import HTMLResponse, FileResponse, JSONResponse
+from fastapi.responses import HTMLResponse, FileResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 
 from core.config_loader import load_config
@@ -143,13 +143,10 @@ async def reset_password(body: dict):
         return JSONResponse({"ok": False, "error": str(e)}, status_code=500)
 
 
-@app.get("/", response_class=HTMLResponse)
+@app.get("/", response_class=RedirectResponse)
 async def serve_frontend():
-    """Serve o frontend wizard."""
-    frontend_path = Path("frontend") / "index.html"
-    if not frontend_path.exists():
-        raise HTTPException(404, "Frontend não encontrado")
-    return frontend_path.read_text(encoding='utf-8')
+    """Redireciona a raiz para o dashboard oficial."""
+    return RedirectResponse(url="/dashboard")
 
 
 @app.post("/api/upload-csv")
