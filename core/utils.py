@@ -28,3 +28,20 @@ def adjust_color(hex_color: str, factor: float) -> str:
     g = min(255, max(0, int(g * factor)))
     b = min(255, max(0, int(b * factor)))
     return f"#{r:02x}{g:02x}{b:02x}"
+
+
+def extract_maps_url(value: str) -> str:
+    """Extrai a URL de embed do Google Maps.
+
+    Aceita tanto a URL direta quanto um iframe HTML completo colado do Google Maps.
+    Se for um iframe, extrai o valor do atributo src.
+    """
+    if not value:
+        return ''
+    value = value.strip()
+    if '<iframe' in value:
+        match = re.search(r'src=["\']([^"\']+)["\']', value)
+        if match:
+            return match.group(1)
+        return ''
+    return value

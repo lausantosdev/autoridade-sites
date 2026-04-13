@@ -10,26 +10,13 @@ from datetime import datetime, timezone
 from uuid import UUID
 
 from core.supabase_client import get_supabase
+from core.utils import extract_maps_url as _extract_maps_url
 import logging
 
 logger = logging.getLogger(__name__)
 
 
-def _extract_maps_url(value: str) -> str:
-    """Extrai a URL de embed do Google Maps.
-
-    Aceita tanto a URL direta quanto um iframe HTML completo cole do Google Maps.
-    Se for um iframe, extrai o valor do atributo src.
-    """
-    if not value:
-        return ''
-    value = value.strip()
-    if '<iframe' in value:
-        match = re.search(r'src=["\']([^"\']+)["\']', value)
-        if match:
-            return match.group(1)
-        return ''
-    return value
+# _extract_maps_url: movida para core.utils.extract_maps_url
 
 async def _append_log(job_id: str, level: str, message: str) -> None:
     """Adiciona uma entrada de log ao job no Supabase."""
