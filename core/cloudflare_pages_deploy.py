@@ -258,6 +258,47 @@ async def delete_client_resources(subdomain: str) -> dict:
     results = {}
 
     async with aiohttp.ClientSession() as s:
+        # ── 0. Deletar custom domains vinculados ao projeto ───────────
+        # A CF retorna erro 8000028 se tentar deletar projeto com custom domains ativos.
+        domains_url = (
+            f"https://api.cloudflare.com/client/v4/accounts/{account_id}"
+            f"/pages/projects/{subdomain}/domains"
+        )
+        domain_delete_errors = []
+        try:
+            async with s.get(domains_url, headers=headers) as r:
+                if r.status == 200:
+                    data = await r.json()
+                    custom_domains = data.get("result", [])
+                    for domain_obj in custom_domains:
+                        d_name = domain_obj.get("name")
+                        if d_name:
+                            del_dom_url = f"{domains_url}/{d_name}"
+                            async with s.delete(del_dom_url, headers=headers) as dr:
+                                dr_body = await dr.text()
+                                logger.info(
+                                    "[CF Delete] DELETE custom domain '%s' → HTTP %s: %s",
+                                    d_name, dr.status, dr_body[:100]
+                                )
+                                if dr.status not in (200, 201, 204):
+                                    domain_delete_errors.append(f"{d_name}: HTTP {dr.status}")
+                    if custom_domains:
+                        # Pequeno delay para a CF propagar o unbind antes da exclusão do projeto
+                        await asyncio.sleep(1)
+                elif r.status == 404:
+                    logger.info("[CF Delete] Projeto Pages '%s' não existe — pulando exclusão de domains", subdomain)
+                else:
+                    body = await r.text()
+                    logger.warning("[CF Delete] Erro ao listar domains do projeto '%s': HTTP %s — %s", subdomain, r.status, body[:200])
+        except Exception as e:
+            logger.warning("[CF Delete] Exceção ao remover custom domains de '%s': %s", subdomain, e)
+
+        if domain_delete_errors:
+            results["custom_domains"] = f"erros: {'; '.join(domain_delete_errors)}"
+            logger.warning("[CF Delete] Falhas ao desassociar domains antes de deletar projeto: %s", domain_delete_errors)
+        else:
+            results["custom_domains"] = "limpos"
+
         # ── 1. Deletar projeto Pages ──────────────────────────────────
         pages_url = (
             f"https://api.cloudflare.com/client/v4/accounts/{account_id}"
