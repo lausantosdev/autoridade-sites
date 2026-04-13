@@ -264,7 +264,7 @@ def _inject_leads_form(html: str, site_data: dict) -> str:
     
     seo = site_data.get('seo', {})
     keyword = seo.get('keyword', '')
-    local = seo.get('local', '')
+    # local não é usado no bottom-CTA da Home (evita canibalismo de keywords com subpáginas)
     cor_marca = site_data.get('theme', {}).get('color', '#6366f1')
     
     # 3. HTML Form e CSS Inline para o container (seção oculta inicialmente)
@@ -451,7 +451,7 @@ def _inject_leads_form(html: str, site_data: dict) -> str:
     <section id="bottom-cta">
         <div class="bottom-cta-card">
             <p class="bottom-cta-text">
-                <strong>{_escape_html_attr(empresa_nome)}</strong> atende em {_escape_html_attr(local)} e região.
+                <strong>{_escape_html_attr(empresa_nome)}</strong> — referência em {_escape_html_attr(keyword)}. Solicite seu orçamento.
             </p>
             <a href="#contato" class="bottom-cta-btn" onclick="event.preventDefault();document.getElementById('contato').scrollIntoView({{behavior:'smooth',block:'center'}})">
                 {_WA_ICON} Falar Agora
@@ -471,7 +471,7 @@ def _inject_leads_form(html: str, site_data: dict) -> str:
       empresaNome: "{_escape_html_attr(empresa_nome)}",
       whatsappNumero: "{_escape_html_attr(whatsapp_num)}",
       keyword: "{_escape_html_attr(keyword)}",
-      local: "{_escape_html_attr(local)}"
+      local: ""
     }};
     </script>
     <script src="js/widget.js?v=2"></script>
