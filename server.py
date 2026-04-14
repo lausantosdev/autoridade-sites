@@ -275,10 +275,6 @@ async def websocket_generate(websocket: WebSocket):
                         config.get('theme', {}).get('mode', 'dark'),
                         phase1_client,
                     )
-                    legacy_path = Path(output_dir) / "images" / "hero.webp"
-                    legacy_path.parent.mkdir(parents=True, exist_ok=True)
-                    if hero_img_path.exists():
-                        shutil.copy2(str(hero_img_path), str(legacy_path))
                 except Exception as e:
                     logger.error("Erro ao gerar imagem AI: %s", e)
 

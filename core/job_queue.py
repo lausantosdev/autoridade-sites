@@ -234,11 +234,6 @@ async def run_generation_job(job_id: str, config_data: dict, agency_id: str) -> 
                         config.get('theme', {}).get('mode', 'dark'),
                         phase1_client,
                     )
-                    import shutil as _shutil
-                    legacy_path = Path(output_dir) / "images" / "hero.webp"
-                    legacy_path.parent.mkdir(parents=True, exist_ok=True)
-                    if hero_img_path.exists():
-                        _shutil.copy2(str(hero_img_path), str(legacy_path))
                 except Exception as e:
                     logger.error("Erro ao gerar hero image: %s", e)
 

@@ -139,8 +139,7 @@ def main():
     if args.step == 'all':
         from concurrent.futures import ThreadPoolExecutor, as_completed
 
-        hero_img_legacy = Path(output_dir) / "images" / "hero.webp"
-        need_hero = not hero_img_path.exists() and not hero_img_legacy.exists()
+        need_hero = not hero_img_path.exists()
 
         def _run_hero():
             if not need_hero:
@@ -154,9 +153,6 @@ def main():
                 theme_mode=theme_mode,
                 llm_client=client,
             )
-            hero_img_legacy.parent.mkdir(parents=True, exist_ok=True)
-            if hero_img_path.exists():
-                shutil.copy2(str(hero_img_path), str(hero_img_legacy))
 
         def _run_home_data():
             return build_site_data(config, client)
@@ -203,8 +199,7 @@ def main():
         # Modo individual: manter sequencial para debug
         # 6.6 Gerar Imagem Hero (Imagen 3)
         if args.step in ('home', 'image'):
-            hero_img_legacy = Path(output_dir) / "images" / "hero.webp"
-            if not hero_img_path.exists() and not hero_img_legacy.exists():
+            if not hero_img_path.exists():
                 print("🎨 Gerando Imagem Hero com Google Gemini...")
                 try:
                     img_client = GeminiImageClient()
@@ -216,9 +211,6 @@ def main():
                         theme_mode=theme_mode,
                         llm_client=client,
                     )
-                    hero_img_legacy.parent.mkdir(parents=True, exist_ok=True)
-                    if hero_img_path.exists():
-                        shutil.copy2(str(hero_img_path), str(hero_img_legacy))
                 except Exception as e:
                     print(f"  ⚠ Aviso: Não foi possível gerar imagem hero: {e}")
             else:
