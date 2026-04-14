@@ -14,16 +14,22 @@ logger = get_logger(__name__)
 
 load_dotenv()
 
-_SCENE_FEW_SHOT_EXAMPLES = """- Pet Shop / Banho e Tosa: "clean, serene, pet-friendly boutique reception area with warm lighting and plush seating"
-- Advocacia / Escritório de Advocacia: "prestigious warm library with leather armchairs and golden ambient lighting"
-- Odontologia / Clínica Odontológica: "spa-like waiting room, plush chairs, indoor plants, warm lighting — NO dental tools"
-- Restaurante / Gastronomia: "a beautifully set table in a warm, elegant restaurant with subtle ambient lighting"
-- Academia / Personal Trainer: "high-end premium wellness studio with soft indirect lighting and a welcoming atmosphere"
-- Limpeza / Serviços de Limpeza: "a spotlessly clean, gleaming modern living room with a fresh, airy atmosphere and soft sunlight"
+_SCENE_FEW_SHOT_EXAMPLES = """- Pet Shop / Banho e Tosa: "clean, serene, pet-friendly boutique reception area with warm lighting and plush seating — NO animals, NO cages, NO tools"
+- Clínica Veterinária / Veterinário: "a warm, cozy pet clinic waiting lounge with wooden benches, soft lighting, lush potted plants and water bowls — NO animals, NO surgical instruments, NO equipment"
+- Advocacia / Escritório de Advocacia: "prestigious warm library with leather armchairs and golden ambient lighting — NO documents, NO papers"
+- Odontologia / Clínica Odontológica: "spa-like waiting room, plush chairs, indoor plants, warm lighting — NO dental chairs, NO dental tools"
+- Restaurante / Gastronomia: "a beautifully set table in a warm, elegant restaurant with candles and subtle ambient lighting — NO kitchen tools"
+- Academia / Personal Trainer: "high-end premium wellness studio with soft indirect lighting and a welcoming atmosphere — NO weights, NO machines"
+- Limpeza / Serviços de Limpeza: "a spotlessly clean, gleaming modern living room with a fresh, airy atmosphere and soft sunlight — NO mops, NO buckets, NO cleaning products"
 - Imobiliária / Corretora de Imóveis: "a beautiful luxury modern home exterior with a perfectly manicured green lawn, sunny day"
-- Elétrica / Eletricista: "modern smart home interior with subtle LED accent lighting"
-- Mecânica / Auto Center: "gleaming luxury car in a pristine showroom with polished floors"
-- Jardinagem / Paisagismo: "a beautifully landscaped lush green garden with vibrant flowers and a perfectly cut lawn, morning sunlight\""""
+- Elétrica / Eletricista: "modern smart home interior with warm LED accent lighting, minimalist decor, elegant finishes — NO wires, NO electrical panels, NO tools"
+- Mecânica / Auto Center: "gleaming luxury car in a pristine automotive showroom with polished floors and dramatic spotlights — NO tools, NO grease, NO engine parts"
+- Jardinagem / Paisagismo: "a beautifully landscaped lush green garden with vibrant flowers, stone pathways and morning sunlight — NO garden tools, NO equipment"
+- Desentupidora / Caça Vazamento / Hidráulica: "a pristine, spotlessly clean modern bathroom with gleaming white tiles, polished fixtures and soft warm lighting — NO pipes, NO tools, NO water damage"
+- Assistência Técnica / Eletrônicos / Informática: "a sleek, minimalist technology showroom with ambient backlighting and clean display surfaces — NO open devices, NO circuit boards, NO tools"
+- Construção Civil / Reformas / Pintura: "a beautifully finished luxury living room with polished floors, high ceilings and premium interior design — NO raw materials, NO tools, NO construction debris"
+- Contabilidade / Finanças: "an elegant, minimalist executive office with a clean desk, warm light and city view through floor-to-ceiling windows — NO papers, NO folders"
+- Saúde / Clínica Médica / Estética: "a serene, spa-like premium clinic reception with marble surfaces, orchids and soft diffused lighting — NO medical equipment, NO clinical instruments""""
 
 
 def _generate_scene_description(categoria: str, llm_client, keywords: list = None) -> str:
@@ -39,9 +45,14 @@ def _generate_scene_description(categoria: str, llm_client, keywords: list = Non
     system_prompt = (
         "You are a professional photography art director specializing in premium cinematic hero images for local service business websites. "
         "Your task is to write a single, precise English sentence describing the ideal photographic scene for a given business niche. "
-        "CRITICAL RULE 1: Focus on the ASPIRATIONAL OUTCOME or the WELCOMING ENVIRONMENT of the business. "
-        "Show the RESULT the customer desires or the atmosphere they will experience — NOT the tools, equipment, or process. "
-        "For health/medical niches: show serene, spa-like reception areas — NEVER clinical tools, needles, or surgical equipment. "
+        "CRITICAL RULE 1: Focus EXCLUSIVELY on the ASPIRATIONAL OUTCOME or the WELCOMING ENVIRONMENT. "
+        "Show the RESULT the customer desires or the premium atmosphere they will experience. "
+        "ABSOLUTE PROHIBITION — applies to ALL niches without exception: NEVER describe or suggest tools, instruments, "
+        "equipment, machines, raw materials, supplies, chemicals, products, open devices, construction materials, "
+        "pipes, wires, cables, paperwork, medical/veterinary/dental instruments, or any work-in-progress. "
+        "This includes: scalpels, syringes, wrenches, drills, mops, buckets, circuit boards, engine parts, scaffolding, "
+        "paint cans, legal folders, or any object associated with the physical work of the trade. "
+        "ALWAYS show: interiors with warm lighting, premium finishes, elegant decor, clean spaces, aspirational results. "
         "CRITICAL RULE 2: ABSOLUTELY NO PEOPLE, NO HUMANS, NO FACES anywhere in the scene. Do not mention humans at all. "
         "Output ONLY the scene description sentence. No explanations, no quotes, no extra text."
     )
@@ -66,8 +77,13 @@ def _generate_scene_description(categoria: str, llm_client, keywords: list = Non
     except Exception as e:
         logger.warning("Falha ao gerar cena via LLM: %s — usando fallback genérico", e)
 
-    # Fallback genérico seguro
-    return f"clean, welcoming environment for {categoria}"
+    # Fallback seguro: mantém contexto do nicho mas com restrições explícitas
+    return (
+        f"a clean, elegant and premium welcoming reception area evoking the professional "
+        f"atmosphere of a {categoria} business — warm ambient lighting, minimal modern decor, "
+        f"lush indoor plants, polished surfaces — absolutely no tools, instruments, equipment, "
+        f"machines, products, or work-related objects visible anywhere"
+    )
 
 
 class GeminiImageClient:
@@ -119,7 +135,13 @@ class GeminiImageClient:
             f"Scene: {scene}. "
             f"STRICT RULES — VIOLATION IS NOT ACCEPTABLE: "
             f"(1) ABSOLUTELY ZERO TEXT anywhere in the image. No words, no letters, no captions, no watermarks, no signs, no logos, no brand names, no store names, no writing of any kind. The image must be 100% text-free. "
-            f"(2) ABSOLUTELY NO PEOPLE, NO HUMANS, NO FACES in the picture. Focus on the WELCOMING ATMOSPHERE and ASPIRATIONAL RESULT — NOT on tools, sharp instruments, or clinical equipment. "
+            f"(2) ABSOLUTELY NO PEOPLE, NO HUMANS, NO FACES anywhere in the image. "
+            f"(3) ABSOLUTELY NO TOOLS, EQUIPMENT OR WORK OBJECTS of any kind — this means: "
+            f"no surgical/dental/veterinary instruments, no wrenches, drills, pliers or hand tools, "
+            f"no plumbing pipes or fittings, no electrical wires or panels, no open electronic devices or circuit boards, "
+            f"no construction materials, scaffolding or raw finishes, no cleaning products or buckets, "
+            f"no engine parts, no chemical containers, no legal documents or folders. "
+            f"Focus ONLY on the WELCOMING ATMOSPHERE and ASPIRATIONAL RESULT: elegant interiors, premium decor, warm light. "
             f"Lighting: Cinematic, warm, inviting. Strong bokeh on background. "
             f"Composition: Main subject in the center 50% of the frame. Outer 25% on each side must be heavily blurred (safe crop zone). "
             f"{palette} "
@@ -135,7 +157,8 @@ class GeminiImageClient:
                 config=types.GenerateImagesConfig(
                     number_of_images=1,
                     output_mime_type="image/jpeg",  # API retorna JPEG; convertemos para WebP abaixo
-                    aspect_ratio="16:9"
+                    aspect_ratio="16:9",
+                    person_generation="DONT_ALLOW"
                 )
             )
 
