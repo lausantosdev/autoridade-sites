@@ -14,8 +14,8 @@ logger = get_logger(__name__)
 
 load_dotenv()
 
-_SCENE_FEW_SHOT_EXAMPLES = """- Pet Shop / Banho e Tosa: "clean, serene, pet-friendly boutique reception area with warm lighting and plush seating — NO animals, NO cages, NO tools"
-- Clínica Veterinária / Veterinário: "a warm, cozy pet clinic waiting lounge with wooden benches, soft lighting, lush potted plants and water bowls — NO animals, NO surgical instruments, NO equipment"
+_SCENE_FEW_SHOT_EXAMPLES = """- Pet Shop / Banho e Tosa: "a cheerful, colorful pet boutique interior with walls decorated with illustrated paw prints, colorful pet accessories hanging on display, warm wood shelves with neatly arranged pet products, soft warm lighting — NO real animals, NO cages, NO tools"
+- Clínica Veterinária / Veterinário: "a warm, charming veterinary clinic waiting room with cheerful illustrated animal murals on the walls, cozy wooden benches with colorful pet-themed cushions, small ceramic pet bowls on display shelves, lush tropical plants and warm soft lighting throughout — welcoming, pet-friendly, NO real animals, NO surgical instruments, NO clinical equipment"
 - Advocacia / Escritório de Advocacia: "prestigious warm library with leather armchairs and golden ambient lighting — NO documents, NO papers"
 - Odontologia / Clínica Odontológica: "spa-like waiting room, plush chairs, indoor plants, warm lighting — NO dental chairs, NO dental tools"
 - Restaurante / Gastronomia: "a beautifully set table in a warm, elegant restaurant with candles and subtle ambient lighting — NO kitchen tools"
