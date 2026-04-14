@@ -66,12 +66,14 @@ async def deploy_to_cloudflare_pages(subdomain: str, output_dir: str) -> str:
     # ── 2. Wrangler: publica arquivos no projeto do cliente ───────────
     await _wrangler_deploy(output_path, project_name, account_id, api_token)
 
-    # ── 3. DNS: CNAME específico  {subdomain} → {subdomain}.pages.dev ─
+    # ── 2.5 Obter o hostname real .pages.dev gerado pela Cloudflare ──
+    actual_pages_domain = await _get_project_subdomain(project_name, account_id, api_token)
+
+    # ── 3. DNS: CNAME específico  {subdomain} → {actual_pages_domain} ─
     #    (sobrepõe wildcard, permite verificação do custom domain)
     zone_id = await _get_zone_id(BASE_DOMAIN, api_token)
     if zone_id:
-        cname_target = f"{subdomain}.pages.dev"
-        await _upsert_cname(subdomain, cname_target, zone_id, api_token)
+        await _upsert_cname(subdomain, actual_pages_domain, zone_id, api_token)
     else:
         logger.warning("[CF Deploy] Zone ID não encontrado para %s — DNS não atualizado", BASE_DOMAIN)
 
@@ -148,6 +150,23 @@ async def _get_zone_id(domain: str, api_token: str) -> str | None:
                 return zone_id
             logger.warning("[CF Deploy] Zone não encontrada para '%s'", domain)
             return None
+
+
+async def _get_project_subdomain(project_name: str, account_id: str, api_token: str) -> str:
+    """Busca o subdomínio real *.pages.dev alocado pela Cloudflare para o projeto."""
+    headers = {"Authorization": f"Bearer {api_token}", "Content-Type": "application/json"}
+    url = f"https://api.cloudflare.com/client/v4/accounts/{account_id}/pages/projects/{project_name}"
+    
+    async with aiohttp.ClientSession() as s:
+        async with s.get(url, headers=headers) as r:
+            if r.status == 200:
+                data = await r.json()
+                subdomain = data.get("result", {}).get("subdomain")
+                if subdomain:
+                    return subdomain
+            
+            logger.warning("[CF Deploy] Falha ao obter subdomain real de %s. Usando fallback.", project_name)
+            return f"{project_name}.pages.dev"
 
 
 async def _upsert_cname(name: str, target: str, zone_id: str, api_token: str) -> None:
