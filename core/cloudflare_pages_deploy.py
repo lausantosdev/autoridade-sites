@@ -176,10 +176,10 @@ async def _upsert_cname(name: str, target: str, zone_id: str, api_token: str) ->
         ) as r:
             existing = (await r.json()).get("result", [])
 
-        # proxied=False (DNS-only / ícone cinza) é obrigatório para *.pages.dev:
-        # CNAMEs proxiados cruzando "usuários" na infra CF disparam Error 1014.
-        # O Pages serve o site corretamente via DNS-only sem precisar do proxy CF.
-        payload = {"type": "CNAME", "name": name, "content": target, "proxied": False, "ttl": 1}
+        # proxied=True: Cloudflare resolve na borda de rede imediatamente (sem espera de propagação DNS).
+        # Error 1014 era causado pelo ALVO errado (pages.dev de outro usuário), não pelo proxy.
+        # Como usamos actual_pages_domain (URL real do nosso projeto), proxied=True é seguro.
+        payload = {"type": "CNAME", "name": name, "content": target, "proxied": True, "ttl": 1}
 
         if existing:
             record_id = existing[0]["id"]
