@@ -2,7 +2,7 @@
 import json
 from pathlib import Path
 from unittest.mock import patch
-from core.output_builder import setup_output_dir
+from core.output_builder import setup_output_dir, generate_fallback_index
 
 
 def _make_config():
@@ -88,3 +88,30 @@ class TestSetupOutputDir:
         assert 'Sitemap: https://test.com.br/sitemap.xml' in content
 
 
+class TestGenerateFallbackIndex:
+    def test_generates_index_from_template(self, tmp_path):
+        templates = tmp_path / "templates"
+        templates.mkdir()
+        (templates / "index.html").write_text(
+            "<html><title>{{empresa_nome}}</title></html>", encoding='utf-8'
+        )
+
+        out = tmp_path / "out"
+        out.mkdir()
+        with patch('core.output_builder.TEMPLATES_DIR', templates):
+            generate_fallback_index(_make_config(), str(out))
+
+        index = out / "index.html"
+        assert index.exists()
+        content = index.read_text(encoding='utf-8')
+        assert 'TestEmpresa' in content
+
+    def test_no_template_no_crash(self, tmp_path):
+        templates = tmp_path / "empty_templates"
+        templates.mkdir()
+        out = tmp_path / "out"
+        out.mkdir()
+        with patch('core.output_builder.TEMPLATES_DIR', templates):
+            # Should not raise
+            generate_fallback_index(_make_config(), str(out))
+        assert not (out / "index.html").exists()

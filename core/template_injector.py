@@ -1,6 +1,3 @@
-# DEPRECATED: Este módulo foi substituído por core/home_renderer.py
-# A home page agora é gerada como HTML estático, sem dependência do React build.
-# Manter apenas para referência histórica — não importar em produção.
 """
 Template Injector — Injeta dados do site no template SiteGen pré-buildado.
 

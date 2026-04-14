@@ -36,13 +36,13 @@ from core.stats_accumulator import StatsAccumulator
 from core.page_generator import generate_all_pages, _replace_config_vars
 from core.validator import validate_site, generate_report
 from core.site_data_builder import build_site_data
-from core.home_renderer import render_home
+from core.template_injector import inject_template
 import re
 from core.config_loader import _parse_keyword_csv
 from core.utils import extract_maps_url as _extract_maps_url_from_input
 from core.imagen_client import GeminiImageClient
 from core.topic_generator import generate_services_data
-from core.output_builder import setup_output_dir
+from core.output_builder import setup_output_dir, generate_fallback_index
 from core.cloudflare_pages_deploy import deploy_to_cloudflare_pages
 from core.logger import get_logger
 logger = get_logger(__name__)
@@ -303,13 +303,14 @@ async def websocket_generate(websocket: WebSocket):
             await websocket.send_json({"type": "step", "step": 5, "message": "Montando home page premium..."})
             try:
                 await asyncio.to_thread(
-                    render_home,
+                    inject_template,
                     site_data=site_data,
                     output_dir=output_dir,
                     hero_image_path=str(hero_img_path) if hero_img_path.exists() else None,
                 )
             except Exception as e:
-                logger.error("Erro ao gerar home estática: %s", e)
+                logger.error("Erro na home SiteGen: %s. Usando template fallback.", e)
+                generate_fallback_index(config, output_dir)
 
             # Salvar dados de serviços (se houver)
             if servicos_data:
