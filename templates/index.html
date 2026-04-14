@@ -3,18 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{seo_title}}</title>
-    <meta name="description" content="{{seo_meta_description}}">
-    <meta name="keywords" content="{{seo_meta_keywords}}">
-    <meta property="og:title" content="{{seo_og_title}}">
-    <meta property="og:description" content="{{seo_og_description}}">
+    <meta name="description" content="{{empresa_nome}} — {{empresa_categoria}} em {{cidade_principal}}. Profissionais qualificados, atendimento personalizado e resultados comprovados. Solicite seu orçamento!">
+    <meta name="keywords" content="{{empresa_categoria}}, {{empresa_nome}}, {{empresa_categoria}} {{cidade_principal}}, {{empresa_categoria}} profissional">
+    <meta property="og:title" content="{{empresa_nome}} — {{empresa_categoria}} em {{cidade_principal}}">
+    <meta property="og:description" content="{{empresa_nome}} é referência em {{empresa_categoria}} em {{cidade_principal}}. Orçamento sem compromisso pelo WhatsApp!">
     <meta property="og:type" content="website">
     <meta property="og:locale" content="pt_BR">
     <meta property="og:url" content="https://{{dominio}}/">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://{{dominio}}/">
     <meta name="theme-color" content="{{cor_marca}}">
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <title>{{empresa_nome}} — {{empresa_categoria}} em {{cidade_principal}}</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 
     <!-- Schema Markup -->
     <script type="application/ld+json">
@@ -22,8 +22,16 @@
       "@context": "https://schema.org",
       "@type": "LocalBusiness",
       "name": "{{empresa_nome}}",
+      "description": "{{empresa_nome}} — {{empresa_categoria}} em {{cidade_principal}}. Profissionais qualificados e resultados comprovados.",
       "telephone": "{{telefone_display}}",
-      "url": "https://{{dominio}}/"
+      "url": "https://{{dominio}}/",
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "{{cidade_principal}}",
+        "addressCountry": "BR"
+      },
+      "openingHours": "{{horario}}",
+      "sameAs": ["https://wa.me/{{telefone_whatsapp}}"]
     }
     </script>
 
@@ -31,52 +39,10 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" onload="this.rel='stylesheet'">
     <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"></noscript>
-
-    <!-- Font Awesome — inline critical icons, async bulk -->
-    <style>
-        /* FA subset inline para evitar FOIT nos ícones críticos */
-        @font-face {
-            font-family: 'Font Awesome 6 Free';
-            font-style: normal;
-            font-weight: 900;
-            font-display: swap;
-            src: url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/webfonts/fa-solid-900.woff2') format('woff2');
-        }
-        .fas, .fab { font-family: 'Font Awesome 6 Free'; font-weight: 900; font-style: normal; -moz-osx-font-smoothing: grayscale; -webkit-font-smoothing: antialiased; display: inline-block; font-variant: normal; text-rendering: auto; line-height: 1; }
-        .fab { font-family: 'Font Awesome 6 Brands'; font-weight: 400; }
-        @font-face { font-family: 'Font Awesome 6 Brands'; font-style: normal; font-weight: 400; font-display: swap; src: url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/webfonts/fa-brands-400.woff2') format('woff2'); }
-        .fa-whatsapp::before { content: "\f232"; }
-        .fa-bars::before { content: "\f0c9"; }
-        .fa-xmark::before { content: "\f00d"; }
-        .fa-award::before { content: "\f559"; }
-        .fa-phone::before { content: "\f095"; }
-        .fa-clock::before { content: "\f017"; }
-        .fa-location-dot::before { content: "\f3c5"; }
-        .fa-map-marker-alt::before { content: "\f3c5"; }
-        .fa-check-circle::before { content: "\f058"; }
-        .fa-headset::before { content: "\f590"; }
-        .fa-medal::before { content: "\f5a2"; }
-        .fa-bolt::before { content: "\f0e7"; }
-        .fa-shield-halved::before { content: "\e24b"; }
-        .fa-star::before { content: "\f005"; }
-        .fa-users::before { content: "\f0c0"; }
-        .fa-chart-line::before { content: "\f201"; }
-        .fa-globe::before { content: "\f0ac"; }
-        .fa-briefcase::before { content: "\f0b1"; }
-        .fa-gear::before { content: "\f013"; }
-        .fa-wand-magic-sparkles::before { content: "\e2ca"; }
-        .fa-microchip::before { content: "\f2db"; }
-        .fa-fingerprint::before { content: "\f577"; }
-        .fa-pencil::before { content: "\f303"; }
-        .fa-desktop::before { content: "\f108"; }
-        .fa-pen-ruler::before { content: "\e31f"; }
-        .fa-table-columns::before { content: "\f0db"; }
-        .fa-database::before { content: "\f1c0"; }
-        .fa-heart-pulse::before { content: "\f21e"; }
-        .fa-building::before { content: "\f1ad"; }
-    </style>
-
-    <!-- Preload hero image para LCP -->
+    <!-- Font Awesome — carregado de forma não-bloqueante (PageSpeed) -->
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" as="style" onload="this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"></noscript>
+    <!-- Preload hero image para otimizar LCP (PageSpeed) -->
     <link rel="preload" as="image" href="images/hero.webp" type="image/webp" fetchpriority="high">
     <link rel="stylesheet" href="css/reset.css">
     <link rel="stylesheet" href="css/style.css">
@@ -95,19 +61,18 @@
 <body>
 
     <!-- Header -->
-    <header class="site-header" id="site-header">
+    <header class="site-header">
         <div class="container header-inner">
-            <a href="index.html" class="header-logo">{{empresa_nome}}</a>
-            <nav class="header-nav" id="main-nav">
-                <a href="#servicos">Serviços</a>
+            <a href="index.html" class="header-logo" data-dinamico="empresa_nome">{{empresa_nome}}</a>
+            <nav class="header-nav">
+                <a href="mapa-do-site.html">Serviços</a>
                 <a href="#sobre">Sobre</a>
-                <a href="#faq">FAQ</a>
                 <a href="#contato" class="header-cta">
                     <i class="fab fa-whatsapp"></i> Fale Conosco
                 </a>
             </nav>
-            <button class="mobile-toggle" id="mobile-toggle" aria-label="Menu" aria-expanded="false">
-                <i class="fas fa-bars" id="toggle-icon"></i>
+            <button class="mobile-toggle" aria-label="Menu">
+                <i class="fas fa-bars"></i>
             </button>
         </div>
     </header>
@@ -120,112 +85,122 @@
             <div class="hero-content">
                 <div class="hero-badge">
                     <i class="fas fa-award"></i>
-                    {{hero_badge_text}}
+                    Referência em <span data-dinamico="empresa_categoria">{{empresa_categoria}}</span>
                 </div>
                 <h1 class="hero-title">
-                    {{hero_title_line_1}}<br>
-                    <span class="accent">{{hero_title_line_2}}</span>
+                    <span data-dinamico="empresa_categoria">{{empresa_categoria}}</span><br>
+                    em {{cidade_principal}}<br>
+                    <span class="accent" data-dinamico="empresa_nome">{{empresa_nome}}</span>
                 </h1>
-                <p class="hero-subtitle">{{hero_subtitle}}</p>
+                <p class="hero-subtitle">
+                    <strong data-dinamico="empresa_nome">{{empresa_nome}}</strong> — profissionais qualificados, atendimento personalizado
+                    e resultados comprovados. Fale com um especialista sem compromisso.
+                </p>
                 <div class="hero-buttons">
-                    <a href="#contato" class="btn btn-primary">
+                    <a href="#contato" data-dinamico-href="whatsapp_link" class="btn btn-primary">
                         <i class="fab fa-whatsapp"></i> Fale Conosco
-                    </a>
-                    <a href="#servicos" class="btn btn-outline">
-                        Ver Serviços
                     </a>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Trust Indicators -->
-    <section class="trust-section">
+    <!-- Stats -->
+    <section class="stats">
         <div class="container">
-            <div class="trust-grid reveal">
-                <div class="trust-item">
-                    <div class="trust-icon"><i class="fas fa-check-circle"></i></div>
-                    <div>
-                        <div class="trust-label">Atendimento Qualificado</div>
-                        <p class="trust-desc">Profissionais experientes e dedicados ao seu resultado.</p>
-                    </div>
+            <div class="stats-grid reveal">
+                <div class="stat-item">
+                    <div class="stat-number"><i class="fas fa-check-circle" style="font-size: 2.5rem; color: var(--primary);"></i></div>
+                    <div class="stat-label">Atendimento Qualificado</div>
                 </div>
-                <div class="trust-item">
-                    <div class="trust-icon"><i class="fas fa-headset"></i></div>
-                    <div>
-                        <div class="trust-label">Suporte Personalizado</div>
-                        <p class="trust-desc">Acompanhamento próximo em cada etapa do serviço.</p>
-                    </div>
+                <div class="stat-item">
+                    <div class="stat-number"><i class="fas fa-handshake" style="font-size: 2.5rem; color: var(--primary);"></i></div>
+                    <div class="stat-label" style="margin-top: 10px;">Foco na Satisfação</div>
                 </div>
-                <div class="trust-item">
-                    <div class="trust-icon"><i class="fas fa-medal"></i></div>
-                    <div>
-                        <div class="trust-label">Compromisso com Resultado</div>
-                        <p class="trust-desc">Foco total na sua satisfação e no sucesso do projeto.</p>
-                    </div>
+                <div class="stat-item">
+                    <div class="stat-number"><i class="fas fa-bullseye" style="font-size: 2.5rem; color: var(--primary);"></i></div>
+                    <div class="stat-label" style="margin-top: 10px;">Compromisso com o Resultado</div>
                 </div>
             </div>
         </div>
     </section>
 
     <!-- Services -->
-    <section id="servicos" class="section section-alt">
+    <section id="servicos" class="section section-alt" style="display: none;">
         <div class="container">
             <div class="section-header reveal">
                 <span class="section-tag">Nossos Serviços</span>
-                <h2 class="section-title">{{services_title}}</h2>
-                <p class="section-subtitle">{{services_subtitle}}</p>
+                <h2 class="section-title">Soluções em <span class="accent" data-dinamico="empresa_categoria">{{empresa_categoria}}</span></h2>
+                <p class="section-subtitle">Oferecemos atendimento técnico e especializado para resolver o seu problema.</p>
             </div>
             <div class="services-grid reveal" id="dynamico-servicos">
-                <!-- Injetado via Python -->
+                <!-- Injetado via JS -->
             </div>
-            <div class="text-center" style="margin-top: 48px;">
-                <a href="#contato" class="btn btn-primary">
-                    <i class="fab fa-whatsapp"></i> Solicitar Orçamento
+            
+            <div class="text-center" style="margin-top: 40px;">
+                <a href="#contato" data-dinamico-href="whatsapp_link" class="btn btn-outline" style="color: var(--text-white); border-color: rgba(255,255,255,0.2);">
+                    <i class="fab fa-whatsapp"></i> Falar com Especialista
                 </a>
             </div>
         </div>
     </section>
 
-    <!-- Authority / Sobre -->
-    <section id="sobre" class="authority-section">
+    <!-- Diferenciais — 3 itens genéricos de confiança -->
+    <section id="diferenciais" class="section section-dark">
         <div class="container">
-            <div class="authority-inner reveal">
-                <span class="section-tag">Sobre Nós</span>
-                <h2 class="section-title">{{authority_title}}</h2>
-                <p class="authority-manifesto">{{authority_manifesto}}</p>
-                <div class="diff-grid" style="margin-top: 40px; text-align: left;">
-                    <div class="diff-card">
-                        <div class="diff-icon"><i class="fas fa-headset"></i></div>
-                        <div>
-                            <h3>Atendimento Personalizado</h3>
-                            <p>Cada cliente recebe atenção dedicada e soluções adaptadas à sua necessidade.</p>
-                        </div>
-                    </div>
-                    <div class="diff-card">
-                        <div class="diff-icon"><i class="fas fa-medal"></i></div>
-                        <div>
-                            <h3>Profissionais Qualificados</h3>
-                            <p>Equipe experiente e comprometida com a excelência em cada entrega.</p>
-                        </div>
-                    </div>
-                    <div class="diff-card">
-                        <div class="diff-icon"><i class="fas fa-check-circle"></i></div>
-                        <div>
-                            <h3>Resultados Comprovados</h3>
-                            <p>Metodologia focada em resultados reais e mensuráveis para o seu negócio.</p>
-                        </div>
-                    </div>
+            <div class="section-header reveal">
+                <span class="section-tag">Por que nos escolher</span>
+                <h2 class="section-title">Nosso Compromisso com Você</h2>
+                <p class="section-subtitle">Qualidade, transparência e resultados em cada atendimento.</p>
+            </div>
+            <div class="diff-grid reveal">
+                <div class="diff-card">
+                    <div class="diff-icon"><i class="fas fa-headset"></i></div>
+                    <h3>Atendimento Personalizado</h3>
+                </div>
+                <div class="diff-card">
+                    <div class="diff-icon"><i class="fas fa-medal"></i></div>
+                    <h3>Profissionais Qualificados</h3>
+                </div>
+                <div class="diff-card">
+                    <div class="diff-icon"><i class="fas fa-check-circle"></i></div>
+                    <h3>Compromisso com Resultado</h3>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- CTA / Contato -->
+    <!-- About / SEO Section -->
+    <section id="sobre" class="seo-section">
+        <div class="container">
+            <div class="section-header reveal">
+                <span class="section-tag">Sobre Nós</span>
+                <h2 class="section-title">Conheça a <span class="accent" data-dinamico="empresa_nome">{{empresa_nome}}</span></h2>
+            </div>
+            <div class="seo-content reveal">
+                <p>
+                    A <strong data-dinamico="empresa_nome">{{empresa_nome}}</strong> é especializada em <strong data-dinamico="empresa_categoria">{{empresa_categoria}}</strong>.
+                    Nossa equipe de profissionais atua oferecendo serviços de alta qualidade, 
+                    com atendimento personalizado e comprometido com as suas necessidades.
+                </p>
+                <p>
+                    Utilizamos as melhores técnicas do mercado para garantir
+                    agilidade e eficiência. Nosso foco é resolver o seu problema com técnica,
+                    priorizando sempre a transparência e o compromisso em cada serviço prestado.
+                </p>
+                <p>
+                    Entre em <a href="#contato">contato</a> conosco e descubra por que somos a escolha preferida
+                    em <span data-dinamico="empresa_categoria">{{empresa_categoria}}</span>. Fale com um especialista sem compromisso!
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA -->
     <section id="contato" class="cta-section">
         <div class="container">
-            <h2 class="cta-title">{{mega_cta_title}}</h2>
-            <p class="cta-subtitle">{{mega_cta_subtitle}}</p>
+            <h2 class="cta-title">Fale Conosco</h2>
+            <p class="cta-subtitle">Solicite mais informações pelo WhatsApp.</p>
             <form id="lead-form" class="lead-form" autocomplete="on">
                 <input type="hidden" name="keyword" value="">
                 <input type="hidden" name="local" value="">
@@ -239,7 +214,7 @@
                         <input type="tel" id="lead-whatsapp" name="whatsapp" placeholder="(11) 99999-9999" required autocomplete="tel">
                     </div>
                 </div>
-                <button type="submit" class="btn-whatsapp">
+                <button type="submit" class="btn btn-whatsapp">
                     <i class="fab fa-whatsapp"></i> Iniciar Conversa pelo WhatsApp
                 </button>
                 <p class="lead-form-hint">Ao enviar, você será direcionado para o WhatsApp do especialista.</p>
@@ -249,27 +224,7 @@
 
     <!-- Map -->
     <section class="map-section">
-        <div class="container" style="padding: 48px 24px;">
-            <div class="section-header" style="text-align:center; margin-bottom: 32px;">
-                <span class="section-tag">Como Chegar</span>
-                <h2 class="section-title" style="font-size: clamp(1.4rem, 3vw, 2rem);">Nossa Localização</h2>
-            </div>
-        </div>
-        <iframe src="{{google_maps_url}}" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Localização {{empresa_nome}}"></iframe>
-    </section>
-
-    <!-- FAQ -->
-    <section id="faq" class="section" style="background: var(--bg-alt);">
-        <div class="container">
-            <div class="section-header reveal">
-                <span class="section-tag">Dúvidas</span>
-                <h2 class="section-title">Perguntas Frequentes</h2>
-                <p class="section-subtitle">Tudo que você precisa saber antes de contratar.</p>
-            </div>
-            <div class="faq-section reveal" id="dynamico-faq">
-                <!-- Injetado via Python -->
-            </div>
-        </div>
+        <iframe src="{{google_maps_url}}" data-dinamico-src="google_maps_url" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Localização {{empresa_nome}}"></iframe>
     </section>
 
     <!-- Footer -->
@@ -277,13 +232,13 @@
         <div class="container">
             <div class="footer-grid">
                 <div class="footer-brand">
-                    <h3>{{empresa_nome}}</h3>
-                    <p>{{footer_descricao}}</p>
+                    <h3 data-dinamico="empresa_nome">{{empresa_nome}}</h3>
+                    <p><span data-dinamico="empresa_categoria">{{empresa_categoria}}</span> de excelência. Profissionais qualificados, atendimento personalizado e resultados comprovados.</p>
                 </div>
                 <div class="footer-col">
                     <h4>Contato</h4>
-                    <p><i class="fas fa-phone"></i> {{telefone_display}}</p>
-                    <p><i class="fas fa-clock"></i> {{horario}}</p>
+                    <p><i class="fas fa-phone"></i> <span data-dinamico="telefone_display">{{telefone_display}}</span></p>
+                    <p><i class="fas fa-clock"></i> <span data-dinamico="horario">{{horario}}</span></p>
                     {{endereco_footer}}
                 </div>
                 <div class="footer-col">
@@ -296,14 +251,14 @@
                 </div>
             </div>
             <div class="footer-bottom">
-                <span>© {{ano}} {{empresa_nome}}. Todos os direitos reservados.</span>
+                <span>© <span data-dinamico="ano">{{ano}}</span> <span data-dinamico="empresa_nome">{{empresa_nome}}</span>. Todos os direitos reservados.</span>
                 <a href="#" target="_blank" rel="noopener">AUTORIDADE DIGITAL</a>
             </div>
         </div>
     </footer>
 
     <!-- WhatsApp Float -->
-    <a href="#contato" class="whatsapp-float" aria-label="WhatsApp">
+    <a href="#contato" data-dinamico-href="whatsapp_link" class="whatsapp-float" aria-label="WhatsApp">
         <i class="fab fa-whatsapp"></i>
     </a>
 
