@@ -29,7 +29,8 @@ _SCENE_FEW_SHOT_EXAMPLES = """- Pet Shop / Banho e Tosa: "clean, serene, pet-fri
 - Assistência Técnica / Eletrônicos / Informática: "a sleek, minimalist technology showroom with ambient backlighting and clean display surfaces — NO open devices, NO circuit boards, NO tools"
 - Construção Civil / Reformas / Pintura: "a beautifully finished luxury living room with polished floors, high ceilings and premium interior design — NO raw materials, NO tools, NO construction debris"
 - Contabilidade / Finanças: "an elegant, minimalist executive office with a clean desk, warm light and city view through floor-to-ceiling windows — NO papers, NO folders"
-- Saúde / Clínica Médica / Estética: "a serene, spa-like premium clinic reception with marble surfaces, orchids and soft diffused lighting — NO medical equipment, NO clinical instruments""""
+- Saúde / Clínica Médica / Estética: "a serene, spa-like premium clinic reception with marble surfaces, orchids and soft diffused lighting — NO medical equipment, NO clinical instruments"
+"""
 
 
 def _generate_scene_description(categoria: str, llm_client, keywords: list = None) -> str:
