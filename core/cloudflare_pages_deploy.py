@@ -66,18 +66,11 @@ async def deploy_to_cloudflare_pages(subdomain: str, output_dir: str) -> str:
     # ── 2. Wrangler: publica arquivos no projeto do cliente ───────────
     await _wrangler_deploy(output_path, project_name, account_id, api_token)
 
-    # ── 2.5 Obter o hostname real .pages.dev gerado pela Cloudflare ──
-    actual_pages_domain = await _get_project_subdomain(project_name, account_id, api_token)
-
-    # ── 3. DNS: CNAME específico  {subdomain} → {actual_pages_domain} ─
-    #    (sobrepõe wildcard, permite verificação do custom domain)
-    zone_id = await _get_zone_id(BASE_DOMAIN, api_token)
-    if zone_id:
-        await _upsert_cname(subdomain, actual_pages_domain, zone_id, api_token)
-    else:
-        logger.warning("[CF Deploy] Zone ID não encontrado para %s — DNS não atualizado", BASE_DOMAIN)
-
-    # ── 4. Registrar custom domain no projeto Pages ───────────────────
+    # ── 3. Registrar custom domain no projeto Pages ───────────────────
+    #    A API do Pages gerencia o CNAME automaticamente.
+    #    NÃO criamos CNAME manual: um CNAME proxiado apontando para
+    #    *.pages.dev dispara o Error 1014 (CNAME Cross-User Banned)
+    #    porque o Cloudflare trata *.pages.dev como infraestrutura interna.
     await _register_pages_domain(project_name, subdomain, account_id, api_token)
 
     site_url = f"https://{subdomain}.{BASE_DOMAIN}"
