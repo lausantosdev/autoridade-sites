@@ -113,8 +113,15 @@ def _inject_meta_tags(html: str, site_data: dict) -> str:
     for marker, value in replacements.items():
         html = html.replace(marker, _escape_html_attr(str(value)))
 
-    # Injetar preload da hero image (LCP otimizado para PageSpeed)
-    hero_preload = '\n    <link rel="preload" as="image" href="./hero-image.webp" type="image/webp" fetchpriority="high">'
+    # Injetar preload da hero image (LCP otimizado para PageSpeed) logo após as metas iniciais
+    hero_preload = '\n    <link rel="preload" as="image" href="/hero-image.webp" type="image/webp" fetchpriority="high">'
+    if 'initial-scale=1.0" />' in html:
+        html = html.replace('initial-scale=1.0" />', 'initial-scale=1.0" />' + hero_preload, 1)
+    elif 'initial-scale=1.0">' in html:
+        html = html.replace('initial-scale=1.0">', 'initial-scale=1.0">' + hero_preload, 1)
+    else:
+        # fallback for any other structure
+        html = html.replace('</head>', hero_preload + '\n</head>', 1)
 
     # Injetar canonical, og:url e robots antes do </head>
     extra_tags = (
@@ -122,7 +129,7 @@ def _inject_meta_tags(html: str, site_data: dict) -> str:
         f'\n    <meta property="og:url" content="{canonical_url}">'
         f'\n    <meta name="robots" content="index, follow">'
     )
-    html = html.replace('</head>', hero_preload + extra_tags + '\n</head>', 1)
+    html = html.replace('</head>', extra_tags + '\n</head>', 1)
 
     return html
 

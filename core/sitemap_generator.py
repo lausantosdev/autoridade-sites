@@ -22,7 +22,7 @@ def _generate_sitemap_xml(pages: list, domain: str, output_dir: str):
 
     urls = [
         f"""    <url>
-        <loc>{domain}/index.html</loc>
+        <loc>{domain}/</loc>
         <lastmod>{today}</lastmod>
         <changefreq>daily</changefreq>
         <priority>1.0</priority>

@@ -62,7 +62,7 @@ def setup_output_dir(output_dir: str, config: dict):
     domain = config['empresa']['dominio']
     robots_content = (
         "User-agent: *\n"
-        "Allow: /\n"
+        "Disallow:\n"
         "\n"
         f"Sitemap: https://{domain}/sitemap.xml\n"
     )
