@@ -80,3 +80,117 @@ def generate_fallback_index(config: dict, output_dir: str):
         output_path = Path(output_dir) / "index.html"
         output_path.write_text(content, encoding='utf-8')
         logger.info("Home page fallback gerada (template HTML puro)")
+
+
+def build_static_home_page(config: dict, site_data: dict, output_dir: str) -> str:
+    """
+    Gera index.html a partir do template estático avançado (index_static.html).
+
+    DIFERENTE de generate_fallback_index():
+        - Usa templates/index_static.html (NÃO toca templates/index.html)
+        - Injeta AI data (site_data) para SEO, Hero, Serviços e FAQ nativo.
+        - Retorna o caminho do index.html gerado
+
+    Args:
+        config: dict carregado via load_config().
+        site_data: dict retornado por build_site_data() (contém dados gerados pela IA).
+        output_dir: diretório de saída.
+
+    Returns:
+        Caminho absoluto do index.html gerado.
+    """
+    import re
+    import json
+    from pathlib import Path
+    import logging
+    from core.template_renderer import (
+        replace_config_vars, 
+        render_premium_services_html,
+        render_faq_html,
+        render_authority_html,
+        render_bottom_cta_html
+    )
+
+    logger = logging.getLogger(__name__)
+    TEMPLATES_DIR = Path("templates")
+
+    static_template = TEMPLATES_DIR / "index_static.html"
+
+    if not static_template.exists():
+        logger.warning("index_static.html não encontrado. Usando fallback.")
+        generate_fallback_index(config, output_dir)
+        return str(Path(output_dir) / "index.html")
+
+    content = static_template.read_text(encoding='utf-8')
+    content = replace_config_vars(content, config)
+
+    import html as _html
+
+    if site_data:
+        hero = site_data.get('hero', {})
+        content = content.replace('{{hero_badge}}', _html.escape(hero.get('badgeText', config.get('empresa', {}).get('categoria', ''))))
+        content = content.replace('{{hero_title_1}}', _html.escape(hero.get('titleLine1', '')))
+        content = content.replace('{{hero_title_2}}', _html.escape(hero.get('titleLine2', '')))
+        content = content.replace('{{hero_subtitle}}', _html.escape(hero.get('subtitle', '')))
+        
+        services_title = site_data.get('featuresSection', {}).get('title', f"Soluções em {config.get('empresa', {}).get('categoria', '')}")
+        services_subtitle = site_data.get('featuresSection', {}).get('subtitle', 'Profissionais qualificados para melhor te atender.')
+        content = content.replace('{{services_title}}', _html.escape(services_title))
+        content = content.replace('{{services_subtitle}}', _html.escape(services_subtitle))
+        services_html = render_premium_services_html(site_data, config)
+        content = content.replace('{{servicos_cards}}', services_html)
+        
+        authority_html = render_authority_html(site_data)
+        content = content.replace('{{authority_html}}', authority_html)
+
+        faq_html, faq_schema = render_faq_html(site_data)
+        content = content.replace('{{faq_html}}', faq_html)
+        content = content.replace('{{faq_schema}}', faq_schema if faq_schema else '')
+
+        bottom_cta_html = render_bottom_cta_html(site_data, config)
+        content = content.replace('{{bottom_cta_html}}', bottom_cta_html)
+
+        # Seção Contato: título e subtítulo dinâmico da IA
+        mega_cta = site_data.get('megaCtaSection', {})
+        contato_titulo = mega_cta.get('title', 'Pronto para começar?')
+        contato_subtitulo = mega_cta.get('subtitle', 'Entre em contato e fale com nossa equipe sem compromisso.')
+        content = content.replace('{{contato_titulo}}', _html.escape(contato_titulo))
+        content = content.replace('{{contato_subtitulo}}', _html.escape(contato_subtitulo))
+
+    else:
+        # Fallback de segurança se site_data estiver vazio
+        from core.template_renderer import render_services_html
+        content = content.replace('{{hero_badge}}', 'Referência em ' + _html.escape(config.get('empresa', {}).get('categoria', '')))
+        content = content.replace('{{hero_title_1}}', _html.escape(config.get('empresa', {}).get('categoria', '')))
+        content = content.replace('{{hero_title_2}}', 'com excelência')
+        content = content.replace('{{hero_subtitle}}', _html.escape(f"A {config.get('empresa', {}).get('nome', '')} é referência. Serviço profissional garantido."))
+        content = content.replace('{{services_title}}', _html.escape(f"Soluções em {config.get('empresa', {}).get('categoria', '')}"))
+        content = content.replace('{{services_subtitle}}', 'Atendimento técnico e especializado.')
+        content = content.replace('{{servicos_cards}}', render_services_html(config))
+        content = content.replace('{{authority_html}}', '')
+        content = content.replace('{{faq_html}}', '')
+        content = content.replace('{{faq_schema}}', '')
+        content = content.replace('{{bottom_cta_html}}', '')
+        content = content.replace('{{contato_titulo}}', 'Fale Conosco')
+        content = content.replace('{{contato_subtitulo}}', 'Solicite mais informações pelo WhatsApp.')
+
+    # Map Guard — lê de config['empresa']['google_maps_embed'] (estrutura real do config.yaml)
+    maps_url = config.get('empresa', {}).get('google_maps_embed', '').strip()
+    if not maps_url:
+        # fallback: tenta config['links']['googleMapsEmbed'] (caso site_data já tenha populado)
+        maps_url = config.get('links', {}).get('googleMapsEmbed', '').strip()
+    if maps_url:
+        empresa_nome = config.get('empresa', {}).get('nome', '')
+        map_html = f'<section class="map-section"><iframe src="{maps_url}" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Localização {empresa_nome}"></iframe></section>'
+        content = content.replace('{{map_html}}', map_html)
+    else:
+        content = content.replace('{{map_html}}', '')
+
+    residual = re.findall(r'\{\{[^}]+\}\}', content)
+    if residual:
+        logger.warning("Placeholders não substituídos em index_static.html: %s", residual)
+
+    output_path = Path(output_dir) / "index.html"
+    output_path.write_text(content, encoding='utf-8')
+    logger.info("Home page estática gerada: %s", output_path)
+    return str(output_path)

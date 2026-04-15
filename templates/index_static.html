@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="{{theme_mode}}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="{{empresa_nome}} — {{empresa_categoria}} em {{cidade_principal}}. Profissionais qualificados, atendimento personalizado e resultados comprovados. Solicite seu orçamento!">
+    <meta name="keywords" content="{{empresa_categoria}}, {{empresa_nome}}, {{empresa_categoria}} {{cidade_principal}}, {{empresa_categoria}} profissional">
+    <meta property="og:title" content="{{empresa_nome}} — {{empresa_categoria}} em {{cidade_principal}}">
+    <meta property="og:description" content="{{empresa_nome}} é referência em {{empresa_categoria}} em {{cidade_principal}}. Orçamento sem compromisso pelo WhatsApp!">
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="pt_BR">
+    <meta property="og:url" content="https://{{dominio}}/">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://{{dominio}}/">
+    <meta name="theme-color" content="{{cor_marca}}">
+    <title>{{empresa_nome}} — {{empresa_categoria}} em {{cidade_principal}}</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <!-- Schema Markup -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "LocalBusiness",
+      "name": "{{empresa_nome}}",
+      "description": "{{empresa_nome}} — {{empresa_categoria}} em {{cidade_principal}}. Profissionais qualificados e resultados comprovados.",
+      "telephone": "{{telefone_display}}",
+      "url": "https://{{dominio}}/",
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "{{cidade_principal}}",
+        "addressCountry": "BR"
+      },
+      "openingHours": "{{horario}}",
+      "sameAs": ["https://wa.me/{{telefone_whatsapp}}"]
+    }
+    </script>
+    {{faq_schema}}
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" onload="this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"></noscript>
+    <!-- Font Awesome — carregado de forma não-bloqueante (PageSpeed) -->
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" as="style" onload="this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"></noscript>
+    <!-- Preload hero image para otimizar LCP (PageSpeed) -->
+    <link rel="preload" as="image" href="hero-image.webp" type="image/webp" fetchpriority="high">
+    <link rel="stylesheet" href="css/reset.css">
+    <link rel="stylesheet" href="css/premium_static.css">
+    <!-- widget.css não é carregado aqui: premium_static.css já contém os estilos do form -->
+
+    <!-- Dynamic Theme Color -->
+    <style>
+        :root {
+            --primary: {{cor_marca}};
+            --primary-rgb: {{cor_marca_rgb}};
+            --primary-text: {{cor_marca_text}};
+            --primary-text-rgb: {{cor_marca_text_rgb}};
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header class="site-header">
+        <div class="container header-inner">
+            <a href="index.html" class="header-logo">{{empresa_nome}}</a>
+            <nav class="header-nav">
+                <a href="#servicos">Serviços</a>
+                <a href="#sobre">Sobre</a>
+                <a href="#contato" class="header-cta">
+                    <i class="fab fa-whatsapp"></i> Fale Conosco
+                </a>
+            </nav>
+            <button class="mobile-toggle" aria-label="Menu">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Hero -->
+    <section class="hero">
+        <div class="hero-bg-image" style="background-image: url('hero-image.webp');"></div>
+        <div class="hero-overlay"></div>
+        <div class="container hero-container">
+            <div class="hero-content">
+                <div class="hero-badge">
+                    <span class="hero-badge-dot"></span>
+                    <span>{{hero_badge}}</span>
+                </div>
+                <h1 class="hero-title">
+                    <span class="hero-line-1">{{hero_title_1}}</span><br>
+                    <span class="hero-line-2 accent">{{hero_title_2}}</span>
+                </h1>
+                <p class="hero-subtitle">
+                    {{hero_subtitle}}
+                </p>
+                <div class="hero-buttons">
+                    <a href="#contato" class="btn btn-primary">
+                        <i class="fab fa-whatsapp"></i> Fale Conosco
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+
+    <!-- Services -->
+    <section id="servicos" class="section section-alt">
+        <div class="container">
+            <div class="section-header reveal">
+                <span class="section-tag">Nossos Serviços</span>
+                <h2 class="section-title">{{services_title}}</h2>
+                <p class="section-subtitle">{{services_subtitle}}</p>
+            </div>
+            <div class="services-grid reveal">
+                {{servicos_cards}}
+            </div>
+        </div>
+    </section>
+
+    <!-- Authority Section (gerado pela IA: Sobre Nós / Manifesto) -->
+    {{authority_html}}
+
+    <!-- FAQ Section (gerado pela IA) -->
+    {{faq_html}}
+
+    <!-- CTA / Contato -->
+    <section id="contato" class="contact-section">
+        <div class="container">
+            <div class="contact-header">
+                <span class="section-tag">Contato</span>
+                <h2 class="contact-title">{{contato_titulo}}</h2>
+                <p class="contact-subtitle">{{contato_subtitulo}}</p>
+            </div>
+            <div class="contact-card">
+                <form id="lead-form" class="lead-form" autocomplete="on">
+                    <input type="hidden" name="keyword" value="{{empresa_categoria}}">
+                    <input type="hidden" name="local" value="{{cidade_principal}}">
+                    <div class="lead-form-fields">
+                        <div class="lead-form-field">
+                            <label for="lead-nome">Seu nome</label>
+                            <input type="text" id="lead-nome" name="nome" placeholder="Como podemos te chamar?" required autocomplete="name">
+                        </div>
+                        <div class="lead-form-field">
+                            <label for="lead-whatsapp">Seu WhatsApp</label>
+                            <input type="tel" id="lead-whatsapp" name="whatsapp" placeholder="(11) 99999-9999" required autocomplete="tel">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-whatsapp">
+                        <i class="fab fa-whatsapp"></i> Iniciar Conversa pelo WhatsApp
+                    </button>
+                    <p class="lead-form-hint">Ao enviar, você será direcionado para o WhatsApp do especialista.</p>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Como Chegar (Google Maps) -->
+    {{map_html}}
+
+    <!-- Bottom CTA -->
+    {{bottom_cta_html}}
+
+    <!-- Footer -->
+    <footer class="site-footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <h3>{{empresa_nome}}</h3>
+                    <p><span>{{empresa_categoria}}</span> de excelência. Profissionais qualificados, atendimento personalizado e resultados comprovados.</p>
+                </div>
+                <div class="footer-col">
+                    <h4>Contato</h4>
+                    <p><i class="fas fa-phone"></i> <span>{{telefone_display}}</span></p>
+                    <p><i class="fas fa-clock"></i> <span>{{horario}}</span></p>
+                    {{endereco_footer}}
+                </div>
+                <div class="footer-col">
+                    <h4>Serviços</h4>
+                    {{servicos_footer}}
+                </div>
+                <div class="footer-col">
+                    <h4>Áreas Atendidas</h4>
+                    {{locais_footer}}
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <span>© <span>{{ano}}</span> <span>{{empresa_nome}}</span>. Todos os direitos reservados.</span>
+                <a href="#" target="_blank" rel="noopener">AUTORIDADE DIGITAL</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- WhatsApp Float -->
+    <a href="{{whatsapp_link}}" class="whatsapp-float" aria-label="WhatsApp" target="_blank" rel="noopener">
+        <i class="fab fa-whatsapp"></i>
+    </a>
+
+    <!-- dados.js mantido para compatibilidade com widget.js -->
+    <script src="js/dados.js" defer></script>
+
+    <!-- JS Estático Minimalista — sem injeção de HTML via dados.js -->
+    <script src="js/main_static.js" defer></script>
+
+    <!-- Widget de Captura de Leads (modo estático: #contato já existe no HTML) -->
+    <script>
+    window.AUTORIDADE_WIDGET = {
+      workerUrl: "{{worker_url}}",
+      clientToken: "{{client_token}}",
+      dominio: "{{dominio}}",
+      empresaNome: "{{empresa_nome}}",
+      whatsappNumero: "{{telefone_whatsapp}}",
+      keyword: "{{empresa_categoria}}",
+      local: "{{cidade_principal}}",
+      staticMode: true  /* flag: informa ao widget.js que #contato já está no DOM */
+    };
+    </script>
+    <script src="js/widget.js?v=2" defer></script>
+
+</body>
+</html>

@@ -1,36 +1,28 @@
-# ===== DADOS DA EMPRESA =====
 empresa:
-  nome: "PetVida Premium"
-  dominio: "petvidapremium.com.br"
-  categoria: "Petshop e Clínica Veterinária"
-  telefone_whatsapp: "5511987654321"
-  telefone_ligar: "(11) 98765-4321"
-  horario: "Segunda a Sábado, 8h às 20h"
-  cor_marca: "#F97316"
-  endereco: "Avenida Ibirapuera, 1234 - Moema, São Paulo, SP"
-  google_maps_embed: ""
-
-# ===== SEO =====
+  nome: Silva & Associados
+  dominio: silvaassociados.com.br
+  categoria: Escritório de Advocacia Empresarial
+  telefone_whatsapp: '5511988887777'
+  telefone_ligar: (11) 98888-7777
+  horario: Segunda a Sexta, 9h às 18h
+  cor_marca: '#1E3A8A'
+  endereco: Av. Paulista, 1000 - Bela Vista, São Paulo, SP
+  google_maps_embed: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3750.3164998781604!2d-43.93184!3d-19.95325!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMTnCsDU3JzExLjciUyA0M8KwNTUnNTQuNiJX!5e0!3m2!1spt-BR!2sbr!4v1611234567890!5m2!1spt-BR!2sbr
 seo:
   palavras_chave:
-    - Banho e Tosa
-    - Clínica Veterinária 24h
-    - Vacinação e Exames Pet
-    - Ração Super Premium
-
+  - Advogados Empresariais
+  - Defesa Trabalhista Patronal
+  - Proteção de Ativos
+  - Consultoria Jurídica
   locais:
-    - Moema
-    - Itaim Bibi
-    - Vila Olímpia
-
-# ===== API =====
+  - São Paulo
+  - Bela Vista
+  - Faria Lima
 api:
-  provider: "openrouter"
-  model: "deepseek/deepseek-v3.2"
+  provider: openrouter
+  model: deepseek/deepseek-v3.2
   max_workers: 5
   max_retries: 3
-
-# ===== LEADS =====
 leads:
-  worker_url: ""
-  client_token: ""
+  worker_url: ''
+  client_token: ''

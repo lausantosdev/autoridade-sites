@@ -30,7 +30,7 @@ from core.validator import validate_site, generate_report
 from core.site_data_builder import build_site_data, resolve_theme_mode
 from core.template_injector import inject_template
 from core.imagen_client import GeminiImageClient
-from core.output_builder import setup_output_dir, generate_fallback_index
+from core.output_builder import setup_output_dir, generate_fallback_index, build_static_home_page
 
 
 def main():
@@ -39,6 +39,9 @@ def main():
     parser.add_argument('--step', choices=['mix', 'sitemap', 'topics', 'image', 'home', 'pages', 'validate', 'all'],
                         default='all', help='Passo específico a executar')
     parser.add_argument('--force-topics', action='store_true', help='Forçar regeneração de tópicos')
+    parser.add_argument('--static-test', action='store_true',
+                        help='Usa o pipeline estático (index_static.html) ao invés do SiteGen React. '
+                             'Apenas para testes locais — não afeta produção.')
     args = parser.parse_args()
 
     print("\n" + "=" * 60)
@@ -99,11 +102,17 @@ def main():
         _print_done(start_time)
         return
 
-    # 5. Inicializar clients API
-    client = OpenRouterClient(
-        model=config['api']['model'],
-        max_retries=config['api']['max_retries']
-    )
+
+
+    try:
+        client = OpenRouterClient(
+            model=config['api']['model'],
+            max_retries=config['api']['max_retries']
+        )
+    except Exception as e:
+        from core.gemini_client import GeminiClient
+        print(f"  [!] OpenRouter indisponível ({e}). Usando GeminiClient...")
+        client = GeminiClient(model='gemini-2.5-flash')
 
     # GeminiClient como primário (structured output, mais rápido)
     gemini = None
@@ -181,11 +190,15 @@ def main():
         if site_data:
             print("🏠 Injetando home page premium (SiteGen)...")
             try:
-                inject_template(
-                    site_data=site_data,
-                    output_dir=output_dir,
-                    hero_image_path=str(hero_img_path) if hero_img_path.exists() else None,
-                )
+                # Usar a versão correta dependendo de args.static_test
+                if getattr(args, 'static_test', False):
+                    build_static_home_page(config, site_data, output_dir)
+                else:
+                    inject_template(
+                        site_data=site_data,
+                        output_dir=output_dir,
+                        hero_image_path=str(hero_img_path) if hero_img_path.exists() else None,
+                    )
             except Exception as e:
                 print(f"  ⚠ Erro ao injetar home: {e}")
                 print("  ↳ Gerando home com template HTML fallback...")
@@ -217,22 +230,37 @@ def main():
                 print("🎨 Imagem Hero já existe. Pulando geração.")
             print()
 
-        # 6.7 Gerar Home Page (SiteGen Template)
+        # 6.7 Gerar Home Page (SiteGen Template ou Estático)
         if args.step == 'home':
-            print("🏠 Gerando conteúdo da home page via IA...")
-            try:
-                site_data = build_site_data(config, client)
-                print()
-                print("🏠 Injetando home page premium (SiteGen)...")
-                inject_template(
-                    site_data=site_data,
-                    output_dir=output_dir,
-                    hero_image_path=str(hero_img_path) if hero_img_path.exists() else None,
-                )
-            except Exception as e:
-                print(f"  ⚠ Erro na home SiteGen: {e}")
-                print("  ↳ Gerando home com template HTML fallback...")
-                generate_fallback_index(config, output_dir)
+            if args.static_test:
+                # ── Pipeline Estático (index_static.html — Premium com IA) ──
+                print("🏠 Gerando dados da home page via IA...")
+                try:
+                    site_data = build_site_data(config, client)
+                    print()
+                    print("🏠 Gerando home ESTÁTICA PREMIUM...")
+                    result_path = build_static_home_page(config, site_data, output_dir)
+                    print(f"  ✓ Home estática gerada: {result_path}")
+                except Exception as e:
+                    print(f"  ⚠ Erro na home estática (IA): {e}")
+                    print("  ↳ Usando fallback padrão...")
+                    generate_fallback_index(config, output_dir)
+            else:
+                # ── Pipeline React original (intacto) ──
+                print("🏠 Gerando conteúdo da home page via IA...")
+                try:
+                    site_data = build_site_data(config, client)
+                    print()
+                    print("🏠 Injetando home page premium (SiteGen)...")
+                    inject_template(
+                        site_data=site_data,
+                        output_dir=output_dir,
+                        hero_image_path=str(hero_img_path) if hero_img_path.exists() else None,
+                    )
+                except Exception as e:
+                    print(f"  ⚠ Erro na home SiteGen: {e}")
+                    print("  ↳ Gerando home com template HTML fallback...")
+                    generate_fallback_index(config, output_dir)
             print()
 
     if args.step == 'home':
