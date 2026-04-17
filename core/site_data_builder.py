@@ -379,10 +379,11 @@ SEÇÃO SERVIÇOS (títulos da seção):
 - services_title (6-10 palavras — ex: "Soluções em {empresa['categoria']} para Toda a Região")
 - services_subtitle (8-12 palavras complementares, sem geo-lock)
 
-AUTORIDADE (Sobre Nós — inclua messaging de confiança e diferenciais da empresa):
-- authority_title (6-9 palavras — por que nos escolher, foco na marca)
-- authority_manifesto (60-90 palavras — tom profissional, menciona a cobertura regional ({regiao_ampla}),
-  inclua 2-3 diferenciais genéricos como atendimento personalizado e compromisso com resultado.
+AUTORIDADE (Sobre Nós — manifesto de marca sem geo-lock):
+- authority_title (6-9 palavras — por que nos escolher, foco na marca e categoria)
+- authority_manifesto (60-90 palavras — tom profissional, foco em MARCA e DIFERENCIAIS.
+  NÃO mencione cidades, bairros ou regiões específicas — isso é papel das subpáginas.
+  Inclua 2-3 diferenciais concretos: atendimento personalizado, compromisso com resultado, experiência na área.
   NÃO invente prêmios, certificações, datas ou horários específicos.)
 
 FAQ — 3 perguntas GERAIS de quem busca {empresa['categoria']} (sem amarrar a cidade específica):

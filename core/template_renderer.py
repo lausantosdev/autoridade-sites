@@ -412,13 +412,20 @@ function toggleFaq(btn){
 
 
 def render_authority_html(site_data: dict) -> str:
-    """Renderiza seção Sobre Nós / Manifesto de Autoridade a partir dos dados da IA."""
+    """Renderiza seção Sobre Nós / Manifesto de Autoridade a partir dos dados da IA.
+
+    Estrutura visual alinhada com o React:
+    - .sobre-section: padding responsivo (56px/128px) + border-top + overflow-hidden
+    - .sobre-blob: blob decorativo radial com a cor da marca
+    - .sobre-container: max-w-4xl (896px) — mais estreito que o .container padrão
+    - .sobre-manifesto: texto solto sem card/box-shadow (sem .premium-authority)
+    """
     import html as _html
 
     authority = site_data.get("authoritySection", {})
     manifesto = authority.get("manifestoText", "")
-    title = authority.get("title", "Nossa Hist\u00f3ria e Responsabilidade")
-    eyebrow = authority.get("eyebrow", "SOBRE N\u00d3S")
+    title = authority.get("title", "Nossa História e Responsabilidade")
+    eyebrow = authority.get("eyebrow", "SOBRE NÓS")
 
     if not manifesto:
         return ""
@@ -426,16 +433,18 @@ def render_authority_html(site_data: dict) -> str:
     paragraphs = [p.strip() for p in manifesto.split("\n") if p.strip()]
     p_html = "".join(f"<p>{_html.escape(p)}</p>" for p in paragraphs)
 
-    html_out = '<section id="sobre" class="seo-section">\n'
-    html_out += '<div class="container">\n'
-    html_out += '<div class="section-header reveal">\n'
-    html_out += f'<span class="section-tag">{_html.escape(eyebrow)}</span>\n'
-    html_out += f'<h2 class="section-title">{_html.escape(title)}</h2>\n'
-    html_out += '</div>\n'
-    html_out += f'<div class="seo-content premium-authority reveal">\n{p_html}\n</div>\n'
-    html_out += '</div>\n</section>'
+    html_out  = '<section id="sobre" class="sobre-section">\n'
+    html_out += '    <div class="sobre-blob" aria-hidden="true"></div>\n'
+    html_out += '    <div class="container sobre-container">\n'
+    html_out += '        <div class="section-header reveal">\n'
+    html_out += f'            <span class="section-tag">{_html.escape(eyebrow)}</span>\n'
+    html_out += f'            <h2 class="section-title">{_html.escape(title)}</h2>\n'
+    html_out += '        </div>\n'
+    html_out += f'        <div class="sobre-manifesto reveal">\n            {p_html}\n        </div>\n'
+    html_out += '    </div>\n</section>'
 
     return html_out
+
 
 
 def render_bottom_cta_html(site_data: dict, config: dict) -> str:

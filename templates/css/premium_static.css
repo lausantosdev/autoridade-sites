@@ -1114,6 +1114,66 @@ section {
     color: #cbd5e1;
 }
 
+/* ==========================================================================
+   SOBRE SECTION — Paridade fiel ao React (home page #sobre)
+   Replica: section#sobre.relative.py-14.md:py-32.bg-background.border-t.overflow-hidden
+   ========================================================================== */
+
+/* D3 + D4: border-top separador + padding responsivo */
+.sobre-section {
+    position: relative;
+    padding: 56px 0;                        /* mobile: py-14 do React */
+    background: var(--bg);
+    border-top: 1px solid var(--border);    /* React: border-t border-border */
+    overflow: hidden;
+}
+
+@media (min-width: 768px) {
+    .sobre-section {
+        padding: 128px 0;                   /* desktop: py-32 do React */
+    }
+}
+
+/* D2: Blob decorativo radial — replica absolute centered blob do React */
+.sobre-blob {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 600px;
+    height: 600px;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.05;                          /* React: opacity-5 */
+    background-color: var(--primary);      /* cor da marca dinâmica */
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* D6: Wrapper de conteúdo restrito a max-w-4xl (896px) — React: max-w-4xl mx-auto */
+.sobre-container {
+    position: relative;
+    z-index: 1;
+    max-width: 896px !important;            /* override do .container padrão (~1200px) */
+}
+
+/* D1: Manifesto sem card — texto flutuante sobre fundo limpo (sem .premium-authority) */
+.sobre-manifesto {
+    max-width: 720px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.sobre-manifesto p {
+    font-size: 1.1rem;
+    line-height: 1.85;
+    color: var(--text-secondary);
+    margin-bottom: 1.5rem;
+}
+
+.sobre-manifesto p:last-child {
+    margin-bottom: 0;
+}
 
 .seo-intro .section-title {
     font-size: clamp(1.8rem, 4vw, 2.5rem);
