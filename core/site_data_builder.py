@@ -367,9 +367,9 @@ SEO (foco na MARCA e CATEGORIA — sem travar em área específica):
 
 HERO — REGRA CRÍTICA DE SEO: a Home é o HUB de autoridade da marca. O hero NUNCA deve citar um bairro/cidade específico no badge ou no título, pois isso canibaliza as subpáginas. Foque em POSICIONAMENTO DE MARCA e no DESEJO DO CLIENTE:
 - hero_badge_text (máx 4 palavras — foca em CATEGORIA ou POSICIONAMENTO. Ex: "Mecânica de Confiança", "Petshop Especializado", "Clínica Veterinária Premium". PROIBIDO: incluir nome de bairro ou cidade)
-- hero_title_line_1 (3-5 palavras — fala do DESEJO DO CLIENTE, não da empresa. Ex: "Seu Pet Merece", "Procurando um bom", "Cansado de problemas com". PROIBIDO: "Cuidados de Alto Nível", "Soluções Completas", frases institucionais)
-- hero_title_line_2 (3-5 palavras com destaque colorido — complementa linha_1 com a CATEGORIA ou BENEFÍCIO CENTRAL. PROIBIDO: bairro ou cidade específico. Ex: "Atendimento Veterinário?", "Mecânico Confiável?", "Assessoria Jurídica?")
-- hero_subtitle (10-15 palavras no MÁXIMO. Frase direta sobre a empresa e a CATEGORIA — PROIBIDO citar bairro, cidade ou região. Foque em posicionamento de marca e benefício central. Ex: "A {empresa['nome']} é referência em {empresa['categoria']} com qualidade e compromisso.")
+- hero_title_line_1 (3-5 palavras — foca no desejo ou dor do cliente. Ex: "Seu Pet Merece", "Cansado de Contas Altas", "Sua Empresa Precisa de")
+- hero_title_line_2 (3-5 palavras em destaque colorido — complementa a linha_1 com a categoria ou benefício central. Ex: "Cuidado de Verdade", "Energia Solar", "Proteção Jurídica")
+- hero_subtitle (MÁXIMO 90 CARACTERES / ~15 palavras. Frase direta sobre a empresa e a CATEGORIA — PROIBIDO citar bairro, cidade ou região. Foque em posicionamento de marca e benefício central. Ex: "A {empresa['nome']} é referência em {empresa['categoria']} com qualidade e compromisso.". Se ultrapassar 90 chars, reescreva mais curto.)
 
 SERVIÇOS — Gere APENAS descrição curta e ícone para cada serviço listado:
 {servicos_prompt}

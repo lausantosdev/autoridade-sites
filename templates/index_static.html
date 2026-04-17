@@ -45,11 +45,7 @@
     <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"></noscript>
     <!-- Preload hero image para otimizar LCP (PageSpeed) -->
     <link rel="preload" as="image" href="hero-image.webp" type="image/webp" fetchpriority="high">
-    <link rel="stylesheet" href="css/reset.css">
-    <link rel="stylesheet" href="css/premium_static.css">
-    <!-- widget.css não é carregado aqui: premium_static.css já contém os estilos do form -->
-
-    <!-- Dynamic Theme Color -->
+    <!-- Dynamic Theme Color — deve vir ANTES do CSS para evitar FOUC -->
     <style>
         :root {
             --primary: {{cor_marca}};
@@ -58,6 +54,9 @@
             --primary-text-rgb: {{cor_marca_text_rgb}};
         }
     </style>
+    <link rel="stylesheet" href="css/reset.css">
+    <link rel="stylesheet" href="css/premium_static.css">
+    <!-- widget.css não é carregado aqui: premium_static.css já contém os estilos do form -->
 </head>
 <body>
 
@@ -102,6 +101,9 @@
                 </div>
             </div>
         </div>
+        <a href="#servicos" class="hero-scroll-indicator" aria-label="Rolar para os serviços">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+        </a>
     </section>
 
 

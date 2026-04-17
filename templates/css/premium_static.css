@@ -95,19 +95,21 @@
 [data-theme="light"] .hero-overlay {
     background: linear-gradient(
         to bottom,
-        rgba(255, 255, 255, 0.70) 0%,
-        rgba(255, 255, 255, 0.60) 35%,
-        rgba(255, 255, 255, 0.85) 65%,
-        var(--bg) 100%
+        rgba(255, 255, 255, 0.82) 0%,
+        rgba(255, 255, 255, 0.75) 50%,
+        rgba(248, 250, 252, 0.93) 100%
     ) !important;
 }
 
 [data-theme="light"] .hero .hero-title {
-    color: var(--text) !important;
+    color: #0f172a !important;
+    text-shadow: 0 1px 4px rgba(255, 255, 255, 0.8);
+    text-wrap: balance;
 }
 
 [data-theme="light"] .hero .hero-subtitle {
-    color: var(--text-secondary) !important;
+    color: rgba(15, 23, 42, 0.88) !important;
+    text-shadow: 0 1px 3px rgba(255, 255, 255, 0.7);
 }
 
 [data-theme="light"] .hero .hero-badge {
@@ -361,12 +363,12 @@ a {
     align-items: center;
     justify-content: center;
     gap: 8px;
-    padding: 8px 20px;
+    padding: 8px 16px;
     background: rgba(var(--primary-rgb), 0.12);
     border: 1px solid rgba(var(--primary-rgb), 0.2);
     border-radius: 50px;
     color: var(--primary-light);
-    font-size: 0.72rem;
+    font-size: 0.75rem;
     font-weight: 700;
     letter-spacing: 0.12em;
     text-transform: uppercase;
@@ -396,20 +398,20 @@ a {
 
 .hero-title .accent,
 .hero-line-2.accent {
-    color: var(--primary);
-    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+    background: linear-gradient(135deg, var(--primary-text) 0%, var(--primary-light) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
 }
 
-/* Light theme: accent precisa de cor prÃ³pria porque text-fill overrides color */
+/* Light theme: cor sólida — gradient transparent cria efeito fantasma com cores escuras */
 [data-theme="light"] .hero-title .accent,
 [data-theme="light"] .hero-line-2.accent {
-    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    background: none;
+    -webkit-background-clip: initial;
+    background-clip: initial;
+    -webkit-text-fill-color: var(--primary-text);
+    color: var(--primary-text);
 }
 
 /* Subtitle */
@@ -420,6 +422,39 @@ a {
     margin-bottom: 40px;
     max-width: 600px;
     font-weight: 400;
+}
+
+/* Scroll indicator (chevron animado — idêntico ao React) */
+@keyframes bounceDown {
+    0%, 100% { transform: translateX(-50%) translateY(0); opacity: 0.6; }
+    50%       { transform: translateX(-50%) translateY(6px); opacity: 1; }
+}
+
+.hero-scroll-indicator {
+    position: absolute;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    color: rgba(15, 23, 42, 0.5);
+    text-decoration: none;
+    transition: color 0.3s ease;
+    animation: bounceDown 2s ease-in-out infinite;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.hero-scroll-indicator:hover {
+    color: rgba(15, 23, 42, 0.8);
+}
+
+[data-theme="dark"] .hero-scroll-indicator {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+[data-theme="dark"] .hero-scroll-indicator:hover {
+    color: rgba(255, 255, 255, 0.8);
 }
 
 /* Buttons */
@@ -461,7 +496,8 @@ a {
 .btn-primary {
     background: var(--primary);
     color: #ffffff;
-    box-shadow: 0 4px 16px rgba(var(--primary-rgb), 0.35);
+    min-height: 52px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
 }
 
 .btn-primary:hover {
@@ -1914,7 +1950,16 @@ section {
         width: 100%;
     }
 
-    .btn {
+    /* Hero: btn sem expansão — tamanho por conteúdo (igual ao React) */
+    .hero-buttons .btn {
+        width: auto;
+        min-width: 200px;
+        justify-content: center;
+    }
+
+    /* Outros contextos: btn larga (CTA, inline-cta etc.) */
+    .cta-buttons .btn,
+    .seo-inline-cta .btn {
         width: 100%;
         max-width: 320px;
         justify-content: center;
