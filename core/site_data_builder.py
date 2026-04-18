@@ -369,15 +369,15 @@ HERO — REGRA CRÍTICA DE SEO: a Home é o HUB de autoridade da marca. O hero N
 - hero_badge_text (máx 4 palavras — foca em CATEGORIA ou POSICIONAMENTO. Ex: "Mecânica de Confiança", "Petshop Especializado", "Clínica Veterinária Premium". PROIBIDO: incluir nome de bairro ou cidade)
 - hero_title_line_1 (3-5 palavras — foca no desejo ou dor do cliente. Ex: "Seu Pet Merece", "Cansado de Contas Altas", "Sua Empresa Precisa de")
 - hero_title_line_2 (3-5 palavras em destaque colorido — complementa a linha_1 com a categoria ou benefício central. Ex: "Cuidado de Verdade", "Energia Solar", "Proteção Jurídica")
-- hero_subtitle (MÁXIMO 90 CARACTERES / ~15 palavras. Frase direta sobre a empresa e a CATEGORIA — PROIBIDO citar bairro, cidade ou região. Foque em posicionamento de marca e benefício central. Ex: "A {empresa['nome']} é referência em {empresa['categoria']} com qualidade e compromisso.". Se ultrapassar 90 chars, reescreva mais curto.)
+- hero_subtitle (MÁXIMO 60 CARACTERES / 8-10 palavras — 1 frase curta de benefício ou emoção. PROIBIDO: repetir o badge_text, citar a categoria completa palavra por palavra, mencionar cidade ou região. Foque no RESULTADO para o cliente. Ex: "Atendimento personalizado e resultados comprovados.", "Qualidade e compromisso em cada serviço.", "Sua tranquilidade é a nossa prioridade." Se ultrapassar 60 chars, reescreva mais curto.)
 
 SERVIÇOS — Gere APENAS descrição curta e ícone para cada serviço listado:
 {servicos_prompt}
 Ícones — use EXATAMENTE um destes: {icons_str}
 
 SEÇÃO SERVIÇOS (títulos da seção):
-- services_title (6-10 palavras — ex: "Soluções em {empresa['categoria']} para Toda a Região")
-- services_subtitle (8-12 palavras complementares, sem geo-lock)
+- services_title (MÁXIMO 5 palavras — foque no BENEFÍCIO do cliente ou no que fazemos por ele. Use linguagem direta e universal, adequada para qualquer nicho B2C ou B2B. Exemplos: "Cuidamos do Seu Pet", "Seu Carro em Boas Mãos", "Resolvemos Seu Problema Rápido", "Proteção Jurídica para Você", "Energia Limpa para Sua Casa". PROIBIDO: usar "Soluções em X", mencionar região, cidade ou bairro.)
+- services_subtitle (8-12 palavras complementares — descrição direta do que oferecemos, sem geo-lock)
 
 AUTORIDADE (Sobre Nós — manifesto de marca sem geo-lock):
 - authority_title (6-9 palavras — por que nos escolher, foco na marca e categoria)
@@ -540,9 +540,9 @@ def _fallback_content(empresa: dict, palavras: list) -> dict:
         'hero_badge_text': f"{empresa['categoria'].split()[0]} em {palavras[0] if palavras else empresa['categoria']}",
         'hero_title_line_1': f"Procurando {empresa['categoria'].split()[0]}",
         'hero_title_line_2': f"em {empresa.get('endereco', empresa['nome'])}?",
-        'hero_subtitle': f"Profissionais qualificados em {empresa['categoria']}. Fale com um especialista sem compromisso.",
+        'hero_subtitle': 'Atendimento personalizado e resultados comprovados.',
         'whatsapp_cta_text': 'Fale Conosco',
-        'services_title': f"Soluções em {empresa['categoria']}",
+        'services_title': 'O Que Fazemos por Você',
         'services_subtitle': 'Conheça nossos serviços especializados.',
         'authority_title': f"Especialistas em {empresa['categoria']}",
         'authority_manifesto': f"Nossa equipe é especializada em {empresa['categoria']}. Trabalhamos com atendimento personalizado e compromisso com resultado para atender suas necessidades.",

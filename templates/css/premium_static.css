@@ -355,6 +355,7 @@ a {
     display: flex;
     flex-direction: column;
     align-items: center;
+    text-align: center;
 }
 
 /* Badge */
@@ -656,6 +657,7 @@ section {
     margin-bottom: 16px;
     color: var(--text-white);
     text-wrap: balance;
+    text-align: center;
 }
 
 .section-title .accent {
@@ -852,9 +854,10 @@ section {
    SERVICES GRID
    ========================================================================== */
 .services-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    gap: 20px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 24px;
 }
 
 .service-card {
@@ -927,6 +930,9 @@ section {
    PREMIUM SERVICE CARDS â€” Cards com descriÃ§Ã£o (gerados pela IA)
    ========================================================================== */
 .premium-service-card {
+    flex: 1 1 calc(33.333% - 1.5rem);
+    min-width: 260px;
+    max-width: 360px;
     background: var(--bg-card);
     padding: 28px 24px;
     border-radius: var(--radius-lg);
@@ -935,7 +941,7 @@ section {
     position: relative;
     overflow: hidden;
     display: flex;
-    gap: 18px;
+    flex-direction: column;
     align-items: flex-start;
 }
 
@@ -962,10 +968,10 @@ section {
 }
 
 .premium-service-card .service-icon {
-    flex-shrink: 0;
     width: 48px;
     height: 48px;
-    margin-bottom: 0;
+    margin-bottom: 18px;
+    flex-shrink: 0;
 }
 
 .premium-service-card:hover .service-icon {
