@@ -22,7 +22,7 @@ from datetime import datetime
 from core.config_loader import load_config, get_whatsapp_link, get_phone_display
 from core.mixer import mix_keywords_locations, get_summary
 from core.sitemap_generator import generate_sitemap
-from core.openrouter_client import OpenRouterClient
+from core.openai_client import OpenAIClient
 from core.gemini_client import GeminiClient
 from core.topic_generator import generate_topics
 from core.page_generator import generate_all_pages, get_retry_log, _replace_config_vars
@@ -104,23 +104,24 @@ def main():
 
 
 
-    try:
-        client = OpenRouterClient(
-            model=config['api']['model'],
-            max_retries=config['api']['max_retries']
-        )
-    except Exception as e:
-        from core.gemini_client import GeminiClient
-        print(f"  [!] OpenRouter indisponível ({e}). Usando GeminiClient...")
-        client = GeminiClient(model='gemini-2.5-flash')
-
-    # GeminiClient como primário (structured output, mais rápido)
+    # ── Clientes de IA ──────────────────────────────────────────────────────
+    # Primário: GeminiClient (structured output, free tier, custo zero)
     gemini = None
     try:
         gemini = GeminiClient(model='gemini-2.5-flash')
-        print("🚀 GeminiClient ativo — usando como primário (OpenRouter = fallback)")
+        client = gemini  # Reutilizado em topics, site_data, imagen e stats
+        print("🚀 GeminiClient ativo — primário para todo o pipeline")
     except Exception as e:
-        print(f"⚠️ GeminiClient indisponível ({e}) — usando apenas OpenRouter")
+        print(f"  ❌ GeminiClient indisponível: {e}")
+        sys.exit(1)
+
+    # Fallback: OpenAIClient (GPT-4o Mini, JSON Schema nativo)
+    openai_fallback = None
+    try:
+        openai_fallback = OpenAIClient()
+        print("✅ OpenAIClient ativo — fallback para subpáginas SEO")
+    except Exception as e:
+        print(f"  ⚠️ OpenAIClient indisponível ({e}) — sem fallback para subpáginas")
 
     # 6. Gerar tópicos do nicho
     if args.step in ('all', 'topics'):
@@ -279,7 +280,7 @@ def main():
             pages=pages,
             config=config,
             topics=topics,
-            client=client,
+            client=openai_fallback,   # OpenAI GPT-4o Mini como fallback real do Gemini
             template_path=str(template_path),
             output_dir=output_dir,
             gemini_client=gemini

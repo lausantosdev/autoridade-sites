@@ -11,7 +11,7 @@ from tqdm import tqdm
 import time
 import threading
 from core.validator import validate_page_html
-from core.openrouter_client import OpenRouterClient
+from core.openai_client import OpenAIClient
 from core.topic_generator import get_random_mix
 from core.config_loader import get_phone_display
 from core.template_renderer import replace_config_vars as _replace_config_vars
@@ -54,9 +54,9 @@ def generate_all_pages(
     pages: list,
     config: dict,
     topics: dict,
-    client: OpenRouterClient,
-    template_path: str,
-    output_dir: str,
+    client: OpenAIClient = None,
+    template_path: str = "",
+    output_dir: str = "",
     progress_callback=None,
     gemini_client=None,
     stats_accumulator=None
@@ -68,7 +68,7 @@ def generate_all_pages(
         pages: Lista de dicts com 'title', 'keyword', 'location', 'filename'
         config: Configuração do site
         topics: Tópicos do nicho (palavras + frases)
-        client: OpenRouterClient (fallback)
+        client: OpenAIClient (fallback GPT-4o Mini quando Gemini falha, opcional)
         template_path: Caminho para o template HTML
         output_dir: Diretório de saída
         progress_callback: Função callback(current, total, page_title) para progresso
@@ -111,9 +111,9 @@ def generate_all_pages(
     errors = [0]
 
     if gemini_client:
-        logger.info("Usando GeminiClient como primário (OpenAI como fallback)")
+        logger.info("Usando GeminiClient como primário (OpenAI GPT-4o Mini = fallback)")
     else:
-        logger.info("Usando OpenRouterClient (sem Gemini)")
+        logger.info("Usando apenas OpenAIClient como primário (sem Gemini)")
 
     def process_page(page):
         try:
